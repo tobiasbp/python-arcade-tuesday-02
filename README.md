@@ -7,3 +7,6 @@ A simple game built with Python and the Arcade library.
 * python3 -mvenv .venv
 * source .venv/bin/activate
 * pip3 install -r requirements.txt
+
+# Communication
+* Discord - https://discord.gg/VDXCFAwa
