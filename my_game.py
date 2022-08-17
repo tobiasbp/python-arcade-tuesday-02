@@ -8,6 +8,7 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 """
 
 import arcade
+import random
 
 
 SPRITE_SCALING = 0.5
@@ -24,6 +25,12 @@ PLAYER_START_Y = 50
 PLAYER_SHOT_SPEED = 4
 
 FIRE_KEY = arcade.key.SPACE
+
+# UFO constants
+UFO_SPEED = 2  # both for x and y note: has to be int
+UFO_DIR_CHANGE_RATE = 3
+UFO_SPAWN_RATE = 10  # seconds
+
 
 class Player(arcade.Sprite):
     """
@@ -90,6 +97,52 @@ class PlayerShot(arcade.Sprite):
             self.kill()
 
 
+class BonusUFO(arcade.Sprite):
+    """occasionally moves across the screen. Grants the player points if shot"""
+
+    def __int__(self, **kwargs):
+
+        kwargs['filename'] = "images/ufoBlue.png"
+
+        kwargs['scale'] = SPRITE_SCALING
+
+        # set random position off-screen
+        kwargs['center_x'] = random.choice([0, SCREEN_WIDTH])
+        kwargs['center_y'] = random.choice([0, SCREEN_HEIGHT])
+
+        # send arguments upstairs
+        super().__init__(**kwargs)
+
+        # set random direction
+        if self.center_x > 0:
+            self.change_x = -random.randint(1, UFO_SPEED)
+        else:
+            self.change_x = random.randint(1, UFO_SPEED)
+
+        if self.center_y > 0:
+            self.change_y = -UFO_SPEED - self.change_x
+        else:
+            self.change_y = (UFO_SPEED - self.change_x)
+
+        # setup direction changing
+        def change_dir(delta_time):
+            r = random.randrange(-UFO_SPEED, UFO_SPEED)
+            self.change_x -= r
+            self.change_y += r
+
+        arcade.schedule(change_dir, UFO_DIR_CHANGE_RATE)
+
+    def update(self):
+        """update position, and kill if out of bounds"""
+
+        self.center_x += self.change_x
+        self.center_y += self.change_y
+
+        # kill if out of bounds
+        if self.center_x > SCREEN_WIDTH or self.center_x < 0 and self.center_y > SCREEN_HEIGHT or self.center_y < 0:
+            self.kill()
+
+
 class MyGame(arcade.Window):
     """
     Main application class.
@@ -110,6 +163,9 @@ class MyGame(arcade.Window):
         self.player_sprite = None
         self.player_score = None
         self.player_lives = None
+
+        # set up ufo info
+        self.ufo_list = None
 
         # Track the current state of what key is pressed
         self.left_pressed = False
@@ -155,12 +211,21 @@ class MyGame(arcade.Window):
 
         # Sprite lists
         self.player_shot_list = arcade.SpriteList()
+        self.ufo_list = arcade.SpriteList()
 
         # Create a Player object
         self.player_sprite = Player(
             center_x=PLAYER_START_X,
             center_y=PLAYER_START_Y
         )
+
+        # setup spawn_ufo to run regularly
+        def spawn_ufo(delta_time):
+            new_ufo_obj = BonusUFO()
+            new_ufo_obj.__int__()
+            self.ufo_list.append(new_ufo_obj)
+
+        arcade.schedule(spawn_ufo, UFO_SPAWN_RATE)
 
     def on_draw(self):
         """
@@ -175,6 +240,9 @@ class MyGame(arcade.Window):
 
         # Draw the player sprite
         self.player_sprite.draw()
+
+        # draw ufo(s)
+        self.ufo_list.draw()
 
         # Draw players score on screen
         arcade.draw_text(
@@ -207,6 +275,9 @@ class MyGame(arcade.Window):
 
         # Update the player shots
         self.player_shot_list.update()
+
+        # update UFOs
+        self.ufo_list.update()
 
     def on_key_press(self, key, modifiers):
         """
