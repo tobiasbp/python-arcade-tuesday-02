@@ -30,6 +30,7 @@ FIRE_KEY = arcade.key.SPACE
 UFO_SPEED = 2  # both for x and y note: has to be int
 UFO_DIR_CHANGE_RATE = 3
 UFO_SPAWN_RATE = 10  # seconds
+UFO_POINTS_REWARD = 300
 
 
 class Player(arcade.Sprite):
@@ -269,6 +270,16 @@ class MyGame(arcade.Window):
         # Move player with joystick if present
         if self.joystick:
             self.player_sprite.change_x = round(self.joystick.x) * PLAYER_SPEED_X
+
+        # check for collisions
+        # player shot
+        for shot in self.player_shot_list:
+            ufo_collisions = arcade.check_for_collision_with_list(shot, self.ufo_list)
+
+            for ufo_hit in ufo_collisions:
+                shot.kill()
+                ufo_hit.kill()
+                self.player_score += UFO_POINTS_REWARD
 
         # Update player sprite
         self.player_sprite.update()
