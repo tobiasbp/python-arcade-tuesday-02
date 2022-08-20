@@ -176,6 +176,9 @@ class BonusUFO(arcade.Sprite):
     def update(self):
         """update position, and kill if out of bounds"""
 
+        # keep spinning. just for graphics purposes
+        self.angle += self.change_x + self.change_y  # the faster it moves, the faster it spins.
+
         self.center_x += self.change_x
         self.center_y += self.change_y
 
