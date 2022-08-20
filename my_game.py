@@ -32,6 +32,9 @@ UFO_DIR_CHANGE_RATE = 3
 UFO_SPAWN_RATE = 10  # seconds
 UFO_POINTS_REWARD = 300
 
+UFO_SHOT_SPEED = 2
+UFO_FIRE_RATE = 1.5
+
 
 class Player(arcade.Sprite):
     """
@@ -98,6 +101,25 @@ class PlayerShot(arcade.Sprite):
             self.kill()
 
 
+class UFOShot(arcade.Sprite):
+    """shot fired by the ufo"""
+
+    def __int__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def update(self):
+        """update position/kill if out of bounds"""
+
+        self.center_x += self.change_x
+        self.center_y += self.change_y
+
+        self.angle = ((self.change_x / self.change_y) * -90)  # set ange based on our direction
+
+        # kill if out of bounds
+        if self.center_x > SCREEN_WIDTH or self.center_x < 0 and self.center_y > SCREEN_HEIGHT or self.center_y < 0:
+            self.kill()
+
+
 class BonusUFO(arcade.Sprite):
     """occasionally moves across the screen. Grants the player points if shot"""
 
@@ -113,6 +135,8 @@ class BonusUFO(arcade.Sprite):
 
         # send arguments upstairs
         super().__init__(**kwargs)
+
+        self.my_shots = arcade.SpriteList()
 
         # set random direction
         if self.center_x > 0:
@@ -132,6 +156,22 @@ class BonusUFO(arcade.Sprite):
             self.change_y += r
 
         arcade.schedule(change_dir, UFO_DIR_CHANGE_RATE)
+
+        # setup shooting
+        def shoot(delta_time):
+            new_ufo_shot = UFOShot()  # sprites created with arcade.schedule don't __init__ it has to be manually called
+            new_ufo_shot.__init__(
+                filename="images/Lasers/laserGreen07.png",
+                scale=SPRITE_SCALING,
+                center_x=self.center_x,
+                center_y=self.center_y
+                )
+
+            new_ufo_shot.change_x = random.randrange(-UFO_SHOT_SPEED, UFO_SHOT_SPEED)
+            new_ufo_shot.change_y = new_ufo_shot.change_x - UFO_SHOT_SPEED
+            self.my_shots.append(new_ufo_shot)
+
+        arcade.schedule(shoot, UFO_FIRE_RATE)
 
     def update(self):
         """update position, and kill if out of bounds"""
@@ -245,6 +285,10 @@ class MyGame(arcade.Window):
         # draw ufo(s)
         self.ufo_list.draw()
 
+        # and their shots
+        for ufo in self.ufo_list:
+            ufo.my_shots.draw()
+
         # Draw players score on screen
         arcade.draw_text(
             "SCORE: {}".format(self.player_score),  # Text to show
@@ -289,6 +333,10 @@ class MyGame(arcade.Window):
 
         # update UFOs
         self.ufo_list.update()
+
+        # update UFO shots
+        for ufo in self.ufo_list:
+            ufo.my_shots.update()
 
     def on_key_press(self, key, modifiers):
         """
