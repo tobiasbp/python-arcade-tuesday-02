@@ -183,6 +183,12 @@ class MyGame(arcade.Window):
             SCREEN_HEIGHT - 20,  # Y positon
             arcade.color.WHITE   # Color of text
         )
+        arcade.draw_text(
+            "LIVES: {}".format(PLAYER_LIVES),  # Text to show
+            10,  # X position
+            SCREEN_HEIGHT - 45,  # Y positon
+            arcade.color.WHITE  # Color of text
+        )
 
     def on_update(self, delta_time):
         """
