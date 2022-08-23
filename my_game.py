@@ -8,7 +8,7 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 """
 
 import arcade
-
+import math
 
 SPRITE_SCALING = 0.5
 
@@ -18,12 +18,12 @@ SCREEN_HEIGHT = 600
 
 # Variables controlling the player
 PLAYER_LIVES = 3
-PLAYER_SPEED_X = 5
-PLAYER_START_X = SCREEN_WIDTH / 2
-PLAYER_START_Y = 50
+PLAYER_SPEED = 5
 PLAYER_SHOT_SPEED = 4
 
+
 FIRE_KEY = arcade.key.SPACE
+
 
 class Player(arcade.Sprite):
     """
@@ -44,20 +44,24 @@ class Player(arcade.Sprite):
         # Pass arguments to class arcade.Sprite
         super().__init__(**kwargs)
 
+        self.speed = 0
+        self.change_x = -math.sin(math.radians(self.angle)) * self.speed
+        self.change_y = math.cos(math.radians(self.angle)) * self.speed
+        self.max_speed = 5
+        self.thrust = 0
+        self.drag = 0.05
+        self.angle = 0
 
     def update(self):
         """
         Move the sprite
         """
+        angle_rad = math.radians(self.angle)
 
-        # Update center_x
-        self.center_x += self.change_x
+        self.angle += self.change_angle
 
-        # Don't let the player move off screen
-        if self.left < 0:
-            self.left = 0
-        elif self.right > SCREEN_WIDTH - 1:
-            self.right = SCREEN_WIDTH - 1
+        self.center_x += -self.speed * math.sin(angle_rad)
+        self.center_y += self.speed * math.cos(angle_rad)
 
 
 class PlayerShot(arcade.Sprite):
@@ -110,6 +114,9 @@ class MyGame(arcade.Window):
         self.player_sprite = None
         self.player_score = None
         self.player_lives = None
+        self.player_speed = 0
+        self.drag = 0.05
+        self.opposite_angle = 0
 
         # Track the current state of what key is pressed
         self.left_pressed = False
@@ -139,8 +146,7 @@ class MyGame(arcade.Window):
             print("No joysticks found")
             self.joystick = None
 
-
-            #self.joystick.
+            # self.joystick.
         # Set the background color
         arcade.set_background_color(arcade.color.AMAZON)
 
@@ -158,8 +164,8 @@ class MyGame(arcade.Window):
 
         # Create a Player object
         self.player_sprite = Player(
-            center_x=PLAYER_START_X,
-            center_y=PLAYER_START_Y
+            center_x=SCREEN_HEIGHT//2,
+            center_y=SCREEN_WIDTH//2
         )
 
     def on_draw(self):
@@ -178,10 +184,10 @@ class MyGame(arcade.Window):
 
         # Draw players score on screen
         arcade.draw_text(
-            "SCORE: {}".format(self.player_score),  # Text to show
-            10,                  # X position
-            SCREEN_HEIGHT - 20,  # Y positon
-            arcade.color.WHITE   # Color of text
+            "SCORE: {}".format(self.opposite_angle),  # Text to show
+            10,  # X position
+            SCREEN_HEIGHT - 20,  # Y_position
+            arcade.color.WHITE  # Color of text
         )
 
     def on_update(self, delta_time):
@@ -189,24 +195,35 @@ class MyGame(arcade.Window):
         Movement and game logic
         """
 
-        # Calculate player speed based on the keys pressed
-        self.player_sprite.change_x = 0
-
-        # Move player with keyboard
-        if self.left_pressed and not self.right_pressed:
-            self.player_sprite.change_x = -PLAYER_SPEED_X
-        elif self.right_pressed and not self.left_pressed:
-            self.player_sprite.change_x = PLAYER_SPEED_X
-
         # Move player with joystick if present
         if self.joystick:
-            self.player_sprite.change_x = round(self.joystick.x) * PLAYER_SPEED_X
+            self.player_sprite.change_x = round(self.joystick.x) * 4
 
         # Update player sprite
         self.player_sprite.update()
 
         # Update the player shots
         self.player_shot_list.update()
+
+        if self.left_pressed:
+            self.player_sprite.angle += PLAYER_SPEED
+        else:
+            self.player_sprite.angle = self.player_sprite.angle
+
+        if self.right_pressed:
+            self.player_sprite.angle += -PLAYER_SPEED
+        else:
+            self.player_sprite.angle = self.player_sprite.angle
+
+        if not self.up_pressed:
+            if not self.player_sprite.speed < 0.05:
+                if self.down_pressed or self.right_pressed or self.left_pressed:
+                    self.player_sprite.speed -= 0.1
+                else:
+                    self.player_sprite.speed -= 0.001
+        else:
+            if not self.player_sprite.speed > 6:
+                self.player_sprite.speed += 0.05
 
     def on_key_press(self, key, modifiers):
         """
@@ -216,6 +233,7 @@ class MyGame(arcade.Window):
         # Track state of arrow keys
         if key == arcade.key.UP:
             self.up_pressed = True
+            self.opposite_angle = self.player_sprite.angle - 180
         elif key == arcade.key.DOWN:
             self.down_pressed = True
         elif key == arcade.key.LEFT:
@@ -258,6 +276,7 @@ class MyGame(arcade.Window):
 
     def on_joyhat_motion(self, joystick, hat_x, hat_y):
         print("Joystick hat ({}, {})".format(hat_x, hat_y))
+
 
 def main():
     """
