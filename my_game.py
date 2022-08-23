@@ -138,16 +138,14 @@ class BonusUFO(arcade.Sprite):
 
         self.my_shots = arcade.SpriteList()
 
-        # set random direction
-        if self.center_x > 0:
-            self.change_x = -random.randint(1, UFO_SPEED)
-        else:
-            self.change_x = random.randint(1, UFO_SPEED)
+        # set random direction. always point towards center, with noise
+        self.change_x = random.randrange(1, UFO_SPEED)
+        if self.center_x > SCREEN_WIDTH / 2:
+            self.change_x *= -1
 
-        if self.center_y > 0:
-            self.change_y = -UFO_SPEED - self.change_x
-        else:
-            self.change_y = (UFO_SPEED - self.change_x)
+        self.change_y = UFO_SPEED - self.change_x
+        if self.center_y > SCREEN_HEIGHT / 2:
+            self.change_y *= -1
 
         # setup direction changing
         def change_dir(delta_time):
