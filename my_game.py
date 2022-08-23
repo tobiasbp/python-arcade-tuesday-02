@@ -244,6 +244,16 @@ class MyGame(arcade.Window):
         # Set the background color
         arcade.set_background_color(arcade.color.AMAZON)
 
+    def spawn_ufo(self, delta_time):
+        """
+        spawns an ufo object into self.ufo_list.
+        has to take delta_time because it needs to be called by arcade.schedule
+        """
+
+        new_ufo_obj = BonusUFO()
+        new_ufo_obj.__int__()
+        self.ufo_list.append(new_ufo_obj)
+
     def setup(self):
         """ Set up the game and initialize the variables. """
 
@@ -264,12 +274,7 @@ class MyGame(arcade.Window):
         )
 
         # setup spawn_ufo to run regularly
-        def spawn_ufo(delta_time):
-            new_ufo_obj = BonusUFO()
-            new_ufo_obj.__int__()
-            self.ufo_list.append(new_ufo_obj)
-
-        arcade.schedule(spawn_ufo, UFO_SPAWN_RATE)
+        arcade.schedule(self.spawn_ufo, UFO_SPAWN_RATE)
 
     def on_draw(self):
         """
