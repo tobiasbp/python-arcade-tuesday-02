@@ -337,7 +337,7 @@ class MyGame(arcade.Window):
         # update UFOs
         self.ufo_list.update()
 
-        # update UFO shots
+        # update UFO shot_lists
         for ufo in self.ufo_list:
             ufo.my_shots.update()
 
