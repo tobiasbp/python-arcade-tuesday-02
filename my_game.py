@@ -154,11 +154,19 @@ class BonusUFO(arcade.Sprite):
         arcade.schedule(self.shoot, UFO_FIRE_RATE)
 
     def change_dir(self, delta_time):
+        """
+        set a new direction
+        """
+
         r = random.randrange(-UFO_SPEED, UFO_SPEED)
         self.change_x -= r
         self.change_y += r
 
     def shoot(self, delta_time):
+        """
+        fire a new shot
+        """
+
         new_ufo_shot = UFOShot()  # sprites created with arcade.schedule don't __init__ it has to be manually called
         new_ufo_shot.__init__(
             filename="images/Lasers/laserGreen07.png",
