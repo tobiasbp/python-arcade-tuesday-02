@@ -17,6 +17,9 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
 # Variables controlling the player
+PLAYER_SPEED_X = 5
+PLAYER_START_X = SCREEN_WIDTH / 2
+PLAYER_START_Y = 50
 PLAYER_LIVES = 3
 PLAYER_SPEED = 5
 PLAYER_SHOT_SPEED = 4
@@ -47,9 +50,7 @@ class Player(arcade.Sprite):
         self.speed = 0
         self.change_x = -math.sin(math.radians(self.angle)) * self.speed
         self.change_y = math.cos(math.radians(self.angle)) * self.speed
-        self.max_speed = 5
-        self.thrust = 0
-        self.drag = 0.05
+        self.breaks = 0.05
         self.angle = 0
 
     def update(self):
@@ -115,8 +116,8 @@ class MyGame(arcade.Window):
         self.player_score = None
         self.player_lives = None
         self.player_speed = 0
-        self.drag = 0.05
         self.opposite_angle = 0
+        self.max_speed = 6
 
         # Track the current state of what key is pressed
         self.left_pressed = False
@@ -164,8 +165,8 @@ class MyGame(arcade.Window):
 
         # Create a Player object
         self.player_sprite = Player(
-            center_x=SCREEN_HEIGHT//2,
-            center_y=SCREEN_WIDTH//2
+            center_x=PLAYER_START_X,
+            center_y=PLAYER_START_Y
         )
 
     def on_draw(self):
@@ -184,7 +185,7 @@ class MyGame(arcade.Window):
 
         # Draw players score on screen
         arcade.draw_text(
-            "SCORE: {}".format(self.opposite_angle),  # Text to show
+            "SCORE: {}".format(self.player_score),  # Text to show
             10,  # X position
             SCREEN_HEIGHT - 20,  # Y_position
             arcade.color.WHITE  # Color of text
@@ -197,7 +198,7 @@ class MyGame(arcade.Window):
 
         # Move player with joystick if present
         if self.joystick:
-            self.player_sprite.change_x = round(self.joystick.x) * 4
+            self.player_sprite.change_x = round(self.joystick.x) * PLAYER_SPEED
 
         # Update player sprite
         self.player_sprite.update()
@@ -222,7 +223,7 @@ class MyGame(arcade.Window):
                 else:
                     self.player_sprite.speed -= 0.001
         else:
-            if not self.player_sprite.speed > 6:
+            if not self.player_sprite.speed > self.max_speed:
                 self.player_sprite.speed += 0.05
 
     def on_key_press(self, key, modifiers):
