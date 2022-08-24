@@ -198,7 +198,7 @@ class MyGame(arcade.Window):
 
         # Move player with joystick if present
         if self.joystick:
-            self.player_sprite.change_x = round(self.joystick.x) * PLAYER_SPEED
+            self.player_sprite.change_x = round(self.joystick.x) * PLAYER_SPEED_X
 
         # Update player sprite
         self.player_sprite.update()
