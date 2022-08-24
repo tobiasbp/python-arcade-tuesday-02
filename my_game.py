@@ -148,15 +148,15 @@ class BonusUFO(arcade.Sprite):
             self.change_y *= -1
 
         # setup direction changing
-        def change_dir(delta_time):
-            r = random.randrange(-UFO_SPEED, UFO_SPEED)
-            self.change_x -= r
-            self.change_y += r
-
-        arcade.schedule(change_dir, UFO_DIR_CHANGE_RATE)
+        arcade.schedule(self.change_dir, UFO_DIR_CHANGE_RATE)
 
         # setup shooting
         arcade.schedule(self.shoot, UFO_FIRE_RATE)
+
+    def change_dir(self, delta_time):
+        r = random.randrange(-UFO_SPEED, UFO_SPEED)
+        self.change_x -= r
+        self.change_y += r
 
     def shoot(self, delta_time):
         new_ufo_shot = UFOShot()  # sprites created with arcade.schedule don't __init__ it has to be manually called
@@ -182,7 +182,16 @@ class BonusUFO(arcade.Sprite):
 
         # kill if out of bounds
         if self.center_x > SCREEN_WIDTH or self.center_x < 0 and self.center_y > SCREEN_HEIGHT or self.center_y < 0:
-            self.kill()
+            self.destroy()
+
+    def destroy(self):
+        """
+        kill the sprite and unschedule all functions
+        """
+
+        arcade.unschedule(self.shoot)
+        arcade.unschedule(self.change_dir)
+        self.kill()
 
 
 class MyGame(arcade.Window):
@@ -329,7 +338,7 @@ class MyGame(arcade.Window):
 
             for ufo_hit in ufo_collisions:
                 shot.kill()
-                ufo_hit.kill()
+                ufo_hit.destroy()
                 self.player_score += UFO_POINTS_REWARD
 
         # Update player sprite
