@@ -342,9 +342,8 @@ class MyGame(arcade.Window):
         # check for collisions
         # player shot
         for shot in self.player_shot_list:
-            ufo_collisions = arcade.check_for_collision_with_list(shot, self.ufo_list)
 
-            for ufo_hit in ufo_collisions:
+            for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
                 shot.kill()
                 ufo_hit.destroy()
                 self.player_score += UFO_POINTS_REWARD
