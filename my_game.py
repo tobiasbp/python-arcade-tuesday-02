@@ -60,6 +60,27 @@ class Player(arcade.Sprite):
             self.right = SCREEN_WIDTH - 1
 
 
+class Asteroid(arcade.Sprite):
+    
+    def __init__(self, center_x=0, center_y=0):
+        
+        #Initialize the asteroid
+        
+        #Graphics
+        super().__init__("images/Meteors/meteorGrey_big1.png", SPRITE_SCALING)
+        
+        self.center_x = center_x
+        self.center_y = center_y
+        self.change_x = 0
+        self.change_y = 0
+        
+    def update(self):
+         
+         #Update position
+         self.center_x = self.change_x
+         self.center_y = self.change_y
+
+
 class PlayerShot(arcade.Sprite):
     """
     A shot fired by the Player
@@ -105,6 +126,9 @@ class MyGame(arcade.Window):
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = None
+
+        #Asteroid SpriteList
+        self.asteroid_list = None
 
         # Set up the player info
         self.player_sprite = None
@@ -155,6 +179,7 @@ class MyGame(arcade.Window):
 
         # Sprite lists
         self.player_shot_list = arcade.SpriteList()
+        self.asteroid_list = arcade.SpriteList()
 
         # Create a Player object
         self.player_sprite = Player(
@@ -169,6 +194,9 @@ class MyGame(arcade.Window):
 
         # This command has to happen before we start drawing
         arcade.start_render()
+        
+        #Draw asteroids
+        self.asteroid_list.draw()
 
         # Draw the player shot
         self.player_shot_list.draw()
@@ -207,6 +235,13 @@ class MyGame(arcade.Window):
 
         # Update the player shots
         self.player_shot_list.update()
+        
+        #Update Asteroids
+        self.asteroid_list.update()
+
+        #Temporary Asteroid test
+        new_asteroid = Asteroid()
+        self.asteroid_list.append(new_asteroid)
 
     def on_key_press(self, key, modifiers):
         """
