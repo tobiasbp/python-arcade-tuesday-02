@@ -57,12 +57,8 @@ class Player(arcade.Sprite):
         """
         Move the sprite
         """
-        angle_rad = math.radians(self.angle)
-
-        self.angle += self.change_angle
-
-        self.center_x += -self.speed * math.sin(angle_rad)
-        self.center_y += self.speed * math.cos(angle_rad)
+        self.center_x += -self.speed * math.sin(self.angle)
+        self.center_y += self.speed * math.cos(self.angle)
 
 
 class PlayerShot(arcade.Sprite):
@@ -206,16 +202,6 @@ class MyGame(arcade.Window):
 
         # Update the player shots
         self.player_shot_list.update()
-
-        if self.left_pressed:
-            self.player_sprite.angle += PLAYER_SPEED
-        else:
-            self.player_sprite.angle = self.player_sprite.angle
-
-        if self.right_pressed:
-            self.player_sprite.angle += -PLAYER_SPEED
-        else:
-            self.player_sprite.angle = self.player_sprite.angle
 
         if not self.up_pressed:
             if not self.player_sprite.speed < 0.05:
