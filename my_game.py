@@ -117,9 +117,10 @@ class MyGame(arcade.Window):
         self.player_lives = None
         self.player_speed = 0
         self.opposite_angle = 0
-        self.max_speed = 6
+        self.max_speed = 3
 
         # Track the current state of what key is pressed
+        self.space_pressed = None
         self.left_pressed = False
         self.right_pressed = False
         self.up_pressed = False
@@ -218,10 +219,8 @@ class MyGame(arcade.Window):
 
         if not self.up_pressed:
             if not self.player_sprite.speed < 0.05:
-                if self.down_pressed or self.right_pressed or self.left_pressed:
-                    self.player_sprite.speed -= 0.1
-                else:
-                    self.player_sprite.speed -= 0.001
+                if self.space_pressed:
+                    self.player_sprite.speed = 0.8
         else:
             if not self.player_sprite.speed > self.max_speed:
                 self.player_sprite.speed += 0.05
@@ -234,13 +233,14 @@ class MyGame(arcade.Window):
         # Track state of arrow keys
         if key == arcade.key.UP:
             self.up_pressed = True
-            self.opposite_angle = self.player_sprite.angle - 180
         elif key == arcade.key.DOWN:
             self.down_pressed = True
         elif key == arcade.key.LEFT:
             self.left_pressed = True
         elif key == arcade.key.RIGHT:
             self.right_pressed = True
+        elif key == arcade.key.SPACE:
+            self.space_pressed = True
 
         if key == FIRE_KEY:
             new_shot = PlayerShot(
@@ -263,6 +263,8 @@ class MyGame(arcade.Window):
             self.left_pressed = False
         elif key == arcade.key.RIGHT:
             self.right_pressed = False
+        elif key == arcade.key.SPACE:
+            self.space_pressed = False
 
     def on_joybutton_press(self, joystick, button_no):
         print("Button pressed:", button_no)
