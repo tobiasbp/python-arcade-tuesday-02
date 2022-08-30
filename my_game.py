@@ -186,7 +186,11 @@ class MyGame(arcade.Window):
             center_x=PLAYER_START_X,
             center_y=PLAYER_START_Y
         )
-
+        
+        #Temporary Asteroid test
+        new_asteroid = Asteroid()
+        self.asteroid_list.append(new_asteroid)
+        
     def on_draw(self):
         """
         Render the screen.
@@ -238,10 +242,6 @@ class MyGame(arcade.Window):
         
         #Update Asteroids
         self.asteroid_list.update()
-
-        #Temporary Asteroid test
-        new_asteroid = Asteroid()
-        self.asteroid_list.append(new_asteroid)
 
     def on_key_press(self, key, modifiers):
         """
