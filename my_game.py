@@ -186,7 +186,7 @@ class BonusUFO(arcade.Sprite):
         self.center_y += self.change_y
 
         # kill if out of bounds
-        if self.center_x > SCREEN_WIDTH or self.center_x < 0 and self.center_y > SCREEN_HEIGHT or self.center_y < 0:
+        if self.center_x > SCREEN_WIDTH or self.center_x < 0 or self.center_y > SCREEN_HEIGHT or self.center_y < 0:
             self.destroy()
 
     def destroy(self):
