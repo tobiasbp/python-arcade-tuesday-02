@@ -47,18 +47,18 @@ class Player(arcade.Sprite):
         # Pass arguments to class arcade.Sprite
         super().__init__(**kwargs)
 
-        self.speed = 0
-        self.change_x = -math.sin(math.radians(self.angle)) * self.speed
-        self.change_y = math.cos(math.radians(self.angle)) * self.speed
-        self.breaks = 0.05
-        self.angle = 0
+        self.speed = 1
+        self.angle = -90
+        self.change_x = self.speed * math.cos(self.angle)
+        self.change_y = self.speed * math.cos(self.angle)
 
     def update(self):
         """
         Move the sprite
         """
-        self.center_x += -self.speed * math.sin(self.angle)
-        self.center_y += self.speed * math.cos(self.angle)
+        self.center_x += self.change_x
+        self.center_y += self.change_y
+
 
 
 class PlayerShot(arcade.Sprite):
@@ -203,11 +203,7 @@ class MyGame(arcade.Window):
         # Update the player shots
         self.player_shot_list.update()
 
-        if not self.up_pressed:
-            if not self.player_sprite.speed < 0.05:
-                if self.space_pressed:
-                    self.player_sprite.speed = 0.8
-        else:
+        if self.up_pressed:
             if not self.player_sprite.speed > self.max_speed:
                 self.player_sprite.speed += 0.05
 
