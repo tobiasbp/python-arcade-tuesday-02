@@ -41,20 +41,17 @@ class Player(arcade.Sprite):
     The player
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self, center_x, center_y, lives, scale):
         """
         Setup new Player object
         """
-
         # Graphics to use for Player
-        kwargs['filename'] = "images/playerShip1_red.png"
+        super().__init__("images/playerShip1_red.png")
 
-        # How much to scale the graphics
-        kwargs['scale'] = SPRITE_SCALING
-
-        # Pass arguments to class arcade.Sprite
-        super().__init__(**kwargs)
-
+        self.center_x = center_x
+        self.center_y = center_y
+        self.lives = lives
+        self.scale = scale
 
     def update(self):
         """
@@ -276,9 +273,6 @@ class MyGame(arcade.Window):
         # No points when the game starts
         self.player_score = 0
 
-        # No of lives
-        self.player_lives = PLAYER_LIVES
-
         # Sprite lists
         self.player_shot_list = arcade.SpriteList()
         self.ufo_list = arcade.SpriteList()
@@ -287,7 +281,9 @@ class MyGame(arcade.Window):
         # Create a Player object
         self.player_sprite = Player(
             center_x=PLAYER_START_X,
-            center_y=PLAYER_START_Y
+            center_y=PLAYER_START_Y,
+            lives=PLAYER_LIVES,
+            scale=SPRITE_SCALING
         )
 
         # setup spawn_ufo to run regularly
@@ -319,6 +315,12 @@ class MyGame(arcade.Window):
             10,                  # X position
             SCREEN_HEIGHT - 20,  # Y positon
             arcade.color.WHITE   # Color of text
+        )
+        arcade.draw_text(
+            "LIVES: {}".format(self.player_sprite.lives),  # Text to show
+            10,  # X position
+            SCREEN_HEIGHT - 45, # Y positon
+            arcade.color.WHITE  # Color of text
         )
 
     def on_update(self, delta_time):
