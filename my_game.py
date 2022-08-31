@@ -76,8 +76,8 @@ class Asteroid(arcade.Sprite):
         
         # Graphics
         super().__init__(
-        filename="images/Meteors/meteorGrey_big1.png", 
-        scale=SPRITE_SCALING
+            filename="images/Meteors/meteorGrey_big1.png", 
+            scale=SPRITE_SCALING
         )
         
         self.center_x = center_x
