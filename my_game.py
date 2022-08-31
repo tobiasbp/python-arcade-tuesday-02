@@ -68,6 +68,28 @@ class Player(arcade.Sprite):
             self.right = SCREEN_WIDTH - 1
 
 
+class Asteroid(arcade.Sprite):
+    
+    def __init__(self, center_x=0, center_y=0):
+        
+        # Initialize the asteroid
+        
+        # Graphics
+        super().__init__(
+            filename="images/Meteors/meteorGrey_big1.png", 
+            scale=SPRITE_SCALING
+        )
+        
+        self.center_x = center_x
+        self.center_y = center_y
+        
+    def update(self):
+         
+         # Update position
+         self.center_x = self.change_x
+         self.center_y = self.change_y
+
+
 class PlayerShot(arcade.Sprite):
     """
     A shot fired by the Player
@@ -215,6 +237,9 @@ class MyGame(arcade.Window):
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = None
 
+        # Asteroid SpriteList
+        self.asteroid_list = None
+
         # Set up the player info
         self.player_sprite = None
         self.player_score = None
@@ -275,6 +300,8 @@ class MyGame(arcade.Window):
 
         # Sprite lists
         self.player_shot_list = arcade.SpriteList()
+        self.asteroid_list = arcade.SpriteList()
+
         self.ufo_list = arcade.SpriteList()
         self.ufo_shot_list = arcade.SpriteList()
 
@@ -285,6 +312,10 @@ class MyGame(arcade.Window):
             lives=PLAYER_LIVES,
             scale=SPRITE_SCALING
         )
+        
+        # Temporary Asteroid test
+        new_asteroid = Asteroid()
+        self.asteroid_list.append(new_asteroid)
 
         # setup spawn_ufo to run regularly
         arcade.schedule(self.spawn_ufo, UFO_SPAWN_RATE)
@@ -296,6 +327,9 @@ class MyGame(arcade.Window):
 
         # This command has to happen before we start drawing
         arcade.start_render()
+        
+        # Draw asteroids
+        self.asteroid_list.draw()
 
         # Draw the player shot
         self.player_shot_list.draw()
@@ -355,6 +389,13 @@ class MyGame(arcade.Window):
 
         # Update the player shots
         self.player_shot_list.update()
+        
+        # Update Asteroids
+        self.asteroid_list.update()
+
+        # Temporary Asteroid test
+        new_asteroid = Asteroid()
+        self.asteroid_list.append(new_asteroid)
 
         # update UFOs
         self.ufo_list.update()
