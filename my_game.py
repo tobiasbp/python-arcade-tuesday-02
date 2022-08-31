@@ -23,6 +23,7 @@ PLAYER_START_Y = 50
 PLAYER_LIVES = 3
 PLAYER_SPEED = 3
 PLAYER_SHOT_SPEED = 4
+PLAYER_THRUST = 0.5
 
 
 FIRE_KEY = arcade.key.SPACE
@@ -48,7 +49,7 @@ class Player(arcade.Sprite):
         super().__init__(**kwargs)
 
         self.speed = 1
-        self.angle = -90
+        self.angle = 0
         self.change_x = self.speed * math.cos(self.angle)
         self.change_y = self.speed * math.cos(self.angle)
 
@@ -58,7 +59,6 @@ class Player(arcade.Sprite):
         """
         self.center_x += self.change_x
         self.center_y += self.change_y
-
 
 
 class PlayerShot(arcade.Sprite):
@@ -116,7 +116,7 @@ class MyGame(arcade.Window):
         self.max_speed = 3
 
         # Track the current state of what key is pressed
-        self.space_pressed = None
+        self.space_pressed = False
         self.left_pressed = False
         self.right_pressed = False
         self.up_pressed = False
@@ -205,7 +205,7 @@ class MyGame(arcade.Window):
 
         if self.up_pressed:
             if not self.player_sprite.speed > self.max_speed:
-                self.player_sprite.speed += 0.05
+                self.player_sprite.speed += PLAYER_THRUST
 
     def on_key_press(self, key, modifiers):
         """
