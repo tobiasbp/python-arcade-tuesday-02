@@ -389,13 +389,6 @@ class MyGame(arcade.Window):
         # Update Asteroids
         self.asteroid_list.update()
 
-        # Temporary Asteroid test
-        new_asteroid = Asteroid(
-            center_x=SCREEN_WIDTH//2,
-            center_y=SCREEN_HEIGHT//2
-        )
-        self.asteroid_list.append(new_asteroid)
-
         # update UFOs
         self.ufo_list.update()
 
