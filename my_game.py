@@ -316,7 +316,10 @@ class MyGame(arcade.Window):
         )
         
         # Temporary Asteroid test
-        new_asteroid = Asteroid()
+        new_asteroid = Asteroid(
+            center_x=SCREEN_WIDTH//2,
+            center_y=SCREEN_HEIGHT//2
+        )
         self.asteroid_list.append(new_asteroid)
 
         # setup spawn_ufo to run regularly
@@ -387,7 +390,10 @@ class MyGame(arcade.Window):
         self.asteroid_list.update()
 
         # Temporary Asteroid test
-        new_asteroid = Asteroid()
+        new_asteroid = Asteroid(
+            center_x=SCREEN_WIDTH//2,
+            center_y=SCREEN_HEIGHT//2
+        )
         self.asteroid_list.append(new_asteroid)
 
         # update UFOs
