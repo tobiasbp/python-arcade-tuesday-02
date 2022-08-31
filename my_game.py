@@ -11,7 +11,6 @@ import arcade
 import math
 import random
 
-
 SPRITE_SCALING = 0.5
 
 # Set the size of the screen
@@ -27,7 +26,6 @@ PLAYER_SPEED = 3
 PLAYER_SHOT_SPEED = 4
 PLAYER_THRUST = 0.5
 
-
 FIRE_KEY = arcade.key.SPACE
 
 # UFO constants
@@ -37,6 +35,7 @@ UFO_SPAWN_RATE = 10  # seconds
 UFO_POINTS_REWARD = 300
 UFO_SHOT_SPEED = 2
 UFO_FIRE_RATE = 1.5
+
 
 class Player(arcade.Sprite):
     """
@@ -68,25 +67,23 @@ class Player(arcade.Sprite):
 
 
 class Asteroid(arcade.Sprite):
-    
+
     def __init__(self, center_x=0, center_y=0):
-        
         # Initialize the asteroid
-        
+
         # Graphics
         super().__init__(
-            filename="images/Meteors/meteorGrey_big1.png", 
+            filename="images/Meteors/meteorGrey_big1.png",
             scale=SPRITE_SCALING
         )
-        
+
         self.center_x = center_x
         self.center_y = center_y
-        
+
     def update(self):
-         
-         # Update position
-         self.center_x = self.change_x
-         self.center_y = self.change_y
+        # Update position
+        self.center_x = self.change_x
+        self.center_y = self.change_y
 
 
 class PlayerShot(arcade.Sprite):
@@ -191,7 +188,7 @@ class BonusUFO(arcade.Sprite):
             scale=SPRITE_SCALING,
             center_x=self.center_x,
             center_y=self.center_y
-            )
+        )
 
         new_ufo_shot.change_x = random.randrange(-UFO_SHOT_SPEED, UFO_SHOT_SPEED)
         new_ufo_shot.change_y = new_ufo_shot.change_x - UFO_SHOT_SPEED
@@ -314,7 +311,7 @@ class MyGame(arcade.Window):
             lives=PLAYER_LIVES,
             scale=SPRITE_SCALING
         )
-        
+
         # Temporary Asteroid test
         new_asteroid = Asteroid()
         self.asteroid_list.append(new_asteroid)
@@ -329,7 +326,7 @@ class MyGame(arcade.Window):
 
         # This command has to happen before we start drawing
         arcade.start_render()
-        
+
         # Draw asteroids
         self.asteroid_list.draw()
 
@@ -355,7 +352,7 @@ class MyGame(arcade.Window):
         arcade.draw_text(
             "LIVES: {}".format(self.player_sprite.lives),  # Text to show
             10,  # X position
-            SCREEN_HEIGHT - 45, # Y positon
+            SCREEN_HEIGHT - 45,  # Y positon
             arcade.color.WHITE  # Color of text
         )
 
@@ -382,12 +379,15 @@ class MyGame(arcade.Window):
 
         # Update the player shots
         self.player_shot_list.update()
-        
+
         # Update Asteroids
         self.asteroid_list.update()
 
         # Temporary Asteroid test
-        new_asteroid = Asteroid()
+        new_asteroid = Asteroid(
+            center_x=SCREEN_WIDTH//2,
+            center_y=SCREEN_HEIGHT//2
+        )
         self.asteroid_list.append(new_asteroid)
 
         # update UFOs
