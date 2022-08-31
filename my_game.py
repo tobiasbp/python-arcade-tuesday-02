@@ -113,7 +113,7 @@ class MyGame(arcade.Window):
         self.player_lives = None
         self.player_speed = 0
         self.opposite_angle = 0
-        self.max_speed = 3
+        self.max_speed = PLAYER_SPEED
 
         # Track the current state of what key is pressed
         self.space_pressed = False
