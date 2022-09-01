@@ -69,7 +69,7 @@ class Player(arcade.Sprite):
 
 class Asteroid(arcade.Sprite):
     
-    def __init__(self, center_x=0, center_y=0):
+    def __init__(self, center_x, center_y):
         
         # Initialize the asteroid
         
@@ -84,9 +84,9 @@ class Asteroid(arcade.Sprite):
         
     def update(self):
          
-         # Update position
-         self.center_x = self.change_x
-         self.center_y = self.change_y
+        # Update position
+        self.center_x += self.change_x
+        self.center_y += self.change_y
 
 
 class PlayerShot(arcade.Sprite):
@@ -316,7 +316,10 @@ class MyGame(arcade.Window):
         )
         
         # Temporary Asteroid test
-        new_asteroid = Asteroid()
+        new_asteroid = Asteroid(
+            center_x=SCREEN_WIDTH//2,
+            center_y=SCREEN_HEIGHT//2
+        )
         self.asteroid_list.append(new_asteroid)
 
         # setup spawn_ufo to run regularly
@@ -385,10 +388,6 @@ class MyGame(arcade.Window):
         
         # Update Asteroids
         self.asteroid_list.update()
-
-        # Temporary Asteroid test
-        new_asteroid = Asteroid()
-        self.asteroid_list.append(new_asteroid)
 
         # update UFOs
         self.ufo_list.update()
