@@ -69,7 +69,7 @@ class Player(arcade.Sprite):
 
 class Asteroid(arcade.Sprite):
     
-    def __init__(self, center_x=50, center_y=50):
+    def __init__(self, center_x, center_y):
         
         # Initialize the asteroid
         
