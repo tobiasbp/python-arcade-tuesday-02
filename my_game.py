@@ -69,7 +69,7 @@ class Player(arcade.Sprite):
 
 class Asteroid(arcade.Sprite):
     
-    def __init__(self, center_x=0, center_y=0):
+    def __init__(self, center_x=50, center_y=50):
         
         # Initialize the asteroid
         
@@ -84,9 +84,9 @@ class Asteroid(arcade.Sprite):
         
     def update(self):
          
-         # Update position
-         self.center_x = self.change_x
-         self.center_y = self.change_y
+        # Update position
+        self.center_x += self.change_x
+        self.center_y += self.change_y
 
 
 class PlayerShot(arcade.Sprite):
