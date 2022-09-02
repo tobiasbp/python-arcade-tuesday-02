@@ -78,7 +78,9 @@ class Asteroid(arcade.Sprite):
             filename="images/Meteors/meteorGrey_big1.png", 
             scale=SPRITE_SCALING
         )
-        
+
+        center_x = random.randint(0, SCREEN_WIDTH)
+        center_y = random.randint(0, SCREEN_HEIGHT)
         self.center_x = center_x
         self.center_y = center_y
         
@@ -316,11 +318,12 @@ class MyGame(arcade.Window):
         )
         
         # Temporary Asteroid test
-        new_asteroid = Asteroid(
-            center_x=SCREEN_WIDTH//2,
-            center_y=SCREEN_HEIGHT//2
-        )
-        self.asteroid_list.append(new_asteroid)
+        for r in range(5):
+            new_asteroid = Asteroid(
+            center_x=0,
+            center_y=0
+            )
+            self.asteroid_list.append(new_asteroid)
 
         # setup spawn_ufo to run regularly
         arcade.schedule(self.spawn_ufo, UFO_SPAWN_RATE)
