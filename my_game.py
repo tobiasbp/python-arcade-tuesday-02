@@ -319,8 +319,7 @@ class MyGame(arcade.Window):
         
         # Temporary Asteroid test
         for r in range(5):
-            new_asteroid = Asteroid()
-            self.asteroid_list.append(new_asteroid)
+            self.asteroid_list.append(Asteroid())
 
         # setup spawn_ufo to run regularly
         arcade.schedule(self.spawn_ufo, UFO_SPAWN_RATE)
