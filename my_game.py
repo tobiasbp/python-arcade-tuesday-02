@@ -79,10 +79,8 @@ class Asteroid(arcade.Sprite):
             scale=SPRITE_SCALING
         )
 
-        center_x = random.randint(0, SCREEN_WIDTH)
-        center_y = random.randint(0, SCREEN_HEIGHT)
-        self.center_x = center_x
-        self.center_y = center_y
+        self.center_x = random.randint(0, SCREEN_WIDTH)
+        self.center_y = random.randint(0, SCREEN_HEIGHT)
         
     def update(self):
          
