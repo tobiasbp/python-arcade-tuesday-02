@@ -29,6 +29,7 @@ PLAYER_THRUST = 0.5
 
 
 FIRE_KEY = arcade.key.SPACE
+ASTROID_PR_LEVEL = 5
 
 # UFO constants
 UFO_SPEED = 2  # both for x and y note: has to be int
@@ -315,8 +316,8 @@ class MyGame(arcade.Window):
             scale=SPRITE_SCALING
         )
         
-        # Temporary Asteroid test
-        for r in range(5):
+        # Spawn Asteroids
+        for r in range(ASTROID_PR_LEVEL):
             self.asteroid_list.append(Asteroid())
 
         # setup spawn_ufo to run regularly
