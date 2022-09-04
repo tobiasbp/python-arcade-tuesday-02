@@ -29,7 +29,10 @@ PLAYER_THRUST = 0.5
 
 
 FIRE_KEY = arcade.key.SPACE
+
+# Asteroids variables
 ASTEROIDS_PR_LEVEL = 5
+ASTEROIDS_SPEED = 1.
 
 # UFO constants
 UFO_SPEED = 2  # both for x and y note: has to be int
@@ -82,6 +85,13 @@ class Asteroid(arcade.Sprite):
 
         self.center_x = random.randint(0, SCREEN_WIDTH)
         self.center_y = random.randint(0, SCREEN_HEIGHT)
+        self.change_x = random.randint(-ASTEROIDS_SPEED, ASTEROIDS_SPEED)
+        self.change_y = random.randint(-ASTEROIDS_SPEED, ASTEROIDS_SPEED)
+        if self.change_x == 0:
+            self.change_x = 0.01
+        if self.change_y == 0:
+            self.change_y = 0.01
+
         
     def update(self):
          
