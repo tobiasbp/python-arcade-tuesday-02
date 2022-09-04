@@ -29,6 +29,7 @@ PLAYER_THRUST = 0.5
 
 
 FIRE_KEY = arcade.key.SPACE
+ASTEROIDS_PR_LEVEL = 5
 
 # UFO constants
 UFO_SPEED = 2  # both for x and y note: has to be int
@@ -69,7 +70,7 @@ class Player(arcade.Sprite):
 
 class Asteroid(arcade.Sprite):
     
-    def __init__(self, center_x, center_y):
+    def __init__(self):
         
         # Initialize the asteroid
         
@@ -78,9 +79,9 @@ class Asteroid(arcade.Sprite):
             filename="images/Meteors/meteorGrey_big1.png", 
             scale=SPRITE_SCALING
         )
-        
-        self.center_x = center_x
-        self.center_y = center_y
+
+        self.center_x = random.randint(0, SCREEN_WIDTH)
+        self.center_y = random.randint(0, SCREEN_HEIGHT)
         
     def update(self):
          
@@ -315,12 +316,9 @@ class MyGame(arcade.Window):
             scale=SPRITE_SCALING
         )
         
-        # Temporary Asteroid test
-        new_asteroid = Asteroid(
-            center_x=SCREEN_WIDTH//2,
-            center_y=SCREEN_HEIGHT//2
-        )
-        self.asteroid_list.append(new_asteroid)
+        # Spawn Asteroids
+        for r in range(ASTEROIDS_PR_LEVEL):
+            self.asteroid_list.append(Asteroid())
 
         # setup spawn_ufo to run regularly
         arcade.schedule(self.spawn_ufo, UFO_SPAWN_RATE)
