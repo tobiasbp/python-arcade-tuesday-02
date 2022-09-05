@@ -8,6 +8,7 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 """
 
 import arcade
+import math
 import random
 
 
@@ -18,11 +19,16 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
 # Variables controlling the player
-PLAYER_LIVES = 3
 PLAYER_SPEED_X = 5
 PLAYER_START_X = SCREEN_WIDTH / 2
 PLAYER_START_Y = 50
+PLAYER_LIVES = 3
+PLAYER_SPEED = 3
 PLAYER_SHOT_SPEED = 4
+PLAYER_THRUST = 0.5
+
+# Asteroid related variables
+ASTEROID_SCORE_REWARD = 50
 
 FIRE_KEY = arcade.key.SPACE
 
@@ -31,10 +37,8 @@ UFO_SPEED = 2  # both for x and y note: has to be int
 UFO_DIR_CHANGE_RATE = 3
 UFO_SPAWN_RATE = 10  # seconds
 UFO_POINTS_REWARD = 300
-
 UFO_SHOT_SPEED = 2
 UFO_FIRE_RATE = 1.5
-
 
 class Player(arcade.Sprite):
     """
@@ -48,24 +52,21 @@ class Player(arcade.Sprite):
         # Graphics to use for Player
         super().__init__("images/playerShip1_red.png")
 
-        self.center_x = center_x
-        self.center_y = center_y
+        self.speed = 1
+        self.angle = 0
         self.lives = lives
         self.scale = scale
+        self.change_x = self.speed * math.cos(self.angle)
+        self.change_y = self.speed * math.cos(self.angle)
+        self.center_x = center_x
+        self.center_y = center_y
 
     def update(self):
         """
         Move the sprite
         """
-
-        # Update center_x
         self.center_x += self.change_x
-
-        # Don't let the player move off screen
-        if self.left < 0:
-            self.left = 0
-        elif self.right > SCREEN_WIDTH - 1:
-            self.right = SCREEN_WIDTH - 1
+        self.center_y += self.change_y
 
 
 class Asteroid(arcade.Sprite):
@@ -76,8 +77,8 @@ class Asteroid(arcade.Sprite):
         
         # Graphics
         super().__init__(
-        filename="images/Meteors/meteorGrey_big1.png", 
-        scale=SPRITE_SCALING
+            filename="images/Meteors/meteorGrey_big1.png", 
+            scale=SPRITE_SCALING
         )
         
         self.center_x = center_x
@@ -85,11 +86,10 @@ class Asteroid(arcade.Sprite):
         
     def update(self):
          
-         # Update position
-         self.center_x = self.change_x
-         self.center_y = self.change_y
-
-
+        # Update position
+        self.center_x = self.change_x
+        self.center_y = self.change_y
+        
 class PlayerShot(arcade.Sprite):
     """
     A shot fired by the Player
@@ -208,7 +208,7 @@ class BonusUFO(arcade.Sprite):
         self.center_y += self.change_y
 
         # kill if out of bounds
-        if self.center_x > SCREEN_WIDTH or self.center_x < 0 and self.center_y > SCREEN_HEIGHT or self.center_y < 0:
+        if self.center_x > SCREEN_WIDTH or self.center_x < 0 or self.center_y > SCREEN_HEIGHT or self.center_y < 0:
             self.destroy()
 
     def destroy(self):
@@ -244,12 +244,16 @@ class MyGame(arcade.Window):
         self.player_sprite = None
         self.player_score = None
         self.player_lives = None
+        self.player_speed = 0
+        self.opposite_angle = 0
+        self.max_speed = PLAYER_SPEED
 
         # set up ufo info
         self.ufo_list = None
         self.ufo_shot_list = None
 
         # Track the current state of what key is pressed
+        self.space_pressed = False
         self.left_pressed = False
         self.right_pressed = False
         self.up_pressed = False
@@ -277,8 +281,7 @@ class MyGame(arcade.Window):
             print("No joysticks found")
             self.joystick = None
 
-
-            #self.joystick.
+            # self.joystick.
         # Set the background color
         arcade.set_background_color(arcade.color.AMAZON)
 
@@ -346,9 +349,9 @@ class MyGame(arcade.Window):
         # Draw players score on screen
         arcade.draw_text(
             "SCORE: {}".format(self.player_score),  # Text to show
-            10,                  # X position
-            SCREEN_HEIGHT - 20,  # Y positon
-            arcade.color.WHITE   # Color of text
+            10,  # X position
+            SCREEN_HEIGHT - 20,  # Y_position
+            arcade.color.WHITE  # Color of text
         )
         arcade.draw_text(
             "LIVES: {}".format(self.player_sprite.lives),  # Text to show
@@ -362,20 +365,20 @@ class MyGame(arcade.Window):
         Movement and game logic
         """
 
-        # Calculate player speed based on the keys pressed
-        self.player_sprite.change_x = 0
-
-        # Move player with keyboard
-        if self.left_pressed and not self.right_pressed:
-            self.player_sprite.change_x = -PLAYER_SPEED_X
-        elif self.right_pressed and not self.left_pressed:
-            self.player_sprite.change_x = PLAYER_SPEED_X
-
         # Move player with joystick if present
         if self.joystick:
             self.player_sprite.change_x = round(self.joystick.x) * PLAYER_SPEED_X
 
         # check for collisions
+        
+        # PlayerShot - Asteroid collisions
+        for s in self.player_shot_list:
+            
+            for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
+                s.kill()
+                self.asteroid_list.remove(a)
+                self.player_score += ASTEROID_SCORE_REWARD
+                
         # player shot
         for shot in self.player_shot_list:
 
@@ -393,16 +396,16 @@ class MyGame(arcade.Window):
         # Update Asteroids
         self.asteroid_list.update()
 
-        # Temporary Asteroid test
-        new_asteroid = Asteroid()
-        self.asteroid_list.append(new_asteroid)
-
         # update UFOs
         self.ufo_list.update()
 
         # update UFO shot_lists
         self.ufo_shot_list.update()
 
+        if self.up_pressed:
+            if not self.player_sprite.speed > self.max_speed:
+                self.player_sprite.speed += PLAYER_THRUST
+        
     def on_key_press(self, key, modifiers):
         """
         Called whenever a key is pressed.
@@ -417,6 +420,8 @@ class MyGame(arcade.Window):
             self.left_pressed = True
         elif key == arcade.key.RIGHT:
             self.right_pressed = True
+        elif key == arcade.key.SPACE:
+            self.space_pressed = True
 
         if key == FIRE_KEY:
             new_shot = PlayerShot(
@@ -439,6 +444,8 @@ class MyGame(arcade.Window):
             self.left_pressed = False
         elif key == arcade.key.RIGHT:
             self.right_pressed = False
+        elif key == arcade.key.SPACE:
+            self.space_pressed = False
 
     def on_joybutton_press(self, joystick, button_no):
         print("Button pressed:", button_no)
@@ -453,6 +460,7 @@ class MyGame(arcade.Window):
 
     def on_joyhat_motion(self, joystick, hat_x, hat_y):
         print("Joystick hat ({}, {})".format(hat_x, hat_y))
+
 
 def main():
     """
