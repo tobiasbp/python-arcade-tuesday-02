@@ -83,11 +83,11 @@ class Asteroid(arcade.Sprite):
             scale=SPRITE_SCALING
         )
 
-        self.angle = random.randint(-90, 180)
+        self.angle = arcade.rand_angle_360_deg()
         self.center_x = random.randint(0, SCREEN_WIDTH)
         self.center_y = random.randint(0, SCREEN_HEIGHT)
-        self.change_x = math.sin(math.radians(self.angle))
-        self.change_y = math.cos(math.radians(self.angle))
+        self.change_x = math.sin(self.radians) * ASTEROIDS_SPEED
+        self.change_y = math.cos(self.radians) * ASTEROIDS_SPEED
         
     def update(self):
          
