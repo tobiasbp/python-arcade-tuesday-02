@@ -27,6 +27,8 @@ PLAYER_SPEED = 3
 PLAYER_SHOT_SPEED = 4
 PLAYER_THRUST = 0.5
 
+# Asteroid related variables
+ASTEROID_SCORE_REWARD = 50
 
 FIRE_KEY = arcade.key.SPACE
 
@@ -69,7 +71,7 @@ class Player(arcade.Sprite):
 
 class Asteroid(arcade.Sprite):
     
-    def __init__(self, center_x=0, center_y=0):
+    def __init__(self, center_x=500, center_y=500):
         
         # Initialize the asteroid
         
@@ -84,11 +86,10 @@ class Asteroid(arcade.Sprite):
         
     def update(self):
          
-         # Update position
-         self.center_x = self.change_x
-         self.center_y = self.change_y
-
-
+        # Update position
+        self.center_x = self.change_x
+        self.center_y = self.change_y
+        
 class PlayerShot(arcade.Sprite):
     """
     A shot fired by the Player
@@ -369,6 +370,15 @@ class MyGame(arcade.Window):
             self.player_sprite.change_x = round(self.joystick.x) * PLAYER_SPEED_X
 
         # check for collisions
+        
+        # PlayerShot - Asteroid collisions
+        for s in self.player_shot_list:
+            
+            for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
+                s.kill()
+                self.asteroid_list.remove(a)
+                self.player_score += ASTEROID_SCORE_REWARD
+                
         # player shot
         for shot in self.player_shot_list:
 
@@ -399,7 +409,7 @@ class MyGame(arcade.Window):
         if self.up_pressed:
             if not self.player_sprite.speed > self.max_speed:
                 self.player_sprite.speed += PLAYER_THRUST
-
+        
     def on_key_press(self, key, modifiers):
         """
         Called whenever a key is pressed.
