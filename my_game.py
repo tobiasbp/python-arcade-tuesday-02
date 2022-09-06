@@ -384,9 +384,9 @@ class MyGame(arcade.Window):
         elif self.right_pressed and not self.left_pressed:
             self.player_sprite.angle+= -PLAYER_ROTATE_SPEED
 
-        # Move player with joystick if present
+        # rotate player with joystick if present
         if self.joystick:
-            self.player_sprite.change_x = round(self.joystick.x) * PLAYER_ROTATE_SPEED
+            self.player_sprite.angle += round(self.joystick.x) * -PLAYER_ROTATE_SPEED
 
         # check for collisions
         # player shot
