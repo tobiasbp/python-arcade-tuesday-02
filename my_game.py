@@ -26,6 +26,7 @@ PLAYER_LIVES = 3
 PLAYER_SPEED = 3
 PLAYER_SHOT_SPEED = 4
 PLAYER_THRUST = 0.5
+PLAYER_SHOT_RANGE = SCREEN_WIDTH // 10
 
 
 FIRE_KEY = arcade.key.SPACE
@@ -112,6 +113,7 @@ class PlayerShot(arcade.Sprite):
         self.center_x = center_x
         self.center_y = center_y
         self.change_y = PLAYER_SHOT_SPEED
+        self.shot_range = 0
 
     def update(self):
         """
@@ -121,8 +123,9 @@ class PlayerShot(arcade.Sprite):
         # Update y position
         self.center_y += self.change_y
 
-        # Remove shot when over top of screen
-        if self.bottom > SCREEN_HEIGHT:
+        # Has a range of how long the shot can last for.
+        self.shot_range += 1
+        if self.shot_range > PLAYER_SHOT_RANGE:
             self.kill()
 
 
