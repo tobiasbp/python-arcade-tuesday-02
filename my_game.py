@@ -71,7 +71,7 @@ class Player(arcade.Sprite):
 
 class Asteroid(arcade.Sprite):
     
-    def __init__(self, center_x=500, center_y=500):
+    def __init__(self, center_x=0, center_y=0):
         
         # Initialize the asteroid
         
@@ -395,10 +395,6 @@ class MyGame(arcade.Window):
         
         # Update Asteroids
         self.asteroid_list.update()
-
-        # Temporary Asteroid test
-        new_asteroid = Asteroid()
-        self.asteroid_list.append(new_asteroid)
 
         # update UFOs
         self.ufo_list.update()
