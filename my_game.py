@@ -94,17 +94,7 @@ class Player(arcade.Sprite):
         self.center_y += self.change_y
 
         # wrap
-        if self.right < 0:
-            self.center_x += SCREEN_WIDTH
-
-        if self.left > SCREEN_WIDTH:
-            self.center_x -= SCREEN_WIDTH
-
-        if self.top < 0:
-            self.center_y += SCREEN_HEIGHT
-
-        if self.bottom > SCREEN_HEIGHT:
-            self.center_y -= SCREEN_HEIGHT
+        wrap(self)
 
 
 class Asteroid(arcade.Sprite):
@@ -130,6 +120,9 @@ class Asteroid(arcade.Sprite):
         # Update position
         self.center_x += self.change_x
         self.center_y += self.change_y
+
+        # wrap
+        wrap(self)
 
 
 class PlayerShot(arcade.Sprite):
@@ -159,6 +152,9 @@ class PlayerShot(arcade.Sprite):
         # Update position
         self.center_x += self.change_x
         self.center_y += self.change_y
+
+        # wrap
+        wrap(self)
 
         # Has a range of how long the shot can last for
         self.distance_traveled += self.speed
