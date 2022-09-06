@@ -113,7 +113,7 @@ class PlayerShot(arcade.Sprite):
         self.center_x = center_x
         self.center_y = center_y
         self.change_y = PLAYER_SHOT_SPEED
-        self.shot_range = 0
+        self.distance_traveled = 0
 
     def update(self):
         """
@@ -124,8 +124,8 @@ class PlayerShot(arcade.Sprite):
         self.center_y += self.change_y
 
         # Has a range of how long the shot can last for.
-        self.shot_range += 1
-        if self.shot_range > PLAYER_SHOT_RANGE:
+        self.distance_traveled += 1
+        if self.distance_traveled > PLAYER_SHOT_RANGE:
             self.kill()
 
 
