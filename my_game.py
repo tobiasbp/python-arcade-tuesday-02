@@ -121,9 +121,9 @@ class PlayerShot(arcade.Sprite):
         Move the sprite
         """
 
-        # Update y position
-        self.center_y += self.change_y
+        # Update position
         self.center_x += self.change_x
+        self.center_y += self.change_y
 
         # Has a range of how long the shot can last for
         self.distance_traveled += self.speed
