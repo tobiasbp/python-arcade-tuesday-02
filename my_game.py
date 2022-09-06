@@ -46,6 +46,25 @@ UFO_POINTS_REWARD = 300
 UFO_SHOT_SPEED = 2
 UFO_FIRE_RATE = 1.5
 
+
+def wrap(sprite: arcade.Sprite):
+    """
+    if sprite is off-screen move it to the other side of the screen
+    """
+
+    if sprite.right < 0:
+        sprite.center_x += SCREEN_WIDTH
+
+    if sprite.left > SCREEN_WIDTH:
+        sprite.center_x -= SCREEN_WIDTH
+
+    if sprite.top < 0:
+        sprite.center_y += SCREEN_HEIGHT
+
+    if sprite.bottom > SCREEN_HEIGHT:
+        sprite.center_y -= SCREEN_HEIGHT
+
+
 class Player(arcade.Sprite):
     """
     The player
