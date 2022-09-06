@@ -19,6 +19,9 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
 # Variables controlling the player
+
+PLAYER_LIVES = 3
+PLAYER_ROTATE_SPEED = 5
 PLAYER_SPEED_X = 5
 PLAYER_START_X = SCREEN_WIDTH / 2
 PLAYER_START_Y = 50
@@ -371,9 +374,19 @@ class MyGame(arcade.Window):
         Movement and game logic
         """
 
-        # Move player with joystick if present
+
+        # Calculate player speed based on the keys pressed
+        self.player_sprite.change_x = 0
+
+        # Move player with keyboard
+        if self.left_pressed and not self.right_pressed:
+            self.player_sprite.angle+= PLAYER_ROTATE_SPEED
+        elif self.right_pressed and not self.left_pressed:
+            self.player_sprite.angle+= -PLAYER_ROTATE_SPEED
+
+        # rotate player with joystick if present
         if self.joystick:
-            self.player_sprite.change_x = round(self.joystick.x) * PLAYER_SPEED_X
+            self.player_sprite.angle += round(self.joystick.x) * -PLAYER_ROTATE_SPEED
 
         # check for collisions
         # player shot
