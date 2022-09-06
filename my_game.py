@@ -69,10 +69,23 @@ class Player(arcade.Sprite):
 
     def update(self):
         """
-        Move the sprite
+        Move the sprite and wrap
         """
         self.center_x += self.change_x
         self.center_y += self.change_y
+
+        # wrap
+        if self.right < 0:
+            self.center_x += SCREEN_WIDTH
+
+        if self.left > SCREEN_WIDTH:
+            self.center_x -= SCREEN_WIDTH
+
+        if self.top < 0:
+            self.center_y += SCREEN_HEIGHT
+
+        if self.bottom > SCREEN_HEIGHT:
+            self.center_y -= SCREEN_HEIGHT
 
 
 class Asteroid(arcade.Sprite):
