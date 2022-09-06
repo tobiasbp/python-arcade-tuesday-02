@@ -27,9 +27,6 @@ PLAYER_SPEED = 3
 PLAYER_SHOT_SPEED = 4
 PLAYER_THRUST = 0.5
 
-# Asteroid related variables
-ASTEROID_SCORE_REWARD = 50
-
 FIRE_KEY = arcade.key.SPACE
 
 # UFO constants
@@ -370,15 +367,6 @@ class MyGame(arcade.Window):
             self.player_sprite.change_x = round(self.joystick.x) * PLAYER_SPEED_X
 
         # check for collisions
-        
-        # PlayerShot - Asteroid collisions
-        for s in self.player_shot_list:
-            
-            for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
-                s.kill()
-                self.asteroid_list.remove(a)
-                self.player_score += ASTEROID_SCORE_REWARD
-                
         # player shot
         for shot in self.player_shot_list:
 
