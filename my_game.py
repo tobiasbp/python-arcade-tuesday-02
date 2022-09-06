@@ -29,6 +29,7 @@ PLAYER_LIVES = 3
 PLAYER_SPEED = 3
 PLAYER_SHOT_SPEED = 4
 PLAYER_THRUST = 0.5
+PLAYER_SHOT_RANGE = SCREEN_WIDTH // 2
 
 
 FIRE_KEY = arcade.key.SPACE
@@ -115,17 +116,23 @@ class PlayerShot(arcade.Sprite):
         self.center_x = center_x
         self.center_y = center_y
         self.change_y = PLAYER_SHOT_SPEED
+        self.distance_traveled = 0
+        self.speed = PLAYER_SHOT_SPEED
 
     def update(self):
         """
         Move the sprite
         """
 
-        # Update y position
+        # Update position
+        self.center_x += self.change_x
         self.center_y += self.change_y
 
-        # Remove shot when over top of screen
-        if self.bottom > SCREEN_HEIGHT:
+        # Has a range of how long the shot can last for
+        self.distance_traveled += self.speed
+
+        # When distance made kill it
+        if self.distance_traveled > PLAYER_SHOT_RANGE:
             self.kill()
 
 
