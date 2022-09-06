@@ -68,16 +68,16 @@ class Player(arcade.Sprite):
 
         # wrap
         if self.right < 0:
-            self.left = SCREEN_WIDTH
+            self.center_x += SCREEN_WIDTH
 
         if self.left > SCREEN_WIDTH:
-            self.right = 0
+            self.center_x -= SCREEN_WIDTH
 
         if self.top < 0:
-            self.bottom = SCREEN_HEIGHT
+            self.center_y += SCREEN_HEIGHT
 
         if self.bottom > SCREEN_HEIGHT:
-            self.top = 0
+            self.center_y -= SCREEN_HEIGHT
 
 
 class Asteroid(arcade.Sprite):
