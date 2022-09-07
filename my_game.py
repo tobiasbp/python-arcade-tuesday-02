@@ -28,7 +28,6 @@ PLAYER_START_Y = 50
 PLAYER_LIVES = 3
 PLAYER_SPEED = 3
 PLAYER_SHOT_SPEED = 4
-PLAYER_THRUST = 0.5
 PLAYER_SHOT_RANGE = SCREEN_WIDTH // 2
 
 
@@ -58,12 +57,9 @@ class Player(arcade.Sprite):
         # Graphics to use for Player
         super().__init__("images/playerShip1_red.png")
 
-        self.speed = 1
         self.angle = 0
         self.lives = lives
         self.scale = scale
-        self.change_x = self.speed * math.cos(self.angle)
-        self.change_y = self.speed * math.cos(self.angle)
         self.center_x = center_x
         self.center_y = center_y
 
@@ -431,10 +427,6 @@ class MyGame(arcade.Window):
 
         # update UFO shot_lists
         self.ufo_shot_list.update()
-
-        if self.up_pressed:
-            if not self.player_sprite.speed > self.max_speed:
-                self.player_sprite.speed += PLAYER_THRUST
 
     def on_key_press(self, key, modifiers):
         """
