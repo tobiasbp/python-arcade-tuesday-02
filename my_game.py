@@ -63,6 +63,31 @@ class Player(arcade.Sprite):
         self.center_x = center_x
         self.center_y = center_y
 
+    def thrust(self):
+        """
+        increase speed in the direction pointing
+        """
+
+        dir_in_quarter = self.angle % 90 / 100
+
+        to_add = PLAYER_SPEED * dir_in_quarter
+
+        if self.angle >= 270:
+            self.change_y += to_add
+            self.change_x += PLAYER_SPEED - to_add
+
+        elif self.angle >= 180:
+            self.change_x += to_add
+            self.change_y -= PLAYER_SPEED - to_add
+
+        elif self.angle >= 90:
+            self.change_y -= to_add
+            self.change_x -= PLAYER_SPEED - to_add
+
+        else:
+            self.change_x -= to_add
+            self.change_y += PLAYER_SPEED - to_add
+
     def update(self):
         """
         Move the sprite and wrap
@@ -71,7 +96,7 @@ class Player(arcade.Sprite):
         self.center_y += self.change_y
 
         # reset angle
-        if self.angle > 360:
+        if self.angle >= 360:
             self.angle = 0
 
         elif self.angle < 0:
@@ -456,6 +481,9 @@ class MyGame(arcade.Window):
             )
 
             self.player_shot_list.append(new_shot)
+
+        if key == PLAYER_THRUST_KEY:
+            self.player_sprite.thrust()
 
     def on_key_release(self, key, modifiers):
         """
