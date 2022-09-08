@@ -30,7 +30,7 @@ PLAYER_SPEED = 3
 PLAYER_SHOT_SPEED = 4
 PLAYER_SHOT_RANGE = SCREEN_WIDTH // 2
 
-
+PLAYER_THRUST_KEY = arcade.key.UP
 FIRE_KEY = arcade.key.SPACE
 
 # Asteroids variables
@@ -69,6 +69,13 @@ class Player(arcade.Sprite):
         """
         self.center_x += self.change_x
         self.center_y += self.change_y
+
+        # reset angle
+        if self.angle > 360:
+            self.angle = 0
+
+        elif self.angle < 0:
+            self.angle = 360
 
         # wrap
         if self.right < 0:
@@ -390,10 +397,7 @@ class MyGame(arcade.Window):
         Movement and game logic
         """
 
-
         # Calculate player speed based on the keys pressed
-        self.player_sprite.change_x = 0
-
         # Move player with keyboard
         if self.left_pressed and not self.right_pressed:
             self.player_sprite.angle+= PLAYER_ROTATE_SPEED
