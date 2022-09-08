@@ -175,7 +175,9 @@ class BonusUFO(arcade.Sprite):
 
         kwargs['filename'] = "images/ufoBlue.png"
 
-        kwargs['scale'] = SPRITE_SCALING
+        scale_change = random.randint(25, 50)
+
+        kwargs['scale'] = SPRITE_SCALING + (scale_change // 100)
 
         # set random position off-screen
         kwargs['center_x'] = random.choice([0, SCREEN_WIDTH])
