@@ -45,11 +45,8 @@ UFO_SPAWN_RATE = 10  # seconds
 UFO_POINTS_REWARD = 300
 UFO_SHOT_SPEED = 2
 UFO_FIRE_RATE = 1.5
-UFO_SIZE_LIST = [
-    1.5,
-    0.9
-]
-
+UFO_SIZE_SMALL = 0.9
+UFO_SIZE_BIG = 1.5
 
 
 def wrap(sprite: arcade.Sprite):
@@ -193,10 +190,8 @@ class BonusUFO(arcade.Sprite):
 
         kwargs['filename'] = "images/ufoBlue.png"
 
-        ufo_scale = random.choice(UFO_SIZE_LIST)
-
-        # Remember to multiply with SPRITE_SCALING
-        kwargs['scale'] = ufo_scale * SPRITE_SCALING
+        # UFO's are big or small
+        kwargs['scale'] = SPRITE_SCALING * random.choice([UFO_SIZE_SMALL, UFO_SIZE_BIG])
 
         # set random position off-screen
         kwargs['center_x'] = random.choice([0, SCREEN_WIDTH])
