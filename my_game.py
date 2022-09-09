@@ -195,6 +195,7 @@ class BonusUFO(arcade.Sprite):
 
         ufo_scale = random.choice(UFO_SIZE_LIST)
 
+        # Remember to multiply with SPRITE_SCALING
         kwargs['scale'] = ufo_scale * SPRITE_SCALING
 
         # set random position off-screen
