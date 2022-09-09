@@ -45,6 +45,8 @@ UFO_SPAWN_RATE = 10  # seconds
 UFO_POINTS_REWARD = 300
 UFO_SHOT_SPEED = 2
 UFO_FIRE_RATE = 1.5
+UFO_SIZE_1 = 1
+UFO_SIZE_2 = 2
 
 class Player(arcade.Sprite):
     """
@@ -175,9 +177,9 @@ class BonusUFO(arcade.Sprite):
 
         kwargs['filename'] = "images/ufoBlue.png"
 
-        scale_change = random.randint(25, 50)
+        scale_change = random.randint(UFO_SIZE_1, UFO_SIZE_2)
 
-        kwargs['scale'] = SPRITE_SCALING + (scale_change // 100)
+        kwargs['scale'] = (SPRITE_SCALING * scale_change)
 
         # set random position off-screen
         kwargs['center_x'] = random.choice([0, SCREEN_WIDTH])
