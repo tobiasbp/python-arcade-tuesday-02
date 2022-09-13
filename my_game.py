@@ -22,7 +22,8 @@ SCREEN_HEIGHT = 600
 
 PLAYER_LIVES = 3
 PLAYER_ROTATE_SPEED = 5
-PLAYER_THRUST = 0.4  # speed gained from thrusting
+PLAYER_THRUST = 0.05  # speed gained from thrusting
+PLAYER_START_X = SCREEN_WIDTH // 2
 PLAYER_START_Y = 50
 PLAYER_LIVES = 3
 PLAYER_SPEED = 3
@@ -67,25 +68,11 @@ class Player(arcade.Sprite):
         increase speed in the direction pointing
         """
 
-        dir_in_quarter = self.angle % 90 / 100
+        to_change_x = math.sin(self.radians) * PLAYER_THRUST
+        to_change_y = math.cos(self.radians) * PLAYER_THRUST
 
-        to_add = PLAYER_SPEED * dir_in_quarter
-
-        if self.angle >= 270:
-            self.change_y += to_add
-            self.change_x += PLAYER_SPEED - to_add
-
-        elif self.angle >= 180:
-            self.change_x += to_add
-            self.change_y -= PLAYER_SPEED - to_add
-
-        elif self.angle >= 90:
-            self.change_y -= to_add
-            self.change_x -= PLAYER_SPEED - to_add
-
-        else:
-            self.change_x -= to_add
-            self.change_y += PLAYER_SPEED - to_add
+        self.change_x -= to_change_x
+        self.change_y += to_change_y
 
     def update(self):
         """
