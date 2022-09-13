@@ -79,13 +79,6 @@ class Player(arcade.Sprite):
         self.center_x += self.change_x
         self.center_y += self.change_y
 
-        # reset angle
-        if self.angle >= 360:
-            self.angle = 0
-
-        elif self.angle < 0:
-            self.angle = 360
-
         # wrap
         if self.right < 0:
             self.center_x += SCREEN_WIDTH
