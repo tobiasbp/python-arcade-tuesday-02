@@ -59,7 +59,6 @@ class Player(arcade.Sprite):
 
         self.angle = 0
         self.lives = lives
-        self.speed = 0
         self.scale = scale
         self.center_x = center_x
         self.center_y = center_y
@@ -79,9 +78,6 @@ class Player(arcade.Sprite):
         """
         Move the sprite and wrap
         """
-
-        # track current speed
-        self.speed = self.change_x + self.change_y / 2
 
         self.center_x += self.change_x
         self.center_y += self.change_y
