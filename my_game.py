@@ -315,6 +315,7 @@ class MyGame(arcade.Window):
         self.right_pressed = False
         self.up_pressed = False
         self.down_pressed = False
+        self.thrust_pressed = False
 
         # Get list of joysticks
         joysticks = arcade.get_joysticks()
@@ -442,6 +443,10 @@ class MyGame(arcade.Window):
                 ufo_hit.destroy()
                 self.player_score += UFO_POINTS_REWARD
 
+        # check for thrust
+        if self.thrust_pressed:
+            self.player_sprite.thrust()
+
         # Update player sprite
         self.player_sprite.update()
 
@@ -473,6 +478,8 @@ class MyGame(arcade.Window):
             self.right_pressed = True
         elif key == arcade.key.SPACE:
             self.space_pressed = True
+        if key == PLAYER_THRUST_KEY:
+            self.thrust_pressed = True
 
         if key == FIRE_KEY:
             new_shot = PlayerShot(
@@ -500,6 +507,8 @@ class MyGame(arcade.Window):
             self.right_pressed = False
         elif key == arcade.key.SPACE:
             self.space_pressed = False
+        if key == PLAYER_THRUST_KEY:
+            self.thrust_pressed = False
 
     def on_joybutton_press(self, joystick, button_no):
         print("Button pressed:", button_no)
