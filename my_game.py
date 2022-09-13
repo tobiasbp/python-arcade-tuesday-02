@@ -68,8 +68,8 @@ class Player(arcade.Sprite):
         increase speed in the direction pointing
         """
 
-        self.change_x += math.cos(self.radians) * PLAYER_THRUST
-        self.change_y += math.sin(self.radians) * PLAYER_THRUST
+        self.change_x += math.cos(self.radians + math.pi / 2) * PLAYER_THRUST  # correct the graphics' wrong angle
+        self.change_y += math.sin(self.radians + math.pi / 2) * PLAYER_THRUST
 
     def update(self):
         """
