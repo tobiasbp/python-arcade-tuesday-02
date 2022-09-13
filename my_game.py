@@ -23,6 +23,7 @@ SCREEN_HEIGHT = 600
 PLAYER_LIVES = 3
 PLAYER_ROTATE_SPEED = 5
 PLAYER_THRUST = 0.05  # speed gained from thrusting
+PLAYER_GRAPHICS_CORRECTION = math.pi / 2  # the player graphic is turned 45 degrees too much compared to actual angle
 PLAYER_START_X = SCREEN_WIDTH // 2
 PLAYER_START_Y = 50
 PLAYER_LIVES = 3
@@ -68,8 +69,8 @@ class Player(arcade.Sprite):
         increase speed in the direction pointing
         """
 
-        self.change_x += math.cos(self.radians + math.pi / 2) * PLAYER_THRUST  # correct the graphics' wrong angle
-        self.change_y += math.sin(self.radians + math.pi / 2) * PLAYER_THRUST
+        self.change_x += math.cos(self.radians + PLAYER_GRAPHICS_CORRECTION) * PLAYER_THRUST
+        self.change_y += math.sin(self.radians + PLAYER_GRAPHICS_CORRECTION) * PLAYER_THRUST
 
     def update(self):
         """
