@@ -32,7 +32,7 @@ PLAYER_SHOT_SPEED = 4
 PLAYER_SHOT_RANGE = SCREEN_WIDTH // 2
 
 PLAYER_THRUST_KEY = arcade.key.UP
-FIRE_KEY = arcade.key.SPACE
+PLAYER_FIRE_KEY = arcade.key.SPACE
 
 # Asteroids variables
 ASTEROIDS_PR_LEVEL = 5
@@ -459,7 +459,7 @@ class MyGame(arcade.Window):
         if key == PLAYER_THRUST_KEY:
             self.thrust_pressed = True
 
-        if key == FIRE_KEY:
+        if key == PLAYER_FIRE_KEY:
             new_shot = PlayerShot(
                 self.player_sprite.center_x,
                 self.player_sprite.center_y
@@ -491,7 +491,7 @@ class MyGame(arcade.Window):
     def on_joybutton_press(self, joystick, button_no):
         print("Button pressed:", button_no)
         # Press the fire key
-        self.on_key_press(FIRE_KEY, [])
+        self.on_key_press(PLAYER_FIRE_KEY, [])
 
     def on_joybutton_release(self, joystick, button_no):
         print("Button released:", button_no)
