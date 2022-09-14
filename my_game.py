@@ -19,12 +19,11 @@ SCREEN_HEIGHT = 600
 
 # Variables controlling the player
 
-PLAYER_LIVES = 3
+PLAYER_START_LIVES = 3
 PLAYER_ROTATE_SPEED = 5
 PLAYER_SPEED_X = 5
 PLAYER_START_X = SCREEN_WIDTH / 2
 PLAYER_START_Y = 50
-PLAYER_LIVES = 3
 PLAYER_SPEED = 3
 PLAYER_SHOT_SPEED = 4
 PLAYER_THRUST = 0.5
@@ -69,7 +68,7 @@ class Player(arcade.Sprite):
     The player
     """
 
-    def __init__(self, center_x, center_y, lives, scale):
+    def __init__(self, center_x, center_y, scale):
         """
         Setup new Player object
         """
@@ -78,7 +77,6 @@ class Player(arcade.Sprite):
 
         self.speed = 1
         self.angle = 0
-        self.lives = lives
         self.scale = scale
         self.change_x = self.speed * math.cos(self.angle)
         self.change_y = self.speed * math.cos(self.angle)
@@ -356,7 +354,6 @@ class MyGame(arcade.Window):
         self.player_sprite = Player(
             center_x=PLAYER_START_X,
             center_y=PLAYER_START_Y,
-            lives=PLAYER_LIVES,
             scale=SPRITE_SCALING,
         )
 
@@ -398,7 +395,7 @@ class MyGame(arcade.Window):
             arcade.color.WHITE  # Color of text
         )
         arcade.draw_text(
-            "LIVES: {}".format(self.player_sprite.lives),  # Text to show
+            "LIVES: {}".format(self.player_lives),  # Text to show
             10,  # X position
             SCREEN_HEIGHT - 45,  # Y positon
             arcade.color.WHITE  # Color of text
@@ -439,7 +436,11 @@ class MyGame(arcade.Window):
                 pass
             else:
                 self.setup()
-
+                if self.player_lives > 0:
+                    self.player_lives -= 1
+                else:
+                    # GameOver
+                    print("Game Over")
         # Update player sprite
         self.player_sprite.update()
 
