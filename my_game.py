@@ -68,7 +68,7 @@ class Player(arcade.Sprite):
     The player
     """
 
-    def __init__(self, center_x, center_y, scale):
+    def __init__(self, center_x, center_y, scale, lives, is_imortal):
         """
         Setup new Player object
         """
@@ -77,11 +77,13 @@ class Player(arcade.Sprite):
 
         self.speed = 1
         self.angle = 0
+        self.lives = lives
         self.scale = scale
         self.change_x = self.speed * math.cos(self.angle)
         self.change_y = self.speed * math.cos(self.angle)
         self.center_x = center_x
         self.center_y = center_y
+        self.is_imortal = is_imortal
 
     def update(self):
         """
@@ -283,11 +285,10 @@ class MyGame(arcade.Window):
         # Set up the player info
         self.player_sprite = None
         self.player_score = None
-        self.player_lives = 3
+        self.player_lives_lose = 0
         self.player_speed = 0
         self.opposite_angle = 0
         self.max_speed = PLAYER_SPEED
-        self.player_immortality_timer = INVINCIBILITY_SECONDS
 
         # set up ufo info
         self.ufo_list = None
@@ -343,7 +344,6 @@ class MyGame(arcade.Window):
         self.player_score = 0
 
         # Sprite lists
-        self.player_sprite = arcade.SpriteList()
         self.player_shot_list = arcade.SpriteList()
         self.asteroid_list = arcade.SpriteList()
 
@@ -355,6 +355,8 @@ class MyGame(arcade.Window):
             center_x=PLAYER_START_X,
             center_y=PLAYER_START_Y,
             scale=SPRITE_SCALING,
+            lives=PLAYER_START_LIVES,
+            is_imortal=INVINCIBILITY_SECONDS
         )
 
         # Spawn Asteroids
@@ -395,7 +397,7 @@ class MyGame(arcade.Window):
             arcade.color.WHITE  # Color of text
         )
         arcade.draw_text(
-            "LIVES: {}".format(self.player_lives),  # Text to show
+            "LIVES: {}".format(self.player_sprite.lives),  # Text to show
             10,  # X position
             SCREEN_HEIGHT - 45,  # Y positon
             arcade.color.WHITE  # Color of text
@@ -415,8 +417,8 @@ class MyGame(arcade.Window):
         elif self.right_pressed and not self.left_pressed:
             self.player_sprite.angle += -PLAYER_ROTATE_SPEED
 
-        if self.player_immortality_timer > 0:
-            self.player_immortality_timer -= delta_time
+        if self.player_sprite.is_imortal > 0:
+            self.player_sprite.is_imortal -= delta_time
 
         # rotate player with joystick if present
         if self.joystick:
@@ -431,16 +433,19 @@ class MyGame(arcade.Window):
                 ufo_hit.destroy()
                 self.player_score += UFO_POINTS_REWARD
 
+        # Checks if the Player touching any astroid
         if any(self.player_sprite.collides_with_list(self.asteroid_list)):
-            if self.player_immortality_timer > 1:
+            if self.player_sprite.is_imortal > 1:
                 pass
             else:
                 self.setup()
-                if self.player_lives > 0:
-                    self.player_lives -= 1
+                if self.player_lives_lose < 2:
+                    self.player_lives_lose += 1
+                    self.player_sprite.lives -= self.player_lives_lose
                 else:
                     # GameOver
                     print("Game Over")
+                    arcade.close_window()
         # Update player sprite
         self.player_sprite.update()
 
