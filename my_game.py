@@ -22,17 +22,17 @@ SCREEN_HEIGHT = 600
 
 PLAYER_LIVES = 3
 PLAYER_ROTATE_SPEED = 5
-PLAYER_SPEED_X = 5
-PLAYER_START_X = SCREEN_WIDTH / 2
+PLAYER_THRUST = 0.05  # speed gained from thrusting
+PLAYER_GRAPHICS_CORRECTION = math.pi / 2  # the player graphic is turned 45 degrees too much compared to actual angle
+PLAYER_START_X = SCREEN_WIDTH // 2
 PLAYER_START_Y = 50
 PLAYER_LIVES = 3
 PLAYER_SPEED = 3
 PLAYER_SHOT_SPEED = 4
-PLAYER_THRUST = 0.5
 PLAYER_SHOT_RANGE = SCREEN_WIDTH // 2
 
-
-FIRE_KEY = arcade.key.SPACE
+PLAYER_THRUST_KEY = arcade.key.UP
+PLAYER_FIRE_KEY = arcade.key.SPACE
 
 # Asteroids variables
 ASTEROIDS_PR_LEVEL = 5
@@ -94,19 +94,25 @@ class Player(arcade.Sprite):
         # Graphics to use for Player
         super().__init__("images/playerShip1_red.png")
 
-        self.speed = 1
         self.angle = 0
         self.lives = lives
         self.scale = scale
-        self.change_x = self.speed * math.cos(self.angle)
-        self.change_y = self.speed * math.cos(self.angle)
         self.center_x = center_x
         self.center_y = center_y
+
+    def thrust(self):
+        """
+        increase speed in the direction pointing
+        """
+
+        self.change_x += math.cos(self.radians + PLAYER_GRAPHICS_CORRECTION) * PLAYER_THRUST
+        self.change_y += math.sin(self.radians + PLAYER_GRAPHICS_CORRECTION) * PLAYER_THRUST
 
     def update(self):
         """
         Move the sprite and wrap
         """
+
         self.center_x += self.change_x
         self.center_y += self.change_y
 
@@ -320,6 +326,7 @@ class MyGame(arcade.Window):
         self.right_pressed = False
         self.up_pressed = False
         self.down_pressed = False
+        self.thrust_pressed = False
 
         # Get list of joysticks
         joysticks = arcade.get_joysticks()
@@ -427,10 +434,7 @@ class MyGame(arcade.Window):
         Movement and game logic
         """
 
-
         # Calculate player speed based on the keys pressed
-        self.player_sprite.change_x = 0
-
         # Move player with keyboard
         if self.left_pressed and not self.right_pressed:
             self.player_sprite.angle+= PLAYER_ROTATE_SPEED
@@ -453,6 +457,10 @@ class MyGame(arcade.Window):
                 ufo_hit.destroy()
                 self.player_score += UFO_POINTS_REWARD
 
+        # check for thrust
+        if self.thrust_pressed:
+            self.player_sprite.thrust()
+
         # Update player sprite
         self.player_sprite.update()
 
@@ -467,10 +475,6 @@ class MyGame(arcade.Window):
 
         # update UFO shot_lists
         self.ufo_shot_list.update()
-
-        if self.up_pressed:
-            if not self.player_sprite.speed > self.max_speed:
-                self.player_sprite.speed += PLAYER_THRUST
 
     def on_key_press(self, key, modifiers):
         """
@@ -488,14 +492,19 @@ class MyGame(arcade.Window):
             self.right_pressed = True
         elif key == arcade.key.SPACE:
             self.space_pressed = True
+        if key == PLAYER_THRUST_KEY:
+            self.thrust_pressed = True
 
-        if key == FIRE_KEY:
+        if key == PLAYER_FIRE_KEY:
             new_shot = PlayerShot(
                 self.player_sprite.center_x,
                 self.player_sprite.center_y
             )
 
             self.player_shot_list.append(new_shot)
+
+        if key == PLAYER_THRUST_KEY:
+            self.player_sprite.thrust()
 
     def on_key_release(self, key, modifiers):
         """
@@ -512,11 +521,13 @@ class MyGame(arcade.Window):
             self.right_pressed = False
         elif key == arcade.key.SPACE:
             self.space_pressed = False
+        if key == PLAYER_THRUST_KEY:
+            self.thrust_pressed = False
 
     def on_joybutton_press(self, joystick, button_no):
         print("Button pressed:", button_no)
         # Press the fire key
-        self.on_key_press(FIRE_KEY, [])
+        self.on_key_press(PLAYER_FIRE_KEY, [])
 
     def on_joybutton_release(self, joystick, button_no):
         print("Button released:", button_no)
