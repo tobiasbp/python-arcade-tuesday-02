@@ -27,9 +27,10 @@ PLAYER_GRAPHICS_CORRECTION = math.pi / 2  # the player graphic is turned 45 degr
 PLAYER_START_X = SCREEN_WIDTH // 2
 PLAYER_START_Y = 50
 PLAYER_LIVES = 3
-PLAYER_SPEED = 3
+PLAYER_START_SPEED = 3
 PLAYER_SHOT_SPEED = 4
 PLAYER_SHOT_RANGE = SCREEN_WIDTH // 2
+PLAYER_SPEED_LIMIT = 9
 
 PLAYER_THRUST_KEY = arcade.key.UP
 PLAYER_FIRE_KEY = arcade.key.SPACE
@@ -105,8 +106,9 @@ class Player(arcade.Sprite):
         increase speed in the direction pointing
         """
 
-        self.change_x += math.cos(self.radians + PLAYER_GRAPHICS_CORRECTION) * PLAYER_THRUST
-        self.change_y += math.sin(self.radians + PLAYER_GRAPHICS_CORRECTION) * PLAYER_THRUST
+        if self.change_x <= PLAYER_SPEED_LIMIT and self.change_y <= PLAYER_SPEED_LIMIT:
+            self.change_x += math.cos(self.radians + PLAYER_GRAPHICS_CORRECTION) * PLAYER_THRUST
+            self.change_y += math.sin(self.radians + PLAYER_GRAPHICS_CORRECTION) * PLAYER_THRUST
 
     def update(self):
         """
@@ -314,7 +316,6 @@ class MyGame(arcade.Window):
         self.player_lives = None
         self.player_speed = 0
         self.opposite_angle = 0
-        self.max_speed = PLAYER_SPEED
 
         # set up ufo info
         self.ufo_list = None
