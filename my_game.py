@@ -10,6 +10,7 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 import arcade
 import math
 import random
+from enum import Enum
 
 
 SPRITE_SCALING = 0.5
@@ -289,6 +290,16 @@ class BonusUFO(arcade.Sprite):
         self.kill()
 
 
+class GameState(Enum):
+    """
+    the state of the game: INTRO, IN_GAME or GAME_OVER
+    """
+
+    INTRO = 0
+    IN_GAME = 1
+    GAME_OVER = 2
+
+
 class MyGame(arcade.Window):
     """
     Main application class.
@@ -301,6 +312,9 @@ class MyGame(arcade.Window):
 
         # Call the parent class initializer
         super().__init__(width, height)
+
+        # game state variable.
+        self.game_state = None
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = None
@@ -366,6 +380,8 @@ class MyGame(arcade.Window):
 
     def setup(self):
         """ Set up the game and initialize the variables. """
+
+        self.game_state = GameState.INTRO
 
         # No points when the game starts
         self.player_score = 0
