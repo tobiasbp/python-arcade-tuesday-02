@@ -415,82 +415,85 @@ class MyGame(arcade.Window):
 
         # This command has to happen before we start drawing
         arcade.start_render()
-        
+
         # Draw asteroids
         self.asteroid_list.draw()
 
-        # Draw the player shot
-        self.player_shot_list.draw()
+        if self.game_state == GameState.IN_GAME:
 
-        # Draw the player sprite
-        self.player_sprite.draw()
+            # Draw the player shot
+            self.player_shot_list.draw()
 
-        # draw ufo(s)
-        self.ufo_list.draw()
+            # Draw the player sprite
+            self.player_sprite.draw()
 
-        # and their shots
-        self.ufo_shot_list.draw()
+            # draw ufo(s)
+            self.ufo_list.draw()
 
-        # Draw players score on screen
-        arcade.draw_text(
-            "SCORE: {}".format(self.player_score),  # Text to show
-            10,  # X position
-            SCREEN_HEIGHT - 20,  # Y_position
-            arcade.color.WHITE  # Color of text
-        )
-        arcade.draw_text(
-            "LIVES: {}".format(self.player_sprite.lives),  # Text to show
-            10,  # X position
-            SCREEN_HEIGHT - 45, # Y positon
-            arcade.color.WHITE  # Color of text
-        )
+            # and their shots
+            self.ufo_shot_list.draw()
+
+            # Draw players score on screen
+            arcade.draw_text(
+                "SCORE: {}".format(self.player_score),  # Text to show
+                10,  # X position
+                SCREEN_HEIGHT - 20,  # Y_position
+                arcade.color.WHITE  # Color of text
+            )
+            arcade.draw_text(
+                "LIVES: {}".format(self.player_sprite.lives),  # Text to show
+                10,  # X position
+                SCREEN_HEIGHT - 45, # Y positon
+                arcade.color.WHITE  # Color of text
+            )
 
     def on_update(self, delta_time):
         """
         Movement and game logic
         """
 
-        # Calculate player speed based on the keys pressed
-        # Move player with keyboard
-        if self.left_pressed and not self.right_pressed:
-            self.player_sprite.angle+= PLAYER_ROTATE_SPEED
-        elif self.right_pressed and not self.left_pressed:
-            self.player_sprite.angle+= -PLAYER_ROTATE_SPEED
-
-        # rotate player with joystick if present
-        if self.joystick:
-            self.player_sprite.angle += round(self.joystick.x) * -PLAYER_ROTATE_SPEED
-
-        # checks if ufo shot collides with player
-        if any(self.player_sprite.collides_with_list(self.ufo_shot_list)):
-            self.player_sprite.lives -= 1
-
-        #player shot
-        for shot in self.player_shot_list:
-
-            for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
-                shot.kill()
-                ufo_hit.destroy()
-                self.player_score += UFO_POINTS_REWARD
-
-        # check for thrust
-        if self.thrust_pressed:
-            self.player_sprite.thrust()
-
-        # Update player sprite
-        self.player_sprite.update()
-
-        # Update the player shots
-        self.player_shot_list.update()
-        
         # Update Asteroids
         self.asteroid_list.update()
 
-        # update UFOs
-        self.ufo_list.update()
+        if self.game_state == GameState.IN_GAME:
+            # Calculate player speed based on the keys pressed
+            # Move player with keyboard
+            if self.left_pressed and not self.right_pressed:
+                self.player_sprite.angle+= PLAYER_ROTATE_SPEED
+            elif self.right_pressed and not self.left_pressed:
+                self.player_sprite.angle+= -PLAYER_ROTATE_SPEED
 
-        # update UFO shot_lists
-        self.ufo_shot_list.update()
+            # rotate player with joystick if present
+            if self.joystick:
+                self.player_sprite.angle += round(self.joystick.x) * -PLAYER_ROTATE_SPEED
+
+            # checks if ufo shot collides with player
+            if any(self.player_sprite.collides_with_list(self.ufo_shot_list)):
+                self.player_sprite.lives -= 1
+
+            #player shot
+            for shot in self.player_shot_list:
+
+                for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
+                    shot.kill()
+                    ufo_hit.destroy()
+                    self.player_score += UFO_POINTS_REWARD
+
+            # check for thrust
+            if self.thrust_pressed:
+                self.player_sprite.thrust()
+
+            # Update player sprite
+            self.player_sprite.update()
+
+            # Update the player shots
+            self.player_shot_list.update()
+
+            # update UFOs
+            self.ufo_list.update()
+
+            # update UFO shot_lists
+            self.ufo_shot_list.update()
 
     def on_key_press(self, key, modifiers):
         """
