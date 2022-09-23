@@ -6,6 +6,7 @@ This program uses the Arcade library found at http://arcade.academy
 Artwork from https://kenney.nl/assets/space-shooter-redux
 
 """
+import time
 
 import arcade
 import math
@@ -23,7 +24,7 @@ PLAYER_START_LIVES = 3
 PLAYER_ROTATE_SPEED = 5
 PLAYER_SPEED_X = 5
 PLAYER_START_X = SCREEN_WIDTH / 2
-PLAYER_START_Y = 50
+PLAYER_START_Y = SCREEN_HEIGHT / 2
 PLAYER_SPEED = 3
 PLAYER_SHOT_SPEED = 4
 PLAYER_THRUST = 0.5
@@ -84,6 +85,18 @@ class Player(arcade.Sprite):
         self.center_x = center_x
         self.center_y = center_y
         self.is_imortal = is_imortal
+        self.die_cooldown = 30
+        self.alpha = 255
+        self.respawning = False
+
+    def reset(self):
+        """
+        What happens to the player when it loses a life.
+        """
+        # It 100% transparent
+        self.respawning = True
+        self.alpha = 0
+        self.die_cooldown = 90
 
     def update(self):
         """
@@ -91,7 +104,14 @@ class Player(arcade.Sprite):
         """
         self.center_x += self.change_x
         self.center_y += self.change_y
-
+        if self.respawning:
+            self.die_cooldown -= 1
+            if self.die_cooldown < 1:
+                self.center_x = PLAYER_START_X
+                self.center_y = PLAYER_START_Y
+                # 100% visible again
+                self.alpha = 255
+                self.respawning = False
         # wrap
         wrap(self)
 
@@ -289,6 +309,7 @@ class MyGame(arcade.Window):
         self.player_speed = 0
         self.opposite_angle = 0
         self.max_speed = PLAYER_SPEED
+        self.reset_cooldown = 5.0
 
         # set up ufo info
         self.ufo_list = None
@@ -438,14 +459,16 @@ class MyGame(arcade.Window):
             if self.player_sprite.is_imortal > 1:
                 pass
             else:
-                self.setup()
-                if self.player_lives_lose < 2:
-                    self.player_lives_lose += 1
+                if not self.player_sprite.lives == 0:
+                    self.player_lives_lose = 1
                     self.player_sprite.lives -= self.player_lives_lose
+                    self.player_sprite.is_imortal = 5
                 else:
                     # GameOver
                     print("Game Over")
                     arcade.close_window()
+                Player.reset(self.player_sprite)
+
         # Update player sprite
         self.player_sprite.update()
 
