@@ -49,6 +49,13 @@ UFO_FIRE_RATE = 1.5
 UFO_SIZE_SMALL = 0.9
 UFO_SIZE_BIG = 1.5
 
+# intro screen constants
+PLAY_BUTTON_X = SCREEN_WIDTH // 2
+PLAY_BUTTON_Y = SCREEN_HEIGHT // 2
+
+TITLE_X = SCREEN_WIDTH // 2
+TITLE_Y = SCREEN_HEIGHT * 0.75
+
 
 def wrap(sprite: arcade.Sprite):
     """
@@ -290,6 +297,19 @@ class BonusUFO(arcade.Sprite):
         self.kill()
 
 
+class PlayButton(arcade.Sprite):
+    """
+    UI. Clicked to start the game
+    """
+
+    def __init__(self, **kwargs):
+
+        kwargs['filename'] = "images/UI/asteroidsStartButton.png"
+        kwargs['scale'] = SPRITE_SCALING
+
+        super().__init__(**kwargs)
+
+
 class GameState(Enum):
     """
     the state of the game: INTRO, IN_GAME or GAME_OVER
@@ -333,6 +353,10 @@ class MyGame(arcade.Window):
         # set up ufo info
         self.ufo_list = None
         self.ufo_shot_list = None
+
+        # UI
+        self.play_button = None
+        self.title_graphics = None
 
         # Track the current state of what key is pressed
         self.space_pressed = False
@@ -408,10 +432,19 @@ class MyGame(arcade.Window):
         # setup spawn_ufo to run regularly
         arcade.schedule(self.spawn_ufo, UFO_SPAWN_RATE)
 
+        # create UI objs
+        self.title_graphics = arcade.load_texture("images/UI/asteroidsTitle.png")
+        self.play_button = PlayButton(
+            center_x=PLAY_BUTTON_X,
+            center_y=PLAY_BUTTON_Y
+        )
+
     def on_draw(self):
         """
         Render the screen.
         """
+
+        # always
 
         # This command has to happen before we start drawing
         arcade.start_render()
@@ -419,7 +452,18 @@ class MyGame(arcade.Window):
         # Draw asteroids
         self.asteroid_list.draw()
 
-        if self.game_state == GameState.IN_GAME:
+        # only in intro
+        if self.game_state == GameState.INTRO:
+
+            self.title_graphics.draw_scaled(
+                center_x=TITLE_X,
+                center_y=TITLE_Y
+            )
+
+            self.play_button.draw()
+
+        # only in-game
+        elif self.game_state == GameState.IN_GAME:
 
             # Draw the player shot
             self.player_shot_list.draw()
