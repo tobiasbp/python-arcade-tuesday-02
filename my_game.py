@@ -465,7 +465,6 @@ class MyGame(arcade.Window):
                     self.player_sprite.is_imortal = 5
                 else:
                     # GameOver
-                    print("Game Over")
                     arcade.close_window()
                 Player.reset(self.player_sprite)
 
