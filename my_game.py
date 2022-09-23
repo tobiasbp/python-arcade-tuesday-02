@@ -297,19 +297,6 @@ class BonusUFO(arcade.Sprite):
         self.kill()
 
 
-class PlayButton(arcade.Sprite):
-    """
-    UI. Clicked to start the game
-    """
-
-    def __init__(self, **kwargs):
-
-        kwargs['filename'] = "images/UI/asteroidsStartButton.png"
-        kwargs['scale'] = SPRITE_SCALING
-
-        super().__init__(**kwargs)
-
-
 class GameState(Enum):
     """
     the state of the game: INTRO, IN_GAME or GAME_OVER
@@ -434,10 +421,7 @@ class MyGame(arcade.Window):
 
         # create UI objs
         self.title_graphics = arcade.load_texture("images/UI/asteroidsTitle.png")
-        self.play_button = PlayButton(
-            center_x=PLAY_BUTTON_X,
-            center_y=PLAY_BUTTON_Y
-        )
+        self.play_button = arcade.load_texture("images/UI/asteroidsStartButton.png")
 
     def on_draw(self):
         """
@@ -460,7 +444,11 @@ class MyGame(arcade.Window):
                 center_y=TITLE_Y
             )
 
-            self.play_button.draw()
+            self.play_button.draw_scaled(
+                center_x=PLAY_BUTTON_X,
+                center_y=PLAY_BUTTON_Y,
+                scale=SPRITE_SCALING
+            )
 
         # only in-game
         elif self.game_state == GameState.IN_GAME:
