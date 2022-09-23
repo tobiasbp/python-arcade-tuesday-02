@@ -505,12 +505,13 @@ class MyGame(arcade.Window):
             self.space_pressed = True
 
         if key == FIRE_KEY:
-            new_shot = PlayerShot(
+            if self.player_sprite.is_imortal < 2:
+                new_shot = PlayerShot(
                 self.player_sprite.center_x,
                 self.player_sprite.center_y
-            )
+                )
 
-            self.player_shot_list.append(new_shot)
+                self.player_shot_list.append(new_shot)
 
     def on_key_release(self, key, modifiers):
         """
