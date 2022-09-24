@@ -527,6 +527,16 @@ class MyGame(arcade.Window):
             # update UFO shot_lists
             self.ufo_shot_list.update()
 
+    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
+        """
+        called whenever the mouse is clicked on the screen
+        """
+
+        if self.game_state == GameState.INTRO:
+
+            if arcade.get_distance(x, y, PLAY_BUTTON_X, PLAY_BUTTON_Y) < self.play_button.width // 4:
+                self.game_state = GameState.IN_GAME
+
     def on_key_press(self, key, modifiers):
         """
         Called whenever a key is pressed.
