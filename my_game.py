@@ -447,7 +447,6 @@ class MyGame(arcade.Window):
             self.play_button.draw_scaled(
                 center_x=PLAY_BUTTON_X,
                 center_y=PLAY_BUTTON_Y,
-                scale=SPRITE_SCALING
             )
 
         # only in-game
