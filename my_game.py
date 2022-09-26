@@ -433,9 +433,6 @@ class MyGame(arcade.Window):
         # This command has to happen before we start drawing
         arcade.start_render()
 
-        # Draw asteroids
-        self.asteroid_list.draw()
-
         # only in intro
         if self.game_state == GameState.INTRO:
 
@@ -457,6 +454,9 @@ class MyGame(arcade.Window):
 
             # Draw the player sprite
             self.player_sprite.draw()
+
+            # Draw asteroids
+            self.asteroid_list.draw()
 
             # draw ufo(s)
             self.ufo_list.draw()
@@ -482,9 +482,6 @@ class MyGame(arcade.Window):
         """
         Movement and game logic
         """
-
-        # Update Asteroids
-        self.asteroid_list.update()
 
         if self.game_state == GameState.IN_GAME:
             # Calculate player speed based on the keys pressed
@@ -519,6 +516,9 @@ class MyGame(arcade.Window):
 
             # Update the player shots
             self.player_shot_list.update()
+
+            # Update Asteroids
+            self.asteroid_list.update()
 
             # update UFOs
             self.ufo_list.update()
