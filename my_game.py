@@ -517,6 +517,10 @@ class MyGame(arcade.Window):
                     s.kill()
                     a.kill()
 
+            # check if the player is dead
+            if self.player_sprite.lives <= 0:
+                self.game_state = GameState.GAME_OVER
+
             # check for thrust
             if self.thrust_pressed:
                 self.player_sprite.thrust()
