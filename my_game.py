@@ -510,6 +510,12 @@ class MyGame(arcade.Window):
                     shot.kill()
                     ufo_hit.destroy()
                     self.player_score += UFO_POINTS_REWARD
+                
+            # Check for PlayerShot - Asteroid collisions
+            for s in self.player_shot_list:
+                for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
+                    s.kill()
+                    a.kill()
 
             # check for thrust
             if self.thrust_pressed:
