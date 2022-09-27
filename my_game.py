@@ -10,7 +10,7 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 import arcade
 import math
 import random
-from enum import Enum
+from enum import Enum, auto
 
 
 SPRITE_SCALING = 0.5
@@ -302,9 +302,9 @@ class GameState(Enum):
     the state of the game: INTRO, IN_GAME or GAME_OVER
     """
 
-    INTRO = 0
-    IN_GAME = 1
-    GAME_OVER = 2
+    INTRO = auto()
+    IN_GAME = auto()
+    GAME_OVER = auto()
 
 
 class MyGame(arcade.Window):
