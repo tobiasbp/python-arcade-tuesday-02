@@ -531,6 +531,10 @@ class MyGame(arcade.Window):
                     a.kill()
                     self.player_score += ASTEROID_POINT_VALUE
 
+            # check if the player is dead
+            if self.player_sprite.lives <= 0:
+                self.game_state = GameState.GAME_OVER
+
             # check for thrust
             if self.thrust_pressed:
                 self.player_sprite.thrust()
