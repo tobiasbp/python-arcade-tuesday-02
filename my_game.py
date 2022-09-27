@@ -29,7 +29,7 @@ PLAYER_SPEED = 3
 PLAYER_SHOT_SPEED = 4
 PLAYER_THRUST = 0.5
 PLAYER_SHOT_RANGE = SCREEN_WIDTH // 2
-INVINCIBILITY_SECONDS = 5
+PLAYER_INVINCIBILITY_SECONDS = 5
 
 FIRE_KEY = arcade.key.SPACE
 
@@ -85,7 +85,7 @@ class Player(arcade.Sprite):
         self.center_x = center_x
         self.center_y = center_y
         self.is_imortal = is_imortal
-        self.die_cooldown = 30
+        self.die_cooldown = 2.5
         self.alpha = 255
         self.respawning = False
 
@@ -96,22 +96,24 @@ class Player(arcade.Sprite):
         # It 100% transparent
         self.respawning = True
         self.alpha = 0
-        self.die_cooldown = 90
+        self.die_cooldown = 2
 
-    def update(self):
+    def update(self, delta_time):
         """
         Move the sprite and wrap
         """
         self.center_x += self.change_x
         self.center_y += self.change_y
         if self.respawning:
-            self.die_cooldown -= 1
-            if self.die_cooldown < 1:
+            self.die_cooldown -= delta_time
+            if self.die_cooldown < 0:
                 self.center_x = PLAYER_START_X
                 self.center_y = PLAYER_START_Y
                 # 100% visible again
                 self.alpha = 255
                 self.respawning = False
+        if self.is_imortal > 0:
+            self.is_imortal -= delta_time
         # wrap
         wrap(self)
 
@@ -305,7 +307,6 @@ class MyGame(arcade.Window):
         # Set up the player info
         self.player_sprite = None
         self.player_score = None
-        self.player_lives_lose = 0
         self.player_speed = 0
         self.opposite_angle = 0
         self.max_speed = PLAYER_SPEED
@@ -377,7 +378,7 @@ class MyGame(arcade.Window):
             center_y=PLAYER_START_Y,
             scale=SPRITE_SCALING,
             lives=PLAYER_START_LIVES,
-            is_imortal=INVINCIBILITY_SECONDS
+            is_imortal=PLAYER_INVINCIBILITY_SECONDS
         )
 
         # Spawn Asteroids
@@ -438,9 +439,6 @@ class MyGame(arcade.Window):
         elif self.right_pressed and not self.left_pressed:
             self.player_sprite.angle += -PLAYER_ROTATE_SPEED
 
-        if self.player_sprite.is_imortal > 0:
-            self.player_sprite.is_imortal -= delta_time
-
         # rotate player with joystick if present
         if self.joystick:
             self.player_sprite.angle += round(self.joystick.x) * -PLAYER_ROTATE_SPEED
@@ -460,8 +458,7 @@ class MyGame(arcade.Window):
                 pass
             else:
                 if not self.player_sprite.lives == 0:
-                    self.player_lives_lose = 1
-                    self.player_sprite.lives -= self.player_lives_lose
+                    self.player_sprite.lives -= 1
                     self.player_sprite.is_imortal = 5
                 else:
                     # GameOver
@@ -469,7 +466,7 @@ class MyGame(arcade.Window):
                 Player.reset(self.player_sprite)
 
         # Update player sprite
-        self.player_sprite.update()
+        self.player_sprite.update(delta_time)
 
         # Update the player shots
         self.player_shot_list.update()
@@ -507,8 +504,8 @@ class MyGame(arcade.Window):
         if key == FIRE_KEY:
             if self.player_sprite.is_imortal < 2:
                 new_shot = PlayerShot(
-                self.player_sprite.center_x,
-                self.player_sprite.center_y
+                    self.player_sprite.center_x,
+                    self.player_sprite.center_y
                 )
 
                 self.player_shot_list.append(new_shot)
