@@ -478,6 +478,10 @@ class MyGame(arcade.Window):
                 arcade.color.WHITE  # Color of text
             )
 
+        # only post-game
+        elif self.game_state == GameState.GAME_OVER:
+            pass
+
     def on_update(self, delta_time):
         """
         Movement and game logic
