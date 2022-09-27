@@ -482,7 +482,7 @@ class InGameView(arcade.View):
         if any(self.player_sprite.collides_with_list(self.ufo_shot_list)):
             self.player_sprite.lives -= 1
 
-        #player shot
+        # player shot
         for shot in self.player_shot_list:
 
             for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
