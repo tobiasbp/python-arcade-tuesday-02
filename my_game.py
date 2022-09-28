@@ -69,7 +69,7 @@ class Player(arcade.Sprite):
     The player
     """
 
-    def __init__(self, center_x, center_y, scale, lives, is_imortal):
+    def __init__(self, center_x, center_y, scale, lives):
         """
         Setup new Player object
         """
@@ -84,19 +84,20 @@ class Player(arcade.Sprite):
         self.change_y = self.speed * math.cos(self.angle)
         self.center_x = center_x
         self.center_y = center_y
-        self.is_imortal = is_imortal
-        self.die_cooldown = 2.5
         self.alpha = 255
-        self.respawning = False
+        self.respawn_timer = PLAYER_INVINCIBILITY_SECONDS
 
     def reset(self):
         """
         What happens to the player when it loses a life.
         """
         # It 100% transparent
-        self.respawning = True
+        self.respawn_timer = PLAYER_INVINCIBILITY_SECONDS
         self.alpha = 0
-        self.die_cooldown = 2
+
+    @property
+    def is_respawning(self):
+        return self.respawn_timer > 0
 
     def update(self, delta_time):
         """
@@ -104,16 +105,16 @@ class Player(arcade.Sprite):
         """
         self.center_x += self.change_x
         self.center_y += self.change_y
-        if self.respawning:
-            self.die_cooldown -= delta_time
-            if self.die_cooldown < 0:
+        if self.respawn_timer > 0:
+            self.respawn_timer -= delta_time
+            if self.respawn_timer < 1:
                 self.center_x = PLAYER_START_X
                 self.center_y = PLAYER_START_Y
                 # 100% visible again
                 self.alpha = 255
-                self.respawning = False
-        if self.is_imortal > 0:
-            self.is_imortal -= delta_time
+                self.respawning = 0
+
+
         # wrap
         wrap(self)
 
@@ -310,7 +311,6 @@ class MyGame(arcade.Window):
         self.player_speed = 0
         self.opposite_angle = 0
         self.max_speed = PLAYER_SPEED
-        self.reset_cooldown = 5.0
 
         # set up ufo info
         self.ufo_list = None
@@ -378,7 +378,6 @@ class MyGame(arcade.Window):
             center_y=PLAYER_START_Y,
             scale=SPRITE_SCALING,
             lives=PLAYER_START_LIVES,
-            is_imortal=PLAYER_INVINCIBILITY_SECONDS
         )
 
         # Spawn Asteroids
@@ -453,16 +452,15 @@ class MyGame(arcade.Window):
                 self.player_score += UFO_POINTS_REWARD
 
         # Checks if the Player touching any astroid
-        if any(self.player_sprite.collides_with_list(self.asteroid_list)):
-            if self.player_sprite.is_imortal > 1:
-                pass
-            else:
-                if not self.player_sprite.lives == 0:
+        if not self.player_sprite.is_respawning:
+            if any(self.player_sprite.collides_with_list(self.asteroid_list)):
+                if not self.player_sprite.lives == 1:
                     self.player_sprite.lives -= 1
-                    self.player_sprite.is_imortal = 5
+                    self.player_sprite.respawning = 5
+
                 else:
                     # GameOver
-                    arcade.close_window()
+                    pass
                 Player.reset(self.player_sprite)
 
         # Update player sprite
@@ -502,7 +500,7 @@ class MyGame(arcade.Window):
             self.space_pressed = True
 
         if key == FIRE_KEY:
-            if self.player_sprite.is_imortal < 2:
+            if self.player_sprite.respawning < 2:
                 new_shot = PlayerShot(
                     self.player_sprite.center_x,
                     self.player_sprite.center_y
