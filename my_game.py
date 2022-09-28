@@ -27,10 +27,9 @@ PLAYER_GRAPHICS_CORRECTION = math.pi / 2  # the player graphic is turned 45 degr
 PLAYER_START_X = SCREEN_WIDTH // 2
 PLAYER_START_Y = 50
 PLAYER_LIVES = 3
-PLAYER_SPEED = 0
 PLAYER_SHOT_SPEED = 4
 PLAYER_SHOT_RANGE = SCREEN_WIDTH // 2
-PLAYER_SPEED_LIMIT = 0.5
+PLAYER_SPEED_LIMIT = 5
 
 PLAYER_THRUST_KEY = arcade.key.UP
 PLAYER_FIRE_KEY = arcade.key.SPACE
@@ -105,19 +104,26 @@ class Player(arcade.Sprite):
         """
         increase speed in the direction pointing
         """
-        # If Player Speed is lower than the maximum it can increase
-        if PLAYER_SPEED < PLAYER_SPEED_LIMIT:
-            self.change_x += math.cos(self.radians + PLAYER_GRAPHICS_CORRECTION) * PLAYER_THRUST
-            self.change_y += math.sin(self.radians + PLAYER_GRAPHICS_CORRECTION) * PLAYER_THRUST
+
+        self.change_x += math.cos(self.radians + PLAYER_GRAPHICS_CORRECTION) * PLAYER_THRUST
+        self.change_y += math.sin(self.radians + PLAYER_GRAPHICS_CORRECTION) * PLAYER_THRUST
+
+        # Keep track of Player Speed
+        player_speed_vector_length = math.sqrt(self.change_x * self.change_x + self.change_y * self.change_y)
+        print("Player Speed: " + str(player_speed_vector_length))
+
+        # Calculating the multiplication value while keeping the x - y Ratio
+        player_x_and_y_speed_ratio = PLAYER_SPEED_LIMIT/player_speed_vector_length
+
+        # If player is too fast slow it down
+        if player_speed_vector_length > PLAYER_SPEED_LIMIT:
+            self.change_x *= player_x_and_y_speed_ratio
+            self.change_y *= player_x_and_y_speed_ratio
 
     def update(self):
         """
         Move the sprite and wrap
         """
-
-        # Keep track of Player Speed
-        PLAYER_SPEED = math.sqrt(self.change_x * self.change_x + self.change_y * self.change_y)
-        print("Player Speed: " + str(PLAYER_SPEED))
 
         self.center_x += self.change_x
         self.center_y += self.change_y
