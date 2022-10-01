@@ -307,18 +307,18 @@ class GameState(Enum):
     GAME_OVER = auto()
 
 
-class MyGame(arcade.Window):
+class InGameView(arcade.View):
     """
     Main application class.
     """
 
-    def __init__(self, width, height):
+    def __init__(self):
         """
         Initializer
         """
 
         # Call the parent class initializer
-        super().__init__(width, height)
+        super().__init__()
 
         # game state variable.
         self.game_state = None
@@ -389,7 +389,7 @@ class MyGame(arcade.Window):
         new_ufo_obj.__int__(self.ufo_shot_list)  # it needs the list so it can send shots to MyGame
         self.ufo_list.append(new_ufo_obj)
 
-    def setup(self):
+    def on_show_view(self):
         """ Set up the game and initialize the variables. """
 
         self.game_state = GameState.INTRO
@@ -618,8 +618,9 @@ def main():
     Main method
     """
 
-    window = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT)
-    window.setup()
+    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT)
+    in_game_view = InGameView()
+    window.show_view(in_game_view)
     arcade.run()
 
 
