@@ -25,7 +25,6 @@ PLAYER_THRUST = 0.05  # speed gained from thrusting
 PLAYER_GRAPHICS_CORRECTION = math.pi / 2  # the player graphic is turned 45 degrees too much compared to actual angle
 PLAYER_START_X = SCREEN_WIDTH // 2
 PLAYER_START_Y = 50
-PLAYER_LIVES = 3
 PLAYER_SPEED = 3
 PLAYER_SHOT_SPEED = 4
 PLAYER_SHOT_RANGE = SCREEN_WIDTH // 2
@@ -297,7 +296,6 @@ class IntroView(arcade.View):
 
         arcade.set_background_color(arcade.color.AMAZON)
 
-
     def on_draw(self):
         """
         draw everything on the screen
@@ -337,11 +335,6 @@ class InGameView(arcade.View):
 
         # Call the parent class initializer
         super().__init__()
-
-
-        # game state variable.
-        self.game_state = None
-
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = None
@@ -488,7 +481,7 @@ class InGameView(arcade.View):
         if any(self.player_sprite.collides_with_list(self.ufo_shot_list)):
             self.player_sprite.lives -= 1
 
-        # player shot
+        #player shot
         for shot in self.player_shot_list:
 
             for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
