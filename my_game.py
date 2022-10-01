@@ -109,10 +109,9 @@ class Player(arcade.Sprite):
         self.change_y += math.sin(self.radians + PLAYER_GRAPHICS_CORRECTION) * PLAYER_THRUST
 
         # Keep track of Player Speed
-        player_speed_vector_length = math.sqrt(self.change_x * self.change_x + self.change_y * self.change_y)
-        print("Player Speed: " + str(player_speed_vector_length))
+        player_speed_vector_length = math.sqrt(self.change_x**2 + self.change_y**2)
 
-        # Calculating the multiplication value while keeping the x - y Ratio
+        # Calculating the value used to lower the players speed while keeping the x - y ratio
         player_x_and_y_speed_ratio = PLAYER_SPEED_LIMIT/player_speed_vector_length
 
         # If player is too fast slow it down
