@@ -297,6 +297,7 @@ class IntroView(arcade.View):
 
         arcade.set_background_color(arcade.color.AMAZON)
 
+
     def on_draw(self):
         """
         draw everything on the screen
@@ -336,6 +337,11 @@ class InGameView(arcade.View):
 
         # Call the parent class initializer
         super().__init__()
+
+
+        # game state variable.
+        self.game_state = None
+
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = None
