@@ -10,8 +10,6 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 import arcade
 import math
 import random
-from enum import Enum, auto
-
 
 SPRITE_SCALING = 0.5
 
@@ -28,9 +26,9 @@ PLAYER_GRAPHICS_CORRECTION = math.pi / 2  # the player graphic is turned 45 degr
 PLAYER_START_X = SCREEN_WIDTH // 2
 PLAYER_START_Y = 50
 PLAYER_LIVES = 3
+PLAYER_SPEED = 3
 PLAYER_SHOT_SPEED = 4
 PLAYER_SHOT_RANGE = SCREEN_WIDTH // 2
-PLAYER_SPEED_LIMIT = 5
 
 PLAYER_THRUST_KEY = arcade.key.UP
 PLAYER_FIRE_KEY = arcade.key.SPACE
@@ -38,7 +36,6 @@ PLAYER_FIRE_KEY = arcade.key.SPACE
 # Asteroids variables
 ASTEROIDS_PR_LEVEL = 5
 ASTEROIDS_SPEED = 1.
-ASTEROID_POINT_VALUE = 50
 
 # UFO constants
 UFO_SPEED = 2  # both for x and y note: has to be int
@@ -117,17 +114,6 @@ class Player(arcade.Sprite):
         self.change_x += math.cos(self.radians + PLAYER_GRAPHICS_CORRECTION) * PLAYER_THRUST
         self.change_y += math.sin(self.radians + PLAYER_GRAPHICS_CORRECTION) * PLAYER_THRUST
 
-        # Keep track of Player Speed
-        player_speed_vector_length = math.sqrt(self.change_x**2 + self.change_y**2)
-
-        # Calculating the value used to lower the players speed while keeping the x - y ratio
-        player_x_and_y_speed_ratio = PLAYER_SPEED_LIMIT/player_speed_vector_length
-
-        # If player is too fast slow it down
-        if player_speed_vector_length > PLAYER_SPEED_LIMIT:
-            self.change_x *= player_x_and_y_speed_ratio
-            self.change_y *= player_x_and_y_speed_ratio
-
     def update(self):
         """
         Move the sprite and wrap
@@ -173,7 +159,7 @@ class PlayerShot(arcade.Sprite):
     A shot fired by the Player
     """
 
-    def __init__(self, center_x=0, center_y=0, angle=0):
+    def __init__(self, center_x=0, center_y=0):
         """
         Setup new PlayerShot object
         """
@@ -183,9 +169,7 @@ class PlayerShot(arcade.Sprite):
 
         self.center_x = center_x
         self.center_y = center_y
-        self.angle = angle
-        self.change_x = math.cos(self.radians + math.pi / 2) * PLAYER_SHOT_SPEED
-        self.change_y = math.sin(self.radians + math.pi / 2) * PLAYER_SHOT_SPEED
+        self.change_y = PLAYER_SHOT_SPEED
         self.distance_traveled = 0
         self.speed = PLAYER_SHOT_SPEED
 
@@ -311,15 +295,46 @@ class BonusUFO(arcade.Sprite):
         self.kill()
 
 
-class GameState(Enum):
+class IntroView(arcade.View):
     """
-    the state of the game: INTRO, IN_GAME or GAME_OVER
+    View for the intro screen.
     """
 
-    INTRO = auto()
-    IN_GAME = auto()
-    GAME_OVER = auto()
+    def __init__(self):
 
+        super().__init__()
+
+        self.play_button = None
+        self.title_graphics = None
+
+    def on_show_view(self):
+
+        self.title_graphics = arcade.load_texture("images/UI/asteroidsTitle.png")
+        self.play_button = arcade.load_texture("images/UI/asteroidsStartButton.png")
+
+    def on_draw(self):
+        """
+        draw everything on the screen
+        """
+
+        self.title_graphics.draw_scaled(
+            center_x=TITLE_X,
+            center_y=TITLE_Y
+        )
+
+        self.play_button.draw_scaled(
+            center_x=PLAY_BUTTON_X,
+            center_y=PLAY_BUTTON_Y,
+        )
+
+    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
+        """
+        called whenever the mouse is clicked on the screen
+        """
+
+        if arcade.get_distance(x, y, PLAY_BUTTON_X, PLAY_BUTTON_Y) < self.play_button.width // 4:
+            in_game_view = InGameView()
+            self.window.show_view(in_game_view)
 
 class InGameView(arcade.View):
     """
@@ -334,9 +349,6 @@ class InGameView(arcade.View):
         # Call the parent class initializer
         super().__init__()
 
-        # game state variable.
-        self.game_state = None
-
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = None
 
@@ -349,14 +361,11 @@ class InGameView(arcade.View):
         self.player_lives = None
         self.player_speed = 0
         self.opposite_angle = 0
+        self.max_speed = PLAYER_SPEED
 
         # set up ufo info
         self.ufo_list = None
         self.ufo_shot_list = None
-
-        # UI
-        self.play_button = None
-        self.title_graphics = None
 
         # Track the current state of what key is pressed
         self.space_pressed = False
@@ -405,8 +414,6 @@ class InGameView(arcade.View):
     def on_show_view(self):
         """ Set up the game and initialize the variables. """
 
-        self.game_state = GameState.INTRO
-
         # No points when the game starts
         self.player_score = 0
 
@@ -432,137 +439,99 @@ class InGameView(arcade.View):
         # setup spawn_ufo to run regularly
         arcade.schedule(self.spawn_ufo, UFO_SPAWN_RATE)
 
-        # create UI objs
-        self.title_graphics = arcade.load_texture("images/UI/asteroidsTitle.png")
-        self.play_button = arcade.load_texture("images/UI/asteroidsStartButton.png")
-
     def on_draw(self):
         """
         Render the screen.
         """
 
-        # always
-
         # This command has to happen before we start drawing
         arcade.start_render()
 
-        # only in intro
-        if self.game_state == GameState.INTRO:
+        # Draw the player shot
+        self.player_shot_list.draw()
 
-            self.title_graphics.draw_scaled(
-                center_x=TITLE_X,
-                center_y=TITLE_Y
-            )
+        # Draw the player sprite
+        self.player_sprite.draw()
 
-            self.play_button.draw_scaled(
-                center_x=PLAY_BUTTON_X,
-                center_y=PLAY_BUTTON_Y,
-            )
+        # Draw asteroids
+        self.asteroid_list.draw()
 
-        # only in-game
-        elif self.game_state == GameState.IN_GAME:
+        # draw ufo(s)
+        self.ufo_list.draw()
 
-            # Draw the player shot
-            self.player_shot_list.draw()
+        # and their shots
+        self.ufo_shot_list.draw()
 
-            # Draw the player sprite
-            self.player_sprite.draw()
-
-            # Draw asteroids
-            self.asteroid_list.draw()
-
-            # draw ufo(s)
-            self.ufo_list.draw()
-
-            # and their shots
-            self.ufo_shot_list.draw()
-
-            # Draw players score on screen
-            arcade.draw_text(
-                "SCORE: {}".format(self.player_score),  # Text to show
-                10,  # X position
-                SCREEN_HEIGHT - 20,  # Y_position
-                arcade.color.WHITE  # Color of text
-            )
-            arcade.draw_text(
-                "LIVES: {}".format(self.player_sprite.lives),  # Text to show
-                10,  # X position
-                SCREEN_HEIGHT - 45, # Y positon
-                arcade.color.WHITE  # Color of text
-            )
-
-        # only post-game
-        elif self.game_state == GameState.GAME_OVER:
-            pass
+        # Draw players score on screen
+        arcade.draw_text(
+            "SCORE: {}".format(self.player_score),  # Text to show
+            10,  # X position
+            SCREEN_HEIGHT - 20,  # Y_position
+            arcade.color.WHITE  # Color of text
+        )
+        arcade.draw_text(
+            "LIVES: {}".format(self.player_sprite.lives),  # Text to show
+            10,  # X position
+            SCREEN_HEIGHT - 45, # Y positon
+            arcade.color.WHITE  # Color of text
+        )
 
     def on_update(self, delta_time):
         """
         Movement and game logic
         """
 
-        if self.game_state == GameState.IN_GAME:
-            # Calculate player speed based on the keys pressed
-            # Move player with keyboard
-            if self.left_pressed and not self.right_pressed:
-                self.player_sprite.angle+= PLAYER_ROTATE_SPEED
-            elif self.right_pressed and not self.left_pressed:
-                self.player_sprite.angle+= -PLAYER_ROTATE_SPEED
+        # Calculate player speed based on the keys pressed
+        # Move player with keyboard
+        if self.left_pressed and not self.right_pressed:
+            self.player_sprite.angle+= PLAYER_ROTATE_SPEED
+        elif self.right_pressed and not self.left_pressed:
+            self.player_sprite.angle+= -PLAYER_ROTATE_SPEED
 
-            # rotate player with joystick if present
-            if self.joystick:
-                self.player_sprite.angle += round(self.joystick.x) * -PLAYER_ROTATE_SPEED
+        # rotate player with joystick if present
+        if self.joystick:
+            self.player_sprite.angle += round(self.joystick.x) * -PLAYER_ROTATE_SPEED
 
-            # checks if ufo shot collides with player
-            if any(self.player_sprite.collides_with_list(self.ufo_shot_list)):
-                self.player_sprite.lives -= 1
+        # checks if ufo shot collides with player
+        if any(self.player_sprite.collides_with_list(self.ufo_shot_list)):
+            self.player_sprite.lives -= 1
 
-            #player shot
-            for shot in self.player_shot_list:
+        #player shot
+        for shot in self.player_shot_list:
 
-                for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
-                    shot.kill()
-                    ufo_hit.destroy()
-                    self.player_score += UFO_POINTS_REWARD
-                
-            # Check for PlayerShot - Asteroid collisions
-            for s in self.player_shot_list:
-                for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
-                    s.kill()
-                    a.kill()
-                    self.player_score += ASTEROID_POINT_VALUE
+            for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
+                shot.kill()
+                ufo_hit.destroy()
+                self.player_score += UFO_POINTS_REWARD
 
-            # check if the player is dead
-            if self.player_sprite.lives <= 0:
-                self.game_state = GameState.GAME_OVER
+        # Check for PlayerShot - Asteroid collisions
+        for s in self.player_shot_list:
+            for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
+                s.kill()
+                a.kill()
 
-            # check for thrust
-            if self.thrust_pressed:
-                self.player_sprite.thrust()
+        # check if the player is dead
+        if self.player_sprite.lives <= 0:
+            pass
 
-            # Update player sprite
-            self.player_sprite.update()
+        # check for thrust
+        if self.thrust_pressed:
+            self.player_sprite.thrust()
 
-            # Update the player shots
-            self.player_shot_list.update()
+        # Update player sprite
+        self.player_sprite.update()
 
-            # Update Asteroids
-            self.asteroid_list.update()
+        # Update the player shots
+        self.player_shot_list.update()
 
-            # update UFOs
-            self.ufo_list.update()
+        # Update Asteroids
+        self.asteroid_list.update()
 
-            # update UFO shot_lists
-            self.ufo_shot_list.update()
+        # update UFOs
+        self.ufo_list.update()
 
-    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
-        """
-        called whenever the mouse is clicked on the screen
-        """
-
-        if self.game_state == GameState.INTRO:
-
-            if arcade.get_distance(x, y, PLAY_BUTTON_X, PLAY_BUTTON_Y) < self.play_button.width // 4:
-                self.game_state = GameState.IN_GAME
+        # update UFO shot_lists
+        self.ufo_shot_list.update()
 
     def on_key_press(self, key, modifiers):
         """
@@ -586,8 +555,7 @@ class InGameView(arcade.View):
         if key == PLAYER_FIRE_KEY:
             new_shot = PlayerShot(
                 self.player_sprite.center_x,
-                self.player_sprite.center_y,
-                self.player_sprite.angle
+                self.player_sprite.center_y
             )
 
             self.player_shot_list.append(new_shot)
@@ -634,8 +602,8 @@ def main():
     """
 
     window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT)
-    in_game_view = InGameView()
-    window.show_view(in_game_view)
+    intro_view = IntroView()
+    window.show_view(intro_view)
     arcade.run()
 
 
