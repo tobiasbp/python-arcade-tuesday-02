@@ -324,7 +324,7 @@ class IntroView(arcade.View):
         called whenever the mouse is clicked on the screen
         """
 
-        if arcade.get_distance(x, y, PLAY_BUTTON_X, PLAY_BUTTON_Y) < self.play_button.width // 4:
+        if arcade.get_distance(x, y, PLAY_BUTTON_X, PLAY_BUTTON_Y) < self.play_button.width // 2:
             in_game_view = InGameView()
             self.window.show_view(in_game_view)
 
