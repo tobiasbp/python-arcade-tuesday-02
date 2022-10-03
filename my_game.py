@@ -51,8 +51,13 @@ UFO_SIZE_BIG = 1.5
 PLAY_BUTTON_X = SCREEN_WIDTH // 2
 PLAY_BUTTON_Y = SCREEN_HEIGHT // 2
 
+# titles (intro sign and game over sign)
 TITLE_X = SCREEN_WIDTH // 2
 TITLE_Y = SCREEN_HEIGHT * 0.75
+
+# game over screen constants
+RESTART_BUTTON_X = PLAY_BUTTON_X
+RESTART_BUTTON_Y = PLAY_BUTTON_Y
 
 
 def wrap(sprite: arcade.Sprite):
@@ -323,6 +328,7 @@ class IntroView(arcade.View):
             in_game_view = InGameView()
             self.window.show_view(in_game_view)
 
+
 class InGameView(arcade.View):
     """
     Main application class.
@@ -497,7 +503,8 @@ class InGameView(arcade.View):
 
         # check if the player is dead
         if self.player_sprite.lives <= 0:
-            pass
+            game_over_view = GameOverView()
+            self.window.show_view(game_over_view)
 
         # check for thrust
         if self.thrust_pressed:
@@ -580,6 +587,48 @@ class InGameView(arcade.View):
     def on_joyhat_motion(self, joystick, hat_x, hat_y):
         print("Joystick hat ({}, {})".format(hat_x, hat_y))
 
+
+class GameOverView(arcade.View):
+    """
+    the game over screen
+    """
+
+    def __init__(self):
+        super().__init__()
+
+        self.game_over_sign = None
+        self.restart_button = None
+
+    def on_show_view(self):
+
+        self.game_over_sign = arcade.load_texture("images/UI/asteroidsGameOverSign.png")
+        self.restart_button = arcade.load_texture("images/UI/asteroidsRestartButton.png")
+
+    def on_draw(self):
+        """
+        draw the screen
+        """
+
+        arcade.start_render()
+
+        self.game_over_sign.draw_scaled(
+            center_x=TITLE_X,
+            center_y=TITLE_Y
+        )
+
+        self.restart_button.draw_scaled(
+            center_x=RESTART_BUTTON_X,
+            center_y=RESTART_BUTTON_Y
+        )
+
+    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
+        """
+        called whenever the mouse is clicked on the screen.
+        """
+
+        if arcade.get_distance(x, y, RESTART_BUTTON_X, RESTART_BUTTON_Y) < self.restart_button.height // 2:
+            pass
+            # restart the game
 
 def main():
     """
