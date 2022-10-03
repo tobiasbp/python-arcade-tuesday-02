@@ -71,23 +71,6 @@ def wrap(sprite: arcade.Sprite):
         sprite.center_y -= SCREEN_HEIGHT
 
 
-
-def wrap(sprite: arcade.Sprite):
-    """
-    if sprite is off-screen move it to the other side of the screen
-    """
-
-    if sprite.right < 0:
-        sprite.center_x += SCREEN_WIDTH
-    elif sprite.left > SCREEN_WIDTH:
-        sprite.center_x -= SCREEN_WIDTH
-
-    if sprite.top < 0:
-        sprite.center_y += SCREEN_HEIGHT
-    elif sprite.bottom > SCREEN_HEIGHT:
-        sprite.center_y -= SCREEN_HEIGHT
-
-
 class Player(arcade.Sprite):
     """
     The player
