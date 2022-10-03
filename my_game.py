@@ -627,8 +627,8 @@ class GameOverView(arcade.View):
         """
 
         if arcade.get_distance(x, y, RESTART_BUTTON_X, RESTART_BUTTON_Y) < self.restart_button.height // 2:
-            pass
-            # restart the game
+            in_game_view = InGameView()
+            self.window.show_view(in_game_view)
 
 def main():
     """
