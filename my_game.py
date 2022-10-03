@@ -588,10 +588,13 @@ class GameOverView(arcade.View):
     """
 
     def __init__(self):
+
         super().__init__()
 
         self.game_over_sign = arcade.load_texture("images/UI/asteroidsGameOverSign.png")
         self.restart_button = arcade.load_texture("images/UI/asteroidsRestartButton.png")
+
+        arcade.set_background_color(arcade.color.AMAZON)
 
     def on_draw(self):
         """
