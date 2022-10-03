@@ -290,6 +290,8 @@ class IntroView(arcade.View):
         self.play_button = None
         self.title_graphics = None
 
+        arcade.set_background_color(arcade.color.AMAZON)
+
     def on_show_view(self):
 
         self.title_graphics = arcade.load_texture("images/UI/asteroidsTitle.png")
@@ -299,6 +301,8 @@ class IntroView(arcade.View):
         """
         draw everything on the screen
         """
+
+        arcade.start_render()
 
         self.title_graphics.draw_scaled(
             center_x=TITLE_X,
@@ -381,8 +385,6 @@ class InGameView(arcade.View):
             self.joystick = None
 
             # self.joystick.
-        # Set the background color
-        arcade.set_background_color(arcade.color.AMAZON)
 
     def spawn_ufo(self, delta_time):
         """
