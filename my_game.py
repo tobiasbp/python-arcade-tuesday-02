@@ -158,8 +158,8 @@ class PlayerShot(arcade.Sprite):
         self.center_x = center_x
         self.center_y = center_y
         self.angle = angle
-        self.change_y = math.cos(self.radians) * PLAYER_SHOT_SPEED
-        self.change_x = math.sin(self.radians) * -PLAYER_SHOT_SPEED
+        self.change_x = math.cos(self.radians + math.pi / 2) * PLAYER_SHOT_SPEED
+        self.change_y = math.sin(self.radians + math.pi / 2) * PLAYER_SHOT_SPEED
         self.distance_traveled = 0
         self.speed = PLAYER_SHOT_SPEED
 
