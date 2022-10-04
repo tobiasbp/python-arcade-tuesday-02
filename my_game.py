@@ -152,7 +152,7 @@ class PlayerShot(arcade.Sprite):
     """
     A shot fired by the Player
     """
-
+    sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
     def __init__(self, center_x=0, center_y=0):
         """
         Setup new PlayerShot object
@@ -167,6 +167,7 @@ class PlayerShot(arcade.Sprite):
         self.distance_traveled = 0
         self.speed = PLAYER_SHOT_SPEED
 
+        PlayerShot.sound_fire.play()
     def update(self):
         """
         Move the sprite
@@ -188,8 +189,8 @@ class PlayerShot(arcade.Sprite):
 
 
 class UFOShot(arcade.Sprite):
-    """shot fired by the ufo"""
 
+    """shot fired by the ufo"""
     def __int__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -207,12 +208,13 @@ class UFOShot(arcade.Sprite):
 
 
 class BonusUFO(arcade.Sprite):
+    sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
+    sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
     """occasionally moves across the screen. Grants the player points if shot"""
 
     def __int__(self, shot_list, **kwargs):
 
         kwargs['filename'] = "images/ufoBlue.png"
-
         # UFO's are big or small
         kwargs['scale'] = SPRITE_SCALING * random.choice([UFO_SIZE_SMALL, UFO_SIZE_BIG])
 
@@ -253,7 +255,7 @@ class BonusUFO(arcade.Sprite):
         """
         fire a new shot
         """
-
+        BonusUFO.sound_fire.play()
         new_ufo_shot = UFOShot()  # sprites created with arcade.schedule don't __init__ it has to be manually called
         new_ufo_shot.__init__(
             filename="images/Lasers/laserGreen07.png",
@@ -283,7 +285,6 @@ class BonusUFO(arcade.Sprite):
         """
         kill the sprite and unschedule all functions
         """
-
         arcade.unschedule(self.shoot)
         arcade.unschedule(self.change_dir)
         self.kill()
@@ -302,6 +303,10 @@ class MyGame(arcade.Window):
         # Call the parent class initializer
         super().__init__(width, height)
 
+        #loading sounds
+        self.sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
+        self.sound_thrust = arcade.load_sound("sounds/spaceEngine_003.ogg")
+        self.sound_thrust_player = None
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = None
 
@@ -367,6 +372,7 @@ class MyGame(arcade.Window):
     def setup(self):
         """ Set up the game and initialize the variables. """
 
+        self.sound_thrust_player = None
         # No points when the game starts
         self.player_score = 0
 
@@ -434,6 +440,13 @@ class MyGame(arcade.Window):
         Movement and game logic
         """
 
+        if self.sound_thrust_player is not None and self.thrust_pressed is False and self.sound_thrust.is_playing(self.sound_thrust_player):
+            v = self.sound_thrust.get_volume(self.sound_thrust_player) * 0.95
+            self.sound_thrust.set_volume(v, self.sound_thrust_player)
+            if v == 0:
+                self.sound_thrust.stop(self.sound_thrust_player)
+
+
         # Calculate player speed based on the keys pressed
         # Move player with keyboard
         if self.left_pressed and not self.right_pressed:
@@ -454,6 +467,7 @@ class MyGame(arcade.Window):
 
             for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
                 shot.kill()
+                self.sound_explosion.play()
                 ufo_hit.destroy()
                 self.player_score += UFO_POINTS_REWARD
 
@@ -493,8 +507,12 @@ class MyGame(arcade.Window):
         elif key == arcade.key.SPACE:
             self.space_pressed = True
         if key == PLAYER_THRUST_KEY:
+            #if thrust just got pressed start sound loop
+            if self.thrust_pressed is False:
+                if self.sound_thrust_player is not None:
+                    self.sound_thrust.stop(self.sound_thrust_player)
+                self.sound_thrust_player = self.sound_thrust.play(loop=True)
             self.thrust_pressed = True
-
         if key == PLAYER_FIRE_KEY:
             new_shot = PlayerShot(
                 self.player_sprite.center_x,
@@ -505,6 +523,7 @@ class MyGame(arcade.Window):
 
         if key == PLAYER_THRUST_KEY:
             self.player_sprite.thrust()
+
 
     def on_key_release(self, key, modifiers):
         """
