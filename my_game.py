@@ -292,15 +292,10 @@ class IntroView(arcade.View):
 
         super().__init__()
 
-        self.play_button = None
-        self.title_graphics = None
-
-        arcade.set_background_color(arcade.color.AMAZON)
-
-    def on_show_view(self):
-
         self.title_graphics = arcade.load_texture("images/UI/asteroidsTitle.png")
         self.play_button = arcade.load_texture("images/UI/asteroidsStartButton.png")
+
+        arcade.set_background_color(arcade.color.AMAZON)
 
     def on_draw(self):
         """
