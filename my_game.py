@@ -38,6 +38,7 @@ PLAYER_FIRE_KEY = arcade.key.SPACE
 # Asteroids variables
 ASTEROIDS_PR_LEVEL = 5
 ASTEROIDS_SPEED = 1.
+ASTEROID_POINT_VALUE = 50
 
 # UFO constants
 UFO_SPEED = 2  # both for x and y note: has to be int
@@ -528,6 +529,7 @@ class MyGame(arcade.Window):
                 for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
                     s.kill()
                     a.kill()
+                    self.player_score += ASTEROID_POINT_VALUE
 
             # check for thrust
             if self.thrust_pressed:
