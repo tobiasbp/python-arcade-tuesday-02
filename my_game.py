@@ -172,7 +172,7 @@ class PlayerShot(arcade.Sprite):
     A shot fired by the Player
     """
 
-    def __init__(self, center_x=0, center_y=0):
+    def __init__(self, center_x=0, center_y=0, angle=0):
         """
         Setup new PlayerShot object
         """
@@ -182,7 +182,9 @@ class PlayerShot(arcade.Sprite):
 
         self.center_x = center_x
         self.center_y = center_y
-        self.change_y = PLAYER_SHOT_SPEED
+        self.angle = angle
+        self.change_x = math.cos(self.radians + math.pi / 2) * PLAYER_SHOT_SPEED
+        self.change_y = math.sin(self.radians + math.pi / 2) * PLAYER_SHOT_SPEED
         self.distance_traveled = 0
         self.speed = PLAYER_SHOT_SPEED
 
@@ -578,7 +580,8 @@ class MyGame(arcade.Window):
         if key == PLAYER_FIRE_KEY:
             new_shot = PlayerShot(
                 self.player_sprite.center_x,
-                self.player_sprite.center_y
+                self.player_sprite.center_y,
+                self.player_sprite.angle
             )
 
             self.player_shot_list.append(new_shot)
