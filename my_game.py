@@ -496,11 +496,6 @@ class InGameView(arcade.View):
                 s.kill()
                 a.kill()
 
-        # check if the player is dead
-        if self.player_sprite.lives <= 0:
-            game_over_view = GameOverView()
-            self.window.show_view(game_over_view)
-
         # check for thrust
         if self.thrust_pressed:
             self.player_sprite.thrust()
@@ -519,6 +514,11 @@ class InGameView(arcade.View):
 
         # update UFO shot_lists
         self.ufo_shot_list.update()
+
+        # check if the player is dead
+        if self.player_sprite.lives <= 0:
+            game_over_view = GameOverView()
+            self.window.show_view(game_over_view)
 
     def on_key_press(self, key, modifiers):
         """
