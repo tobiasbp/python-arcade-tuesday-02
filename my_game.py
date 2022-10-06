@@ -513,8 +513,9 @@ class MyGame(arcade.Window):
                 self.player_sprite.angle += round(self.joystick.x) * -PLAYER_ROTATE_SPEED
 
             # checks if ufo shot collides with player
-            if any(self.player_sprite.collides_with_list(self.ufo_shot_list)):
+            for collision in self.player_sprite.collides_with_list(self.ufo_shot_list):
                 self.player_sprite.lives -= 1
+                collision.kill()
 
             #player shot
             for shot in self.player_shot_list:
