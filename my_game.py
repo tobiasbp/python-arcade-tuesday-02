@@ -26,9 +26,9 @@ PLAYER_GRAPHICS_CORRECTION = math.pi / 2  # the player graphic is turned 45 degr
 PLAYER_START_X = SCREEN_WIDTH // 2
 PLAYER_START_Y = 50
 PLAYER_LIVES = 3
+PLAYER_SPEED = 3
 PLAYER_SHOT_SPEED = 4
 PLAYER_SHOT_RANGE = SCREEN_WIDTH // 2
-PLAYER_SPEED_LIMIT = 5
 
 PLAYER_THRUST_KEY = arcade.key.UP
 PLAYER_FIRE_KEY = arcade.key.SPACE
@@ -36,7 +36,6 @@ PLAYER_FIRE_KEY = arcade.key.SPACE
 # Asteroids variables
 ASTEROIDS_PR_LEVEL = 5
 ASTEROIDS_SPEED = 1.
-ASTEROID_POINT_VALUE = 50
 
 # UFO constants
 UFO_SPEED = 2  # both for x and y note: has to be int
@@ -103,17 +102,6 @@ class Player(arcade.Sprite):
         self.change_x += math.cos(self.radians + PLAYER_GRAPHICS_CORRECTION) * PLAYER_THRUST
         self.change_y += math.sin(self.radians + PLAYER_GRAPHICS_CORRECTION) * PLAYER_THRUST
 
-        # Keep track of Player Speed
-        player_speed_vector_length = math.sqrt(self.change_x**2 + self.change_y**2)
-
-        # Calculating the value used to lower the players speed while keeping the x - y ratio
-        player_x_and_y_speed_ratio = PLAYER_SPEED_LIMIT/player_speed_vector_length
-
-        # If player is too fast slow it down
-        if player_speed_vector_length > PLAYER_SPEED_LIMIT:
-            self.change_x *= player_x_and_y_speed_ratio
-            self.change_y *= player_x_and_y_speed_ratio
-
     def update(self):
         """
         Move the sprite and wrap
@@ -159,7 +147,7 @@ class PlayerShot(arcade.Sprite):
     A shot fired by the Player
     """
 
-    def __init__(self, center_x=0, center_y=0, angle=0):
+    def __init__(self, center_x=0, center_y=0):
         """
         Setup new PlayerShot object
         """
@@ -169,9 +157,7 @@ class PlayerShot(arcade.Sprite):
 
         self.center_x = center_x
         self.center_y = center_y
-        self.angle = angle
-        self.change_x = math.cos(self.radians + math.pi / 2) * PLAYER_SHOT_SPEED
-        self.change_y = math.sin(self.radians + math.pi / 2) * PLAYER_SHOT_SPEED
+        self.change_y = PLAYER_SHOT_SPEED
         self.distance_traveled = 0
         self.speed = PLAYER_SHOT_SPEED
 
@@ -363,6 +349,7 @@ class InGameView(arcade.View):
         self.player_lives = None
         self.player_speed = 0
         self.opposite_angle = 0
+        self.max_speed = PLAYER_SPEED
 
         # set up ufo info
         self.ufo_list = None
@@ -512,48 +499,88 @@ class InGameView(arcade.View):
         # check for thrust
         if self.thrust_pressed:
             self.player_sprite.thrust()
-=======
-        if self.game_state == GameState.IN_GAME:
-            # Calculate player speed based on the keys pressed
-            # Move player with keyboard
-            if self.left_pressed and not self.right_pressed:
-                self.player_sprite.angle+= PLAYER_ROTATE_SPEED
-            elif self.right_pressed and not self.left_pressed:
-                self.player_sprite.angle+= -PLAYER_ROTATE_SPEED
 
-            # rotate player with joystick if present
-            if self.joystick:
-                self.player_sprite.angle += round(self.joystick.x) * -PLAYER_ROTATE_SPEED
+        # Update player sprite
+        self.player_sprite.update()
 
-            # checks if ufo shot collides with player
-            if any(self.player_sprite.collides_with_list(self.ufo_shot_list)):
-                self.player_sprite.lives -= 1
+        # Update the player shots
+        self.player_shot_list.update()
 
-            #player shot
-            for shot in self.player_shot_list:
+        # Update Asteroids
+        self.asteroid_list.update()
 
-                for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
-                    shot.kill()
-                    ufo_hit.destroy()
-                    self.player_score += UFO_POINTS_REWARD
-                
-            # Check for PlayerShot - Asteroid collisions
-            for s in self.player_shot_list:
-                for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
-                    s.kill()
-                    a.kill()
-                    self.player_score += ASTEROID_POINT_VALUE
+        # update UFOs
+        self.ufo_list.update()
 
-            # check for thrust
-            if self.thrust_pressed:
-                self.player_sprite.thrust()
+        # update UFO shot_lists
+        self.ufo_shot_list.update()
 
-            # Update player sprite
-            self.player_sprite.update()
+        # check if the player is dead
+        if self.player_sprite.lives <= 0:
+            game_over_view = GameOverView()
+            self.window.show_view(game_over_view)
 
-            # Update the player shots
-            self.player_shot_list.update()
+    def on_key_press(self, key, modifiers):
+        """
+        Called whenever a key is pressed.
+        """
 
+        # Track state of arrow keys
+        if key == arcade.key.UP:
+            self.up_pressed = True
+        elif key == arcade.key.DOWN:
+            self.down_pressed = True
+        elif key == arcade.key.LEFT:
+            self.left_pressed = True
+        elif key == arcade.key.RIGHT:
+            self.right_pressed = True
+        elif key == arcade.key.SPACE:
+            self.space_pressed = True
+        if key == PLAYER_THRUST_KEY:
+            self.thrust_pressed = True
+
+        if key == PLAYER_FIRE_KEY:
+            new_shot = PlayerShot(
+                self.player_sprite.center_x,
+                self.player_sprite.center_y
+            )
+
+            self.player_shot_list.append(new_shot)
+
+        if key == PLAYER_THRUST_KEY:
+            self.player_sprite.thrust()
+
+    def on_key_release(self, key, modifiers):
+        """
+        Called whenever a key is released.
+        """
+
+        if key == arcade.key.UP:
+            self.up_pressed = False
+        elif key == arcade.key.DOWN:
+            self.down_pressed = False
+        elif key == arcade.key.LEFT:
+            self.left_pressed = False
+        elif key == arcade.key.RIGHT:
+            self.right_pressed = False
+        elif key == arcade.key.SPACE:
+            self.space_pressed = False
+        if key == PLAYER_THRUST_KEY:
+            self.thrust_pressed = False
+
+    def on_joybutton_press(self, joystick, button_no):
+        print("Button pressed:", button_no)
+        # Press the fire key
+        self.on_key_press(PLAYER_FIRE_KEY, [])
+
+    def on_joybutton_release(self, joystick, button_no):
+        print("Button released:", button_no)
+
+    def on_joyaxis_motion(self, joystick, axis, value):
+        print("Joystick axis {}, value {}".format(axis, value))
+
+    def on_joyhat_motion(self, joystick, hat_x, hat_y):
+        print("Joystick hat ({}, {})".format(hat_x, hat_y))
 
 
 class GameOverView(arcade.View):
