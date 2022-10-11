@@ -542,11 +542,12 @@ class MyGame(arcade.Window):
             # checks if ufo shot collides with player
             if any(self.player_sprite.collides_with_list(self.ufo_shot_list)):
                 self.player_sprite.lives -= 1
-
-            if any(self.player_sprite.collides_with_list(self.asteroid_list)):
+            # Check if collision with Asteroids and dies and kills the Asteroid
+            for a in self.player_sprite.collides_with_list(self.asteroid_list):
                 if not self.player_sprite.invincible:
                     self.player_sprite.lives -= 1
                     self.player_sprite.reset()
+                    a.kill()
 
             #player shot
             for shot in self.player_shot_list:
@@ -568,7 +569,7 @@ class MyGame(arcade.Window):
                 self.player_sprite.thrust()
 
             # Update player sprite
-            self.player_sprite.on_update(delta_time)
+            self.player_sprite.on_update()
 
             # Update the player shots
             self.player_shot_list.update()
