@@ -21,16 +21,16 @@ SCREEN_HEIGHT = 600
 
 # Variables controlling the player
 
-PLAYER_LIVES = 3
+PLAYER_START_LIVES = 3
 PLAYER_ROTATE_SPEED = 5
 PLAYER_THRUST = 0.05  # speed gained from thrusting
 PLAYER_GRAPHICS_CORRECTION = math.pi / 2  # the player graphic is turned 45 degrees too much compared to actual angle
 PLAYER_START_X = SCREEN_WIDTH // 2
-PLAYER_START_Y = 50
-PLAYER_LIVES = 3
+PLAYER_START_Y = SCREEN_HEIGHT // 2
 PLAYER_SHOT_SPEED = 4
 PLAYER_SHOT_RANGE = SCREEN_WIDTH // 2
 PLAYER_SPEED_LIMIT = 5
+PLAYER_INVINCIBILTY_SECONDS = 5
 
 PLAYER_THRUST_KEY = arcade.key.UP
 PLAYER_FIRE_KEY = arcade.key.SPACE
@@ -103,6 +103,7 @@ class Player(arcade.Sprite):
         # Graphics to use for Player
         super().__init__("images/playerShip1_red.png")
 
+        self.invincibility_timer = 0
         self.angle = 0
         self.lives = lives
         self.scale = scale
@@ -128,13 +129,39 @@ class Player(arcade.Sprite):
             self.change_x *= player_x_and_y_speed_ratio
             self.change_y *= player_x_and_y_speed_ratio
 
-    def update(self):
+    def reset(self):
+        """
+        The code works as when you get hit by the asteroid you will disappear for 2 seconds.
+        After that you are invincible for 3 seconds, and you can get hit again.
+        """
+        self.invincibility_timer = PLAYER_INVINCIBILTY_SECONDS
+        # The Player is Invisible
+        self.alpha = 0
+
+    @property
+    def is_invincible(self):
+        return self.invincibility_timer > 0
+
+    def on_update(self, delta_time: float = 1 / 60):
         """
         Move the sprite and wrap
         """
 
         self.center_x += self.change_x
         self.center_y += self.change_y
+
+        # Time when you can't get hit by an asteroid
+        if self.is_invincible:
+            self.invincibility_timer -= delta_time
+            # Time when you are not visible
+            if self.invincibility_timer < 3:
+                # Visible
+                if self.alpha == 0:
+                    self.alpha = 255
+                    self.center_x = PLAYER_START_X
+                    self.center_y = PLAYER_START_Y
+                    self.change_y = 0
+                    self.change_x = 0
 
         # wrap
         wrap(self)
@@ -421,7 +448,7 @@ class MyGame(arcade.Window):
         self.player_sprite = Player(
             center_x=PLAYER_START_X,
             center_y=PLAYER_START_Y,
-            lives=PLAYER_LIVES,
+            lives=PLAYER_START_LIVES,
             scale=SPRITE_SCALING
         )
         
@@ -516,6 +543,14 @@ class MyGame(arcade.Window):
             if any(self.player_sprite.collides_with_list(self.ufo_shot_list)):
                 self.player_sprite.lives -= 1
 
+            # Check if collision with Asteroids and dies and kills the Asteroid
+            for a in self.player_sprite.collides_with_list(self.asteroid_list):
+                if not self.player_sprite.is_invincible:
+                    # In the future, the Player will explode instead of disappearing.
+                    self.player_sprite.lives -= 1
+                    self.player_sprite.reset()
+                    a.kill()
+
             #player shot
             for shot in self.player_shot_list:
 
@@ -536,7 +571,7 @@ class MyGame(arcade.Window):
                 self.player_sprite.thrust()
 
             # Update player sprite
-            self.player_sprite.update()
+            self.player_sprite.on_update()
 
             # Update the player shots
             self.player_shot_list.update()
