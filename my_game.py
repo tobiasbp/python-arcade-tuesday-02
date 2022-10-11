@@ -139,7 +139,7 @@ class Player(arcade.Sprite):
         self.alpha = 0
 
     @property
-    def invincible(self):
+    def is_invincible(self):
         return self.invincibility_timer > 0
 
     def on_update(self, delta_time: float = 1 / 60):
@@ -151,7 +151,7 @@ class Player(arcade.Sprite):
         self.center_y += self.change_y
 
         # Time when you can't get hit by an asteroid
-        if self.invincible:
+        if self.is_invincible:
             self.invincibility_timer -= delta_time
             # Time when you are not visible
             if self.invincibility_timer < 3:
@@ -545,7 +545,7 @@ class MyGame(arcade.Window):
 
             # Check if collision with Asteroids and dies and kills the Asteroid
             for a in self.player_sprite.collides_with_list(self.asteroid_list):
-                if not self.player_sprite.invincible:
+                if not self.player_sprite.is_invincible:
                     # In the future, the Player will explode instead of disappearing.
                     self.player_sprite.lives -= 1
                     self.player_sprite.reset()
