@@ -417,7 +417,7 @@ class MyGame(arcade.Window):
 
             # self.joystick.
         # Set the background color
-        arcade.set_background_color(arcade.color.AMAZON)
+        arcade.set_background_color(arcade.color.BLACK)
 
     def spawn_ufo(self, delta_time):
         """
