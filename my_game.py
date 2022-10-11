@@ -135,10 +135,14 @@ class Player(arcade.Sprite):
         self.alpha = 0
 
     @property
-    def invicible(self):
+    def invincible(self):
+        """
+        The code works as when you get hit by the asteroid you will disappear for 2 seconds.
+        After that you are invincible for 3 seconds, and you can get hit again.
+        """
         return self.reset_timer < 1
 
-    def update(self, delta_time):
+    def on_update(self, delta_time: float = 1 / 60):
         """
         Move the sprite and wrap
         """
@@ -540,7 +544,7 @@ class MyGame(arcade.Window):
                 self.player_sprite.lives -= 1
 
             if any(self.player_sprite.collides_with_list(self.asteroid_list)):
-                if self.player_sprite.invicible:
+                if self.player_sprite.invincible:
                     self.player_sprite.lives -= 1
                     self.player_sprite.reset()
 
@@ -564,7 +568,7 @@ class MyGame(arcade.Window):
                 self.player_sprite.thrust()
 
             # Update player sprite
-            self.player_sprite.update(delta_time)
+            self.player_sprite.on_update(delta_time)
 
             # Update the player shots
             self.player_shot_list.update()
