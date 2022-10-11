@@ -18,6 +18,7 @@ SPRITE_SCALING = 0.5
 # Set the size of the screen
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
+SCREEN_COLOR = arcade.color.BLACK
 
 # Variables controlling the player
 
@@ -417,7 +418,7 @@ class MyGame(arcade.Window):
 
             # self.joystick.
         # Set the background color
-        arcade.set_background_color(arcade.color.AMAZON)
+        arcade.set_background_color(SCREEN_COLOR)
 
     def spawn_ufo(self, delta_time):
         """
