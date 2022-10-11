@@ -38,7 +38,8 @@ PLAYER_FIRE_KEY = arcade.key.SPACE
 # Asteroids variables
 ASTEROIDS_PR_LEVEL = 5
 ASTEROIDS_SPEED = 1.
-ASTEROID_POINT_VALUE = 50
+ASTEROID_SCORE_VALUES = {1: 50, 2: 40, 3: 30, 4: 20} # Different Values for differet sizes
+ASTEROID_SIZES = (1, 2, 3, 4)
 
 # UFO constants
 UFO_SPEED = 2  # both for x and y note: has to be int
@@ -72,24 +73,6 @@ def wrap(sprite: arcade.Sprite):
         sprite.center_y += SCREEN_HEIGHT
     elif sprite.bottom > SCREEN_HEIGHT:
         sprite.center_y -= SCREEN_HEIGHT
-
-
-
-def wrap(sprite: arcade.Sprite):
-    """
-    if sprite is off-screen move it to the other side of the screen
-    """
-
-    if sprite.right < 0:
-        sprite.center_x += SCREEN_WIDTH
-    elif sprite.left > SCREEN_WIDTH:
-        sprite.center_x -= SCREEN_WIDTH
-
-    if sprite.top < 0:
-        sprite.center_y += SCREEN_HEIGHT
-    elif sprite.bottom > SCREEN_HEIGHT:
-        sprite.center_y -= SCREEN_HEIGHT
-
 
 class Player(arcade.Sprite):
     """
