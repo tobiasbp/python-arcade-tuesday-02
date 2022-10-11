@@ -103,7 +103,7 @@ class Player(arcade.Sprite):
         # Graphics to use for Player
         super().__init__("images/playerShip1_red.png")
 
-        self.reset_timer = 0
+        self.invincibility_timer = 0
         self.angle = 0
         self.lives = lives
         self.scale = scale
@@ -130,17 +130,17 @@ class Player(arcade.Sprite):
             self.change_y *= player_x_and_y_speed_ratio
 
     def reset(self):
-        self.reset_timer = PLAYER_INVINCIBILTY_SECONDS
+        """
+        The code works as when you get hit by the asteroid you will disappear for 2 seconds.
+        After that you are invincible for 3 seconds, and you can get hit again.
+        """
+        self.invincibility_timer = PLAYER_INVINCIBILTY_SECONDS
         # The Player is Invisible
         self.alpha = 0
 
     @property
     def invincible(self):
-        """
-        The code works as when you get hit by the asteroid you will disappear for 2 seconds.
-        After that you are invincible for 3 seconds, and you can get hit again.
-        """
-        return self.reset_timer < 1
+        return self.invincibility_timer > 0
 
     def on_update(self, delta_time: float = 1 / 60):
         """
@@ -151,10 +151,10 @@ class Player(arcade.Sprite):
         self.center_y += self.change_y
 
         # Time when you can't get hit by an asteroid
-        if self.reset_timer > 0:
-            self.reset_timer -= delta_time
+        if self.invincible > 0:
+            self.invincibility_timer -= delta_time
             # Time when you are not visible
-            if self.reset_timer < 3:
+            if self.invincibility_timer < 3:
                 # Visible
                 if self.alpha == 0:
                     self.alpha = 255
@@ -544,7 +544,7 @@ class MyGame(arcade.Window):
                 self.player_sprite.lives -= 1
 
             if any(self.player_sprite.collides_with_list(self.asteroid_list)):
-                if self.player_sprite.invincible:
+                if not self.player_sprite.invincible:
                     self.player_sprite.lives -= 1
                     self.player_sprite.reset()
 
