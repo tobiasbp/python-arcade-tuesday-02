@@ -151,7 +151,7 @@ class Player(arcade.Sprite):
         self.center_y += self.change_y
 
         # Time when you can't get hit by an asteroid
-        if self.invincible > 0:
+        if self.invincible:
             self.invincibility_timer -= delta_time
             # Time when you are not visible
             if self.invincibility_timer < 3:
