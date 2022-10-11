@@ -38,8 +38,7 @@ PLAYER_FIRE_KEY = arcade.key.SPACE
 # Asteroids variables
 ASTEROIDS_PR_LEVEL = 5
 ASTEROIDS_SPEED = 1.
-ASTEROID_SCORE_VALUES = {1: 50, 2: 40, 3: 30, 4: 20} # Different Values for differet sizes
-ASTEROID_SIZES = (1, 2, 3, 4)
+ASTEROID_SCORE_VALUES = {4: 50, 3: 40, 2: 30, 1: 20} # Different Values for differet sizes
 
 # UFO constants
 UFO_SPEED = 2  # both for x and y note: has to be int
@@ -124,14 +123,21 @@ class Player(arcade.Sprite):
 
 
 class Asteroid(arcade.Sprite):
+
+    # A list of valid sizes for asteroids and their respective graphics
+    valid_sizes = {1: "images/Meteors/meteorGrey_tiny1.png", 2: "images/Meteors/meteorGrey_small1.png", 3: "images/Meteors/meteorGrey_med1.png", 4: "images/Meteors/meteorGrey_big1.png"}
     
-    def __init__(self):
+    def __init__(self, size=4):
         
+        # If size is not valid raise exeption
+        if size not in Asteroid.valid_sizes:
+            raise ValueError(f"{size} is an invalid size for Asteroid") 
+
         # Initialize the asteroid
         
         # Graphics
         super().__init__(
-            filename="images/Meteors/meteorGrey_big1.png", 
+            filename=Asteroid.valid_sizes[size], 
             scale=SPRITE_SCALING
         )
 
@@ -140,7 +146,8 @@ class Asteroid(arcade.Sprite):
         self.center_y = random.randint(0, SCREEN_HEIGHT)
         self.change_x = math.sin(self.radians) * ASTEROIDS_SPEED
         self.change_y = math.cos(self.radians) * ASTEROIDS_SPEED
-        
+        self.size = size
+
     def update(self):
          
         # Update position
@@ -149,7 +156,6 @@ class Asteroid(arcade.Sprite):
 
         # wrap
         wrap(self)
-
 
 class PlayerShot(arcade.Sprite):
     """
@@ -510,9 +516,9 @@ class MyGame(arcade.Window):
             # Check for PlayerShot - Asteroid collisions
             for s in self.player_shot_list:
                 for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
+                    self.player_score += ASTEROID_SCORE_VALUES[a.size]
                     s.kill()
                     a.kill()
-                    self.player_score += ASTEROID_POINT_VALUE
 
             # check for thrust
             if self.thrust_pressed:
