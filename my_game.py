@@ -127,7 +127,7 @@ class Asteroid(arcade.Sprite):
     # A list of valid sizes for asteroids and their respective graphics
     valid_sizes = {1: "images/Meteors/meteorGrey_tiny1.png", 2: "images/Meteors/meteorGrey_small1.png", 3: "images/Meteors/meteorGrey_med1.png", 4: "images/Meteors/meteorGrey_big1.png"}
     
-    def __init__(self, size, center_x, center_y):
+    def __init__(self, size, center_x, center_y, direction):
         
         # If size is not valid raise exeption
         if size not in Asteroid.valid_sizes:
@@ -141,18 +141,21 @@ class Asteroid(arcade.Sprite):
             scale=SPRITE_SCALING
         )
 
-        self.angle = arcade.rand_angle_360_deg()
+        self.direction = direction #arcade.rand_angle_360_deg()
         self.center_x = center_x
         self.center_y = center_y
-        self.change_x = math.sin(self.radians) * ASTEROIDS_SPEED
-        self.change_y = math.cos(self.radians) * ASTEROIDS_SPEED
+        self.change_x = math.sin(math.radians(self.direction)) * ASTEROIDS_SPEED
+        self.change_y = math.cos(math.radians(self.direction)) * ASTEROIDS_SPEED
         self.size = size
+        self.angle = arcade.rand_angle_360_deg()
+        self.rotation = random.randint(1, 3)
         
     def update(self):
          
         # Update position
         self.center_x += self.change_x
         self.center_y += self.change_y
+        self.angle += self.rotation
 
         # wrap
         wrap(self)
@@ -416,7 +419,7 @@ class MyGame(arcade.Window):
         
         # Spawn Asteroids
         for r in range(ASTEROIDS_PR_LEVEL):
-            self.asteroid_list.append(Asteroid(random.randint(1, 4), random.randint(0, SCREEN_HEIGHT), random.randint(0, SCREEN_WIDTH)))
+            self.asteroid_list.append(Asteroid(random.randint(1, 4), random.randint(0, SCREEN_HEIGHT), random.randint(0, SCREEN_WIDTH), arcade.rand_angle_360_deg()))
 
         # setup spawn_ufo to run regularly
         arcade.schedule(self.spawn_ufo, UFO_SPAWN_RATE)
@@ -518,7 +521,7 @@ class MyGame(arcade.Window):
                 for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
                     self.player_score += ASTEROID_SCORE_VALUES[a.size]
                     for n in range(2):
-                        try: self.asteroid_list.append(Asteroid(a.size-1, a.center_x, a.center_y))
+                        try: self.asteroid_list.append(Asteroid(a.size-1, a.center_x, a.center_y, a.direction))
                         except ValueError:
                             pass
                     s.kill()
