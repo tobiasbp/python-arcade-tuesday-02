@@ -16,19 +16,25 @@ SPRITE_SCALING = 0.5
 # Set the size of the screen
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
+SCREEN_COLOR = arcade.color.BLACK
 
 # Variables controlling the player
 
-PLAYER_LIVES = 3
+PLAYER_START_LIVES = 3
 PLAYER_ROTATE_SPEED = 5
 PLAYER_THRUST = 0.05  # speed gained from thrusting
 PLAYER_GRAPHICS_CORRECTION = math.pi / 2  # the player graphic is turned 45 degrees too much compared to actual angle
 PLAYER_START_X = SCREEN_WIDTH // 2
 PLAYER_START_Y = 50
-PLAYER_LIVES = 3
-PLAYER_SPEED = 3
 PLAYER_SHOT_SPEED = 4
 PLAYER_SHOT_RANGE = SCREEN_WIDTH // 2
+
+PLAYER_START_Y = SCREEN_HEIGHT // 2
+PLAYER_SHOT_SPEED = 4
+PLAYER_SHOT_RANGE = SCREEN_WIDTH // 2
+PLAYER_SPEED_LIMIT = 5
+PLAYER_INVINCIBILTY_SECONDS = 5
+
 
 PLAYER_THRUST_KEY = arcade.key.UP
 PLAYER_FIRE_KEY = arcade.key.SPACE
@@ -85,9 +91,11 @@ class Player(arcade.Sprite):
         """
         Setup new Player object
         """
+        
         # Graphics to use for Player
         super().__init__("images/playerShip1_red.png")
 
+        self.invincibility_timer = 0
         self.angle = 0
         self.lives = lives
         self.scale = scale
@@ -102,13 +110,50 @@ class Player(arcade.Sprite):
         self.change_x += math.cos(self.radians + PLAYER_GRAPHICS_CORRECTION) * PLAYER_THRUST
         self.change_y += math.sin(self.radians + PLAYER_GRAPHICS_CORRECTION) * PLAYER_THRUST
 
-    def update(self):
+        # Keep track of Player Speed
+        player_speed_vector_length = math.sqrt(self.change_x**2 + self.change_y**2)
+
+        # Calculating the value used to lower the players speed while keeping the x - y ratio
+        player_x_and_y_speed_ratio = PLAYER_SPEED_LIMIT/player_speed_vector_length
+
+        # If player is too fast slow it down
+        if player_speed_vector_length > PLAYER_SPEED_LIMIT:
+            self.change_x *= player_x_and_y_speed_ratio
+            self.change_y *= player_x_and_y_speed_ratio
+
+    def reset(self):
+        """
+        The code works as when you get hit by the asteroid you will disappear for 2 seconds.
+        After that you are invincible for 3 seconds, and you can get hit again.
+        """
+        self.invincibility_timer = PLAYER_INVINCIBILTY_SECONDS
+        # The Player is Invisible
+        self.alpha = 0
+
+    @property
+    def is_invincible(self):
+        return self.invincibility_timer > 0
+
+    def on_update(self, delta_time: float = 1 / 60):
         """
         Move the sprite and wrap
         """
 
         self.center_x += self.change_x
         self.center_y += self.change_y
+
+        # Time when you can't get hit by an asteroid
+        if self.is_invincible:
+            self.invincibility_timer -= delta_time
+            # Time when you are not visible
+            if self.invincibility_timer < 3:
+                # Visible
+                if self.alpha == 0:
+                    self.alpha = 255
+                    self.center_x = PLAYER_START_X
+                    self.center_y = PLAYER_START_Y
+                    self.change_y = 0
+                    self.change_x = 0
 
         # wrap
         wrap(self)
@@ -386,6 +431,8 @@ class InGameView(arcade.View):
             self.joystick = None
 
             # self.joystick.
+        # Set the background color
+        arcade.set_background_color(SCREEN_COLOR)
 
     def spawn_ufo(self, delta_time):
         """
@@ -414,7 +461,7 @@ class InGameView(arcade.View):
         self.player_sprite = Player(
             center_x=PLAYER_START_X,
             center_y=PLAYER_START_Y,
-            lives=PLAYER_LIVES,
+            lives=PLAYER_START_LIVES,
             scale=SPRITE_SCALING
         )
         
