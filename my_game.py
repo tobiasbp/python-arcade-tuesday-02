@@ -30,6 +30,7 @@ PLAYER_START_X = SCREEN_WIDTH // 2
 PLAYER_START_Y = SCREEN_HEIGHT // 2
 PLAYER_SHOT_SPEED = 4
 PLAYER_SHOT_RANGE = SCREEN_WIDTH // 2
+PLAYER_SHOT_RATE = 0.2
 PLAYER_SPEED_LIMIT = 5
 PLAYER_INVINCIBILTY_SECONDS = 5
 
@@ -73,7 +74,6 @@ def wrap(sprite: arcade.Sprite):
         sprite.center_y += SCREEN_HEIGHT
     elif sprite.bottom > SCREEN_HEIGHT:
         sprite.center_y -= SCREEN_HEIGHT
-
 
 
 def wrap(sprite: arcade.Sprite):
@@ -120,10 +120,10 @@ class Player(arcade.Sprite):
         self.change_y += math.sin(self.radians + PLAYER_GRAPHICS_CORRECTION) * PLAYER_THRUST
 
         # Keep track of Player Speed
-        player_speed_vector_length = math.sqrt(self.change_x**2 + self.change_y**2)
+        player_speed_vector_length = math.sqrt(self.change_x ** 2 + self.change_y ** 2)
 
         # Calculating the value used to lower the players speed while keeping the x - y ratio
-        player_x_and_y_speed_ratio = PLAYER_SPEED_LIMIT/player_speed_vector_length
+        player_x_and_y_speed_ratio = PLAYER_SPEED_LIMIT / player_speed_vector_length
 
         # If player is too fast slow it down
         if player_speed_vector_length > PLAYER_SPEED_LIMIT:
@@ -169,14 +169,13 @@ class Player(arcade.Sprite):
 
 
 class Asteroid(arcade.Sprite):
-    
+
     def __init__(self):
-        
         # Initialize the asteroid
-        
+
         # Graphics
         super().__init__(
-            filename="images/Meteors/meteorGrey_big1.png", 
+            filename="images/Meteors/meteorGrey_big1.png",
             scale=SPRITE_SCALING
         )
 
@@ -185,9 +184,8 @@ class Asteroid(arcade.Sprite):
         self.center_y = random.randint(0, SCREEN_HEIGHT)
         self.change_x = math.sin(self.radians) * ASTEROIDS_SPEED
         self.change_y = math.cos(self.radians) * ASTEROIDS_SPEED
-        
+
     def update(self):
-         
         # Update position
         self.center_x += self.change_x
         self.center_y += self.change_y
@@ -310,7 +308,7 @@ class BonusUFO(arcade.Sprite):
             scale=SPRITE_SCALING,
             center_x=self.center_x,
             center_y=self.center_y
-            )
+        )
 
         new_ufo_shot.change_x = random.randrange(-UFO_SHOT_SPEED, UFO_SHOT_SPEED)
         new_ufo_shot.change_y = new_ufo_shot.change_x - UFO_SHOT_SPEED
@@ -367,6 +365,7 @@ class MyGame(arcade.Window):
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = None
+        self.player_shot_rate_counter = 0.0
 
         # Asteroid SpriteList
         self.asteroid_list = None
@@ -452,7 +451,7 @@ class MyGame(arcade.Window):
             lives=PLAYER_START_LIVES,
             scale=SPRITE_SCALING
         )
-        
+
         # Spawn Asteroids
         for r in range(ASTEROIDS_PR_LEVEL):
             self.asteroid_list.append(Asteroid())
@@ -515,7 +514,7 @@ class MyGame(arcade.Window):
             arcade.draw_text(
                 "LIVES: {}".format(self.player_sprite.lives),  # Text to show
                 10,  # X position
-                SCREEN_HEIGHT - 45, # Y positon
+                SCREEN_HEIGHT - 45,  # Y positon
                 arcade.color.WHITE  # Color of text
             )
 
@@ -532,9 +531,9 @@ class MyGame(arcade.Window):
             # Calculate player speed based on the keys pressed
             # Move player with keyboard
             if self.left_pressed and not self.right_pressed:
-                self.player_sprite.angle+= PLAYER_ROTATE_SPEED
+                self.player_sprite.angle += PLAYER_ROTATE_SPEED
             elif self.right_pressed and not self.left_pressed:
-                self.player_sprite.angle+= -PLAYER_ROTATE_SPEED
+                self.player_sprite.angle += -PLAYER_ROTATE_SPEED
 
             # rotate player with joystick if present
             if self.joystick:
@@ -553,14 +552,14 @@ class MyGame(arcade.Window):
                     self.player_sprite.reset()
                     a.kill()
 
-            #player shot
+            # player shot
             for shot in self.player_shot_list:
 
                 for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
                     shot.kill()
                     ufo_hit.destroy()
                     self.player_score += UFO_POINTS_REWARD
-                
+
             # Check for PlayerShot - Asteroid collisions
             for s in self.player_shot_list:
                 for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
@@ -571,6 +570,9 @@ class MyGame(arcade.Window):
             # check for thrust
             if self.thrust_pressed:
                 self.player_sprite.thrust()
+
+            if self.player_shot_rate_counter < PLAYER_SHOT_RATE:
+                self.player_shot_rate_counter += delta_time
 
             # Update player sprite
             self.player_sprite.on_update()
@@ -617,13 +619,17 @@ class MyGame(arcade.Window):
             self.thrust_pressed = True
 
         if key == PLAYER_FIRE_KEY:
-            new_shot = PlayerShot(
-                self.player_sprite.center_x,
-                self.player_sprite.center_y,
-                self.player_sprite.angle
-            )
+            if self.player_shot_rate_counter > PLAYER_SHOT_RATE:
+                # The Player can now not shoot because the rate_counter is lower than the rate.
+                new_shot = PlayerSho
+                t(
+                    self.player_sprite.center_x,
+                    self.player_sprite.center_y,
+                    self.player_sprite.angle
+                )
 
-            self.player_shot_list.append(new_shot)
+                self.player_shot_list.append(new_shot)
+                self.player_shot_rate_counter = 0
 
         if key == PLAYER_THRUST_KEY:
             self.player_sprite.thrust()
