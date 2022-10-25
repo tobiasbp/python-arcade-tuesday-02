@@ -174,7 +174,6 @@ class PlayerShot(arcade.Sprite):
     """
 
     sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
-    def __init__(self, center_x=0, center_y=0):
 
     def __init__(self, center_x=0, center_y=0, angle=0):
 
@@ -477,19 +476,8 @@ class MyGame(arcade.Window):
             # Draw the player shot
             self.player_shot_list.draw()
 
-        if self.sound_thrust_player is not None and self.thrust_pressed is False and self.sound_thrust.is_playing(self.sound_thrust_player):
-            v = self.sound_thrust.get_volume(self.sound_thrust_player) * 0.95
-            self.sound_thrust.set_volume(v, self.sound_thrust_player)
-            if v == 0:
-                self.sound_thrust.stop(self.sound_thrust_player)
-
 
         # Calculate player speed based on the keys pressed
-        # Move player with keyboard
-        if self.left_pressed and not self.right_pressed:
-            self.player_sprite.angle+= PLAYER_ROTATE_SPEED
-        elif self.right_pressed and not self.left_pressed:
-            self.player_sprite.angle+= -PLAYER_ROTATE_SPEED
 
             # Draw the player sprite
             self.player_sprite.draw()
@@ -502,12 +490,6 @@ class MyGame(arcade.Window):
 
             # and their shots
             self.ufo_shot_list.draw()
-
-            for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
-                shot.kill()
-                self.sound_explosion.play()
-                ufo_hit.destroy()
-                self.player_score += UFO_POINTS_REWARD
 
             # Draw players score on screen
             arcade.draw_text(
@@ -554,14 +536,24 @@ class MyGame(arcade.Window):
 
                 for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
                     shot.kill()
+                    self.sound_explosion.play()
                     ufo_hit.destroy()
                     self.player_score += UFO_POINTS_REWARD
-                
+
+            if self.sound_thrust_player is not None and self.thrust_pressed is False and self.sound_thrust.is_playing(
+                    self.sound_thrust_player):
+                v = self.sound_thrust.get_volume(self.sound_thrust_player) * 0.95
+                self.sound_thrust.set_volume(v, self.sound_thrust_player)
+                if v == 0:
+                    self.sound_thrust.stop(self.sound_thrust_player)
+
             # Check for PlayerShot - Asteroid collisions
             for s in self.player_shot_list:
+
                 for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
                     s.kill()
                     a.kill()
+                    self.sound_explosion.play()
                     self.player_score += ASTEROID_POINT_VALUE
 
             # check for thrust
