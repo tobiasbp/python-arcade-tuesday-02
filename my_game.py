@@ -10,8 +10,6 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 import arcade
 import math
 import random
-from enum import Enum, auto
-
 
 SPRITE_SCALING = 0.5
 
@@ -27,6 +25,10 @@ PLAYER_ROTATE_SPEED = 5
 PLAYER_THRUST = 0.05  # speed gained from thrusting
 PLAYER_GRAPHICS_CORRECTION = math.pi / 2  # the player graphic is turned 45 degrees too much compared to actual angle
 PLAYER_START_X = SCREEN_WIDTH // 2
+PLAYER_START_Y = 50
+PLAYER_SHOT_SPEED = 4
+PLAYER_SHOT_RANGE = SCREEN_WIDTH // 2
+
 PLAYER_START_Y = SCREEN_HEIGHT // 2
 PLAYER_SHOT_SPEED = 4
 PLAYER_SHOT_RANGE = SCREEN_WIDTH // 2
@@ -34,13 +36,13 @@ PLAYER_SHOT_RATE = 0.2
 PLAYER_SPEED_LIMIT = 5
 PLAYER_INVINCIBILTY_SECONDS = 5
 
+
 PLAYER_THRUST_KEY = arcade.key.UP
 PLAYER_FIRE_KEY = arcade.key.SPACE
 
 # Asteroids variables
 ASTEROIDS_PR_LEVEL = 5
 ASTEROIDS_SPEED = 1.
-ASTEROID_POINT_VALUE = 50
 
 # UFO constants
 UFO_SPEED = 2  # both for x and y note: has to be int
@@ -56,25 +58,13 @@ UFO_SIZE_BIG = 1.5
 PLAY_BUTTON_X = SCREEN_WIDTH // 2
 PLAY_BUTTON_Y = SCREEN_HEIGHT // 2
 
+# titles (intro sign and game over sign)
 TITLE_X = SCREEN_WIDTH // 2
 TITLE_Y = SCREEN_HEIGHT * 0.75
 
-
-def wrap(sprite: arcade.Sprite):
-    """
-    if sprite is off-screen move it to the other side of the screen
-    """
-
-    if sprite.right < 0:
-        sprite.center_x += SCREEN_WIDTH
-    elif sprite.left > SCREEN_WIDTH:
-        sprite.center_x -= SCREEN_WIDTH
-
-    if sprite.top < 0:
-        sprite.center_y += SCREEN_HEIGHT
-    elif sprite.bottom > SCREEN_HEIGHT:
-        sprite.center_y -= SCREEN_HEIGHT
-
+# game over screen constants
+RESTART_BUTTON_X = PLAY_BUTTON_X
+RESTART_BUTTON_Y = PLAY_BUTTON_Y
 
 def wrap(sprite: arcade.Sprite):
     """
@@ -101,6 +91,7 @@ class Player(arcade.Sprite):
         """
         Setup new Player object
         """
+        
         # Graphics to use for Player
         super().__init__("images/playerShip1_red.png")
 
@@ -199,7 +190,11 @@ class PlayerShot(arcade.Sprite):
     A shot fired by the Player
     """
 
+    sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
+
     def __init__(self, center_x=0, center_y=0, angle=0):
+
+
         """
         Setup new PlayerShot object
         """
@@ -209,12 +204,11 @@ class PlayerShot(arcade.Sprite):
 
         self.center_x = center_x
         self.center_y = center_y
-        self.angle = angle
-        self.change_x = math.cos(self.radians + math.pi / 2) * PLAYER_SHOT_SPEED
-        self.change_y = math.sin(self.radians + math.pi / 2) * PLAYER_SHOT_SPEED
+        self.change_y = PLAYER_SHOT_SPEED
         self.distance_traveled = 0
         self.speed = PLAYER_SHOT_SPEED
 
+        PlayerShot.sound_fire.play()
     def update(self):
         """
         Move the sprite
@@ -236,8 +230,8 @@ class PlayerShot(arcade.Sprite):
 
 
 class UFOShot(arcade.Sprite):
-    """shot fired by the ufo"""
 
+    """shot fired by the ufo"""
     def __int__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -255,12 +249,13 @@ class UFOShot(arcade.Sprite):
 
 
 class BonusUFO(arcade.Sprite):
+    sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
+    sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
     """occasionally moves across the screen. Grants the player points if shot"""
 
     def __int__(self, shot_list, **kwargs):
 
         kwargs['filename'] = "images/ufoBlue.png"
-
         # UFO's are big or small
         kwargs['scale'] = SPRITE_SCALING * random.choice([UFO_SIZE_SMALL, UFO_SIZE_BIG])
 
@@ -301,7 +296,7 @@ class BonusUFO(arcade.Sprite):
         """
         fire a new shot
         """
-
+        BonusUFO.sound_fire.play()
         new_ufo_shot = UFOShot()  # sprites created with arcade.schedule don't __init__ it has to be manually called
         new_ufo_shot.__init__(
             filename="images/Lasers/laserGreen07.png",
@@ -331,28 +326,58 @@ class BonusUFO(arcade.Sprite):
         """
         kill the sprite and unschedule all functions
         """
-
         arcade.unschedule(self.shoot)
         arcade.unschedule(self.change_dir)
         self.kill()
 
 
-class GameState(Enum):
+class IntroView(arcade.View):
     """
-    the state of the game: INTRO, IN_GAME or GAME_OVER
+    View for the intro screen.
     """
 
-    INTRO = auto()
-    IN_GAME = auto()
-    GAME_OVER = auto()
+    def __init__(self):
+
+        super().__init__()
+
+        self.title_graphics = arcade.load_texture("images/UI/asteroidsTitle.png")
+        self.play_button = arcade.load_texture("images/UI/asteroidsStartButton.png")
+
+        arcade.set_background_color(arcade.color.AMAZON)
+
+    def on_draw(self):
+        """
+        draw everything on the screen
+        """
+
+        arcade.start_render()
+
+        self.title_graphics.draw_scaled(
+            center_x=TITLE_X,
+            center_y=TITLE_Y
+        )
+
+        self.play_button.draw_scaled(
+            center_x=PLAY_BUTTON_X,
+            center_y=PLAY_BUTTON_Y,
+        )
+
+    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
+        """
+        called whenever the mouse is clicked on the screen
+        """
+
+        if arcade.get_distance(x, y, PLAY_BUTTON_X, PLAY_BUTTON_Y) < self.play_button.width // 2:
+            in_game_view = InGameView()
+            self.window.show_view(in_game_view)
 
 
-class MyGame(arcade.Window):
+class InGameView(arcade.View):
     """
     Main application class.
     """
 
-    def __init__(self, width, height):
+    def __init__(self):
         """
         Initializer
         """
@@ -360,8 +385,15 @@ class MyGame(arcade.Window):
         # Call the parent class initializer
         super().__init__(width, height)
 
+        # loading sounds
+        self.sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
+        self.sound_thrust = arcade.load_sound("sounds/spaceEngine_003.ogg")
+        self.sound_thrust_player = None
+        
         # game state variable.
         self.game_state = None
+
+
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = None
@@ -380,10 +412,6 @@ class MyGame(arcade.Window):
         # set up ufo info
         self.ufo_list = None
         self.ufo_shot_list = None
-
-        # UI
-        self.play_button = None
-        self.title_graphics = None
 
         # Track the current state of what key is pressed
         self.space_pressed = False
@@ -429,8 +457,10 @@ class MyGame(arcade.Window):
         new_ufo_obj.__int__(self.ufo_shot_list)  # it needs the list so it can send shots to MyGame
         self.ufo_list.append(new_ufo_obj)
 
-    def setup(self):
+    def on_show_view(self):
         """ Set up the game and initialize the variables. """
+
+        self.sound_thrust_player = None
 
         self.game_state = GameState.INTRO
 
@@ -459,47 +489,29 @@ class MyGame(arcade.Window):
         # setup spawn_ufo to run regularly
         arcade.schedule(self.spawn_ufo, UFO_SPAWN_RATE)
 
-        # create UI objs
-        self.title_graphics = arcade.load_texture("images/UI/asteroidsTitle.png")
-        self.play_button = arcade.load_texture("images/UI/asteroidsStartButton.png")
-
     def on_draw(self):
         """
         Render the screen.
         """
 
-        # always
-
         # This command has to happen before we start drawing
         arcade.start_render()
 
-        # only in intro
-        if self.game_state == GameState.INTRO:
+        # Draw the player shot
+        self.player_shot_list.draw()
 
-            self.title_graphics.draw_scaled(
-                center_x=TITLE_X,
-                center_y=TITLE_Y
-            )
+        # Draw the player sprite
+        self.player_sprite.draw()
 
-            self.play_button.draw_scaled(
-                center_x=PLAY_BUTTON_X,
-                center_y=PLAY_BUTTON_Y,
-            )
+        # Draw asteroids
+        self.asteroid_list.draw()
 
-        # only in-game
-        elif self.game_state == GameState.IN_GAME:
+        # draw ufo(s)
+        self.ufo_list.draw()
 
-            # Draw the player shot
-            self.player_shot_list.draw()
+        # and their shots
+        self.ufo_shot_list.draw()
 
-            # Draw the player sprite
-            self.player_sprite.draw()
-
-            # Draw asteroids
-            self.asteroid_list.draw()
-
-            # draw ufo(s)
-            self.ufo_list.draw()
 
             # and their shots
             self.ufo_shot_list.draw()
@@ -517,6 +529,7 @@ class MyGame(arcade.Window):
                 SCREEN_HEIGHT - 45,  # Y positon
                 arcade.color.WHITE  # Color of text
             )
+
 
         # only post-game
         elif self.game_state == GameState.GAME_OVER:
@@ -540,31 +553,32 @@ class MyGame(arcade.Window):
                 self.player_sprite.angle += round(self.joystick.x) * -PLAYER_ROTATE_SPEED
 
             # checks if ufo shot collides with player
-            for ufo_shot_hit in self.player_sprite.collides_with_list(self.ufo_shot_list):
+            if any(self.player_sprite.collides_with_list(self.ufo_shot_list)):
                 self.player_sprite.lives -= 1
-                ufo_shot_hit.kill()
-
-            # Check if collision with Asteroids and dies and kills the Asteroid
-            for a in self.player_sprite.collides_with_list(self.asteroid_list):
-                if not self.player_sprite.is_invincible:
-                    # In the future, the Player will explode instead of disappearing.
-                    self.player_sprite.lives -= 1
-                    self.player_sprite.reset()
-                    a.kill()
 
             # player shot
             for shot in self.player_shot_list:
 
                 for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
                     shot.kill()
+                    self.sound_explosion.play()
                     ufo_hit.destroy()
                     self.player_score += UFO_POINTS_REWARD
 
+            if self.sound_thrust_player is not None and self.thrust_pressed is False and self.sound_thrust.is_playing(
+                    self.sound_thrust_player):
+                v = self.sound_thrust.get_volume(self.sound_thrust_player) * 0.95
+                self.sound_thrust.set_volume(v, self.sound_thrust_player)
+                if v == 0:
+                    self.sound_thrust.stop(self.sound_thrust_player)
+
             # Check for PlayerShot - Asteroid collisions
             for s in self.player_shot_list:
+
                 for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
                     s.kill()
                     a.kill()
+                    self.sound_explosion.play()
                     self.player_score += ASTEROID_POINT_VALUE
 
             # check for thrust
@@ -575,29 +589,30 @@ class MyGame(arcade.Window):
                 self.player_shot_rate_counter += delta_time
 
             # Update player sprite
-            self.player_sprite.on_update()
+            self.player_sprite.update()
 
             # Update the player shots
             self.player_shot_list.update()
 
-            # Update Asteroids
-            self.asteroid_list.update()
+        # Update player sprite
+        self.player_sprite.update()
 
-            # update UFOs
-            self.ufo_list.update()
+        # Update the player shots
+        self.player_shot_list.update()
 
-            # update UFO shot_lists
-            self.ufo_shot_list.update()
+        # Update Asteroids
+        self.asteroid_list.update()
 
-    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
-        """
-        called whenever the mouse is clicked on the screen
-        """
+        # update UFOs
+        self.ufo_list.update()
 
-        if self.game_state == GameState.INTRO:
+        # update UFO shot_lists
+        self.ufo_shot_list.update()
 
-            if arcade.get_distance(x, y, PLAY_BUTTON_X, PLAY_BUTTON_Y) < self.play_button.width // 4:
-                self.game_state = GameState.IN_GAME
+        # check if the player is dead
+        if self.player_sprite.lives <= 0:
+            game_over_view = GameOverView()
+            self.window.show_view(game_over_view)
 
     def on_key_press(self, key, modifiers):
         """
@@ -616,8 +631,12 @@ class MyGame(arcade.Window):
         elif key == arcade.key.SPACE:
             self.space_pressed = True
         if key == PLAYER_THRUST_KEY:
+            #if thrust just got pressed start sound loop
+            if self.thrust_pressed is False:
+                if self.sound_thrust_player is not None:
+                    self.sound_thrust.stop(self.sound_thrust_player)
+                self.sound_thrust_player = self.sound_thrust.play(loop=True)
             self.thrust_pressed = True
-
         if key == PLAYER_FIRE_KEY:
             if self.player_shot_rate_counter > PLAYER_SHOT_RATE:
                 # The Player can now not shoot because the rate_counter is lower than the rate.
@@ -629,9 +648,16 @@ class MyGame(arcade.Window):
 
                 self.player_shot_list.append(new_shot)
                 self.player_shot_rate_counter = 0
+            new_shot = PlayerShot(
+                self.player_sprite.center_x,
+                self.player_sprite.center_y
+            )
+
+            self.player_shot_list.append(new_shot)
 
         if key == PLAYER_THRUST_KEY:
             self.player_sprite.thrust()
+
 
     def on_key_release(self, key, modifiers):
         """
@@ -666,13 +692,51 @@ class MyGame(arcade.Window):
         print("Joystick hat ({}, {})".format(hat_x, hat_y))
 
 
+class GameOverView(arcade.View):
+    """
+    the game over screen
+    """
+
+    def __init__(self):
+        super().__init__()
+
+        self.game_over_sign = arcade.load_texture("images/UI/asteroidsGameOverSign.png")
+        self.restart_button = arcade.load_texture("images/UI/asteroidsRestartButton.png")
+
+    def on_draw(self):
+        """
+        draw the screen
+        """
+
+        arcade.start_render()
+
+        self.game_over_sign.draw_scaled(
+            center_x=TITLE_X,
+            center_y=TITLE_Y
+        )
+
+        self.restart_button.draw_scaled(
+            center_x=RESTART_BUTTON_X,
+            center_y=RESTART_BUTTON_Y
+        )
+
+    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
+        """
+        called whenever the mouse is clicked on the screen.
+        """
+
+        if arcade.get_distance(x, y, RESTART_BUTTON_X, RESTART_BUTTON_Y) < self.restart_button.height // 2:
+            in_game_view = InGameView()
+            self.window.show_view(in_game_view)
+
 def main():
     """
     Main method
     """
 
-    window = MyGame(SCREEN_WIDTH, SCREEN_HEIGHT)
-    window.setup()
+    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT)
+    intro_view = IntroView()
+    window.show_view(intro_view)
     arcade.run()
 
 
