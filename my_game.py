@@ -621,8 +621,7 @@ class MyGame(arcade.Window):
         if key == PLAYER_FIRE_KEY:
             if self.player_shot_rate_counter > PLAYER_SHOT_RATE:
                 # The Player can now not shoot because the rate_counter is lower than the rate.
-                new_shot = PlayerSho
-                t(
+                new_shot = PlayerShot(
                     self.player_sprite.center_x,
                     self.player_sprite.center_y,
                     self.player_sprite.angle
