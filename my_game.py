@@ -340,7 +340,7 @@ class IntroView(arcade.View):
         self.title_graphics = arcade.load_texture("images/UI/asteroidsTitle.png")
         self.play_button = arcade.load_texture("images/UI/asteroidsStartButton.png")
 
-        arcade.set_background_color(arcade.color.AMAZON)
+        arcade.set_background_color(SCREEN_COLOR)
 
     def on_draw(self):
         """
@@ -389,8 +389,6 @@ class InGameView(arcade.View):
 
         # game state variable.
         self.game_state = None
-
-
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = None
@@ -679,6 +677,9 @@ class GameOverView(arcade.View):
 
         self.game_over_sign = arcade.load_texture("images/UI/asteroidsGameOverSign.png")
         self.restart_button = arcade.load_texture("images/UI/asteroidsRestartButton.png")
+
+        #set background color
+        arcade.set_background_color(SCREEN_COLOR)
 
     def on_draw(self):
         """
