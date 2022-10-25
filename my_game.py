@@ -128,7 +128,7 @@ class Player(arcade.Sprite):
     def is_invincible(self):
         return self.invincibility_timer > 0
 
-    def on_update(self, delta_time: float = 1 / 60):
+    def update(self, delta_time: float = 1 / 60):
         """
         Move the sprite and wrap
         """
@@ -148,10 +148,8 @@ class Player(arcade.Sprite):
                     self.center_y = PLAYER_START_Y
                     self.change_y = 0
                     self.change_x = 0
-
         # wrap
         wrap(self)
-
 
 class Asteroid(arcade.Sprite):
 
@@ -189,8 +187,6 @@ class PlayerShot(arcade.Sprite):
     sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
 
     def __init__(self, center_x=0, center_y=0, angle=0):
-
-
         """
         Setup new PlayerShot object
         """
@@ -200,11 +196,14 @@ class PlayerShot(arcade.Sprite):
 
         self.center_x = center_x
         self.center_y = center_y
-        self.change_y = PLAYER_SHOT_SPEED
+        self.angle = angle
+        self.change_x = math.cos(self.radians + math.pi / 2) * PLAYER_SHOT_SPEED
+        self.change_y = math.sin(self.radians + math.pi / 2) * PLAYER_SHOT_SPEED
         self.distance_traveled = 0
         self.speed = PLAYER_SHOT_SPEED
 
         PlayerShot.sound_fire.play()
+
     def update(self):
         """
         Move the sprite
@@ -245,14 +244,16 @@ class UFOShot(arcade.Sprite):
 
 
 class BonusUFO(arcade.Sprite):
+    """occasionally moves across the screen. Grants the player points if shot"""
+
     sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
     sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
-    """occasionally moves across the screen. Grants the player points if shot"""
 
     def __int__(self, shot_list, **kwargs):
 
         kwargs['filename'] = "images/ufoBlue.png"
-        # UFO's are big or small
+
+        # UFOs are big or small
         kwargs['scale'] = SPRITE_SCALING * random.choice([UFO_SIZE_SMALL, UFO_SIZE_BIG])
 
         # set random position off-screen
@@ -543,6 +544,14 @@ class InGameView(arcade.View):
         if any(self.player_sprite.collides_with_list(self.ufo_shot_list)):
             self.player_sprite.lives -= 1
 
+        # Check if collision with Asteroids and dies and kills the Asteroid
+        for a in self.player_sprite.collides_with_list(self.asteroid_list):
+            if not self.player_sprite.is_invincible:
+                # In the future, the Player will explode instead of disappearing.
+                self.player_sprite.lives -= 1
+                self.player_sprite.reset()
+                a.kill()
+
         #player shot
         for shot in self.player_shot_list:
 
@@ -571,12 +580,6 @@ class InGameView(arcade.View):
         # check for thrust
         if self.thrust_pressed:
             self.player_sprite.thrust()
-
-        # Update player sprite
-        self.player_sprite.update()
-
-        # Update the player shots
-        self.player_shot_list.update()
 
         # Update player sprite
         self.player_sprite.update()
@@ -614,6 +617,7 @@ class InGameView(arcade.View):
             self.right_pressed = True
         elif key == arcade.key.SPACE:
             self.space_pressed = True
+
         if key == PLAYER_THRUST_KEY:
             #if thrust just got pressed start sound loop
             if self.thrust_pressed is False:
@@ -621,16 +625,15 @@ class InGameView(arcade.View):
                     self.sound_thrust.stop(self.sound_thrust_player)
                 self.sound_thrust_player = self.sound_thrust.play(loop=True)
             self.thrust_pressed = True
+
         if key == PLAYER_FIRE_KEY:
             new_shot = PlayerShot(
                 self.player_sprite.center_x,
-                self.player_sprite.center_y
+                self.player_sprite.center_y,
+                self.player_sprite.angle
             )
 
             self.player_shot_list.append(new_shot)
-
-        if key == PLAYER_THRUST_KEY:
-            self.player_sprite.thrust()
 
 
     def on_key_release(self, key, modifiers):
