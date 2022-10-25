@@ -38,7 +38,9 @@ PLAYER_FIRE_KEY = arcade.key.SPACE
 # Asteroids variables
 ASTEROIDS_PR_LEVEL = 5
 ASTEROIDS_SPEED = 1.
-ASTEROID_SCORE_VALUES = {4: 50, 3: 40, 2: 30, 1: 20} # Different Values for differet sizes
+ASTEROIDS_SCORE_VALUES = {4: 50, 3: 40, 2: 30, 1: 20} # Different Values for differet sizes
+ASTEROIDS_SPLIT_COUNT = 2
+ASTEROIDS_ANGLE_RANGE_FOR_SPLIT = 30
 
 # UFO constants
 UFO_SPEED = 2  # both for x and y note: has to be int
@@ -127,7 +129,7 @@ class Asteroid(arcade.Sprite):
     # A list of valid sizes for asteroids and their respective graphics
     valid_sizes = {1: "images/Meteors/meteorGrey_tiny1.png", 2: "images/Meteors/meteorGrey_small1.png", 3: "images/Meteors/meteorGrey_med1.png", 4: "images/Meteors/meteorGrey_big1.png"}
     
-    def __init__(self, size, center_x, center_y, direction):
+    def __init__(self, size, center_x, center_y, angle=None):
         
         # If size is not valid raise exeption
         if size not in Asteroid.valid_sizes:
@@ -140,22 +142,26 @@ class Asteroid(arcade.Sprite):
             filename=Asteroid.valid_sizes[size], 
             scale=SPRITE_SCALING
         )
-
-        self.direction = direction #arcade.rand_angle_360_deg()
+        if angle is None:
+            self.angle = arcade.rand_angle_360_deg()
+        else:
+            self.angle = angle
+        
         self.center_x = center_x
         self.center_y = center_y
-        self.change_x = math.sin(math.radians(self.direction)) * ASTEROIDS_SPEED
-        self.change_y = math.cos(math.radians(self.direction)) * ASTEROIDS_SPEED
+        self.change_x = math.sin(math.radians(self.angle)) * ASTEROIDS_SPEED
+        self.change_y = math.cos(math.radians(self.angle)) * ASTEROIDS_SPEED
         self.size = size
-        self.angle = arcade.rand_angle_360_deg()
-        self.rotation = random.randint(1, 3)
+        self.rotation_speed = random.randint(1, 3)
+        
+        self.direction = angle
         
     def update(self):
          
         # Update position
         self.center_x += self.change_x
         self.center_y += self.change_y
-        self.angle += self.rotation
+        self.angle += self.rotation_speed
 
         # wrap
         wrap(self)
@@ -419,7 +425,8 @@ class MyGame(arcade.Window):
         
         # Spawn Asteroids
         for r in range(ASTEROIDS_PR_LEVEL):
-            self.asteroid_list.append(Asteroid(random.randint(1, 4), random.randint(0, SCREEN_HEIGHT), random.randint(0, SCREEN_WIDTH), arcade.rand_angle_360_deg()))
+            self.asteroid_list.append(Asteroid(random.randint(1, 4), random.randint(0, SCREEN_HEIGHT), random.randint(0, SCREEN_WIDTH), round(arcade.rand_angle_360_deg())))
+            # If an Asteroid's angle is a float it will lead to complications later on
 
         # setup spawn_ufo to run regularly
         arcade.schedule(self.spawn_ufo, UFO_SPAWN_RATE)
@@ -519,14 +526,18 @@ class MyGame(arcade.Window):
             # Check for PlayerShot - Asteroid collisions
             for s in self.player_shot_list:
                 for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
-                    self.player_score += ASTEROID_SCORE_VALUES[a.size]
-                    for n in range(2):
-                        try: self.asteroid_list.append(Asteroid(a.size-1, a.center_x, a.center_y, a.direction))
+                    self.player_score += ASTEROIDS_SCORE_VALUES[a.size]
+                    for n in range(ASTEROIDS_SPLIT_COUNT):
+                        try:
+                            # New asteroid is 1 size smaller than the previous
+                            new_asteroid = Asteroid(a.size-1, a.center_x, a.center_y, random.randrange(a.direction-ASTEROIDS_ANGLE_RANGE_FOR_SPLIT, a.direction+ASTEROIDS_ANGLE_RANGE_FOR_SPLIT))
+                            self.asteroid_list.append(new_asteroid)
                         except ValueError:
+                            # If the size of the asteroid is invalid a ValueError occurs and it will not be created
                             pass
-                    s.kill()
-                    a.kill()
-
+                        s.kill()
+                        a.kill()
+                        
             # check for thrust
             if self.thrust_pressed:
                 self.player_sprite.thrust()
