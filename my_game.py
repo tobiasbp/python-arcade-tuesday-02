@@ -1,10 +1,7 @@
 """
 Simple program to show moving a sprite with the keyboard.
-
 This program uses the Arcade library found at http://arcade.academy
-
 Artwork from https://kenney.nl/assets/space-shooter-redux
-
 """
 
 import arcade
@@ -28,10 +25,6 @@ PLAYER_START_X = SCREEN_WIDTH // 2
 PLAYER_START_Y = 50
 PLAYER_SHOT_SPEED = 4
 PLAYER_SHOT_RANGE = SCREEN_WIDTH // 2
-
-PLAYER_START_Y = SCREEN_HEIGHT // 2
-PLAYER_SHOT_SPEED = 4
-PLAYER_SHOT_RANGE = SCREEN_WIDTH // 2
 PLAYER_SPEED_LIMIT = 5
 PLAYER_INVINCIBILTY_SECONDS = 5
 
@@ -41,7 +34,8 @@ PLAYER_FIRE_KEY = arcade.key.SPACE
 
 # Asteroids variables
 ASTEROIDS_PR_LEVEL = 5
-ASTEROIDS_SPEED = 1.
+ASTEROIDS_SPEED = 1
+ASTEROID_POINT_VALUE = 50
 
 # UFO constants
 UFO_SPEED = 2  # both for x and y note: has to be int
@@ -91,7 +85,7 @@ class Player(arcade.Sprite):
         """
         Setup new Player object
         """
-        
+
         # Graphics to use for Player
         super().__init__("images/playerShip1_red.png")
 
@@ -160,14 +154,14 @@ class Player(arcade.Sprite):
 
 
 class Asteroid(arcade.Sprite):
-    
+
     def __init__(self):
-        
+
         # Initialize the asteroid
-        
+
         # Graphics
         super().__init__(
-            filename="images/Meteors/meteorGrey_big1.png", 
+            filename="images/Meteors/meteorGrey_big1.png",
             scale=SPRITE_SCALING
         )
 
@@ -176,9 +170,9 @@ class Asteroid(arcade.Sprite):
         self.center_y = random.randint(0, SCREEN_HEIGHT)
         self.change_x = math.sin(self.radians) * ASTEROIDS_SPEED
         self.change_y = math.cos(self.radians) * ASTEROIDS_SPEED
-        
+
     def update(self):
-         
+
         # Update position
         self.center_x += self.change_x
         self.center_y += self.change_y
@@ -385,13 +379,13 @@ class InGameView(arcade.View):
         """
 
         # Call the parent class initializer
-        super().__init__(width, height)
+        super().__init__()
 
         # loading sounds
         self.sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
         self.sound_thrust = arcade.load_sound("sounds/spaceEngine_003.ogg")
         self.sound_thrust_player = None
-        
+
         # game state variable.
         self.game_state = None
 
@@ -463,8 +457,6 @@ class InGameView(arcade.View):
 
         self.sound_thrust_player = None
 
-        self.game_state = GameState.INTRO
-
         # No points when the game starts
         self.player_score = 0
 
@@ -482,7 +474,7 @@ class InGameView(arcade.View):
             lives=PLAYER_START_LIVES,
             scale=SPRITE_SCALING
         )
-        
+
         # Spawn Asteroids
         for r in range(ASTEROIDS_PR_LEVEL):
             self.asteroid_list.append(Asteroid())
@@ -514,83 +506,77 @@ class InGameView(arcade.View):
         self.ufo_shot_list.draw()
 
 
-            # and their shots
-            self.ufo_shot_list.draw()
+        # and their shots
+        self.ufo_shot_list.draw()
 
-            # Draw players score on screen
-            arcade.draw_text(
-                "SCORE: {}".format(self.player_score),  # Text to show
-                10,  # X position
-                SCREEN_HEIGHT - 20,  # Y_position
-                arcade.color.WHITE  # Color of text
-            )
-            arcade.draw_text(
-                "LIVES: {}".format(self.player_sprite.lives),  # Text to show
-                10,  # X position
-                SCREEN_HEIGHT - 45, # Y positon
-                arcade.color.WHITE  # Color of text
-            )
-
-
-        # only post-game
-        elif self.game_state == GameState.GAME_OVER:
-            pass
+        # Draw players score on screen
+        arcade.draw_text(
+            "SCORE: {}".format(self.player_score),  # Text to show
+            10,  # X position
+            SCREEN_HEIGHT - 20,  # Y_position
+            arcade.color.WHITE  # Color of text
+        )
+        arcade.draw_text(
+            "LIVES: {}".format(self.player_sprite.lives),  # Text to show
+            10,  # X position
+            SCREEN_HEIGHT - 45, # Y positon
+            arcade.color.WHITE  # Color of text
+        )
 
     def on_update(self, delta_time):
         """
         Movement and game logic
         """
 
-        if self.game_state == GameState.IN_GAME:
-            # Calculate player speed based on the keys pressed
-            # Move player with keyboard
-            if self.left_pressed and not self.right_pressed:
-                self.player_sprite.angle+= PLAYER_ROTATE_SPEED
-            elif self.right_pressed and not self.left_pressed:
-                self.player_sprite.angle+= -PLAYER_ROTATE_SPEED
+        # Calculate player speed based on the keys pressed
+        # Move player with keyboard
+        if self.left_pressed and not self.right_pressed:
+            self.player_sprite.angle+= PLAYER_ROTATE_SPEED
+        elif self.right_pressed and not self.left_pressed:
+            self.player_sprite.angle+= -PLAYER_ROTATE_SPEED
 
-            # rotate player with joystick if present
-            if self.joystick:
-                self.player_sprite.angle += round(self.joystick.x) * -PLAYER_ROTATE_SPEED
+        # rotate player with joystick if present
+        if self.joystick:
+            self.player_sprite.angle += round(self.joystick.x) * -PLAYER_ROTATE_SPEED
 
-            # checks if ufo shot collides with player
-            if any(self.player_sprite.collides_with_list(self.ufo_shot_list)):
-                self.player_sprite.lives -= 1
+        # checks if ufo shot collides with player
+        if any(self.player_sprite.collides_with_list(self.ufo_shot_list)):
+            self.player_sprite.lives -= 1
 
-            #player shot
-            for shot in self.player_shot_list:
+        #player shot
+        for shot in self.player_shot_list:
 
-                for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
-                    shot.kill()
-                    self.sound_explosion.play()
-                    ufo_hit.destroy()
-                    self.player_score += UFO_POINTS_REWARD
+            for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
+                shot.kill()
+                self.sound_explosion.play()
+                ufo_hit.destroy()
+                self.player_score += UFO_POINTS_REWARD
 
-            if self.sound_thrust_player is not None and self.thrust_pressed is False and self.sound_thrust.is_playing(
-                    self.sound_thrust_player):
-                v = self.sound_thrust.get_volume(self.sound_thrust_player) * 0.95
-                self.sound_thrust.set_volume(v, self.sound_thrust_player)
-                if v == 0:
-                    self.sound_thrust.stop(self.sound_thrust_player)
+        if self.sound_thrust_player is not None and self.thrust_pressed is False and self.sound_thrust.is_playing(
+                self.sound_thrust_player):
+            v = self.sound_thrust.get_volume(self.sound_thrust_player) * 0.95
+            self.sound_thrust.set_volume(v, self.sound_thrust_player)
+            if v == 0:
+                self.sound_thrust.stop(self.sound_thrust_player)
 
-            # Check for PlayerShot - Asteroid collisions
-            for s in self.player_shot_list:
+        # Check for PlayerShot - Asteroid collisions
+        for s in self.player_shot_list:
 
-                for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
-                    s.kill()
-                    a.kill()
-                    self.sound_explosion.play()
-                    self.player_score += ASTEROID_POINT_VALUE
+            for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
+                s.kill()
+                a.kill()
+                self.sound_explosion.play()
+                self.player_score += ASTEROID_POINT_VALUE
 
-            # check for thrust
-            if self.thrust_pressed:
-                self.player_sprite.thrust()
+        # check for thrust
+        if self.thrust_pressed:
+            self.player_sprite.thrust()
 
-            # Update player sprite
-            self.player_sprite.update()
+        # Update player sprite
+        self.player_sprite.update()
 
-            # Update the player shots
-            self.player_shot_list.update()
+        # Update the player shots
+        self.player_shot_list.update()
 
         # Update player sprite
         self.player_sprite.update()
