@@ -128,7 +128,7 @@ class Player(arcade.Sprite):
     def is_invincible(self):
         return self.invincibility_timer > 0
 
-    def update(self, delta_time: float = 1 / 60):
+    def on_update(self, delta_time: float = 1/ 60):
         """
         Move the sprite and wrap
         """
@@ -148,8 +148,10 @@ class Player(arcade.Sprite):
                     self.center_y = PLAYER_START_Y
                     self.change_y = 0
                     self.change_x = 0
+
         # wrap
         wrap(self)
+
 
 class Asteroid(arcade.Sprite):
 
@@ -580,7 +582,7 @@ class InGameView(arcade.View):
             self.player_sprite.thrust()
 
         # Update player sprite
-        self.player_sprite.update()
+        self.player_sprite.on_update(delta_time)
 
         # Update the player shots
         self.player_shot_list.update()
