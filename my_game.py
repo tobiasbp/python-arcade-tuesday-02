@@ -128,7 +128,7 @@ class Player(arcade.Sprite):
     def is_invincible(self):
         return self.invincibility_timer > 0
 
-    def on_update(self, delta_time: float = 1/ 60):
+    def on_update(self, delta_time):
         """
         Move the sprite and wrap
         """
