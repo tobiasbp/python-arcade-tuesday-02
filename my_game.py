@@ -394,6 +394,7 @@ class InGameView(arcade.View):
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = None
+        self.player_shot_fire_rate_counter = 0
 
         # Asteroid SpriteList
         self.asteroid_list = None
@@ -506,7 +507,6 @@ class InGameView(arcade.View):
         # and their shots
         self.ufo_shot_list.draw()
 
-
         # and their shots
         self.ufo_shot_list.draw()
 
@@ -552,7 +552,7 @@ class InGameView(arcade.View):
                 self.player_sprite.reset()
                 a.kill()
 
-        #player shot
+        # Player shot
         for shot in self.player_shot_list:
 
             for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
@@ -580,6 +580,9 @@ class InGameView(arcade.View):
         # check for thrust
         if self.thrust_pressed:
             self.player_sprite.thrust()
+
+        if self.player_shot_fire_rate_counter < 0.2:
+            self.player_shot_fire_rate_counter += delta_time
 
         # Update player sprite
         self.player_sprite.on_update(delta_time)
@@ -627,14 +630,16 @@ class InGameView(arcade.View):
             self.thrust_pressed = True
 
         if key == PLAYER_FIRE_KEY:
-            new_shot = PlayerShot(
-                self.player_sprite.center_x,
-                self.player_sprite.center_y,
-                self.player_sprite.angle
-            )
+            if self.player_shot_fire_rate_counter > 0.2:
 
-            self.player_shot_list.append(new_shot)
+                new_shot = PlayerShot(
+                    self.player_sprite.center_x,
+                    self.player_sprite.center_y,
+                    self.player_sprite.angle
+                )
 
+                self.player_shot_list.append(new_shot)
+                self.player_shot_fire_rate_counter = 0
 
     def on_key_release(self, key, modifiers):
         """
