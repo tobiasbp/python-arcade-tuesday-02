@@ -1,10 +1,7 @@
 """
 Simple program to show moving a sprite with the keyboard.
-
 This program uses the Arcade library found at http://arcade.academy
-
 Artwork from https://kenney.nl/assets/space-shooter-redux
-
 """
 
 import arcade
@@ -28,10 +25,6 @@ PLAYER_START_X = SCREEN_WIDTH // 2
 PLAYER_START_Y = 50
 PLAYER_SHOT_SPEED = 4
 PLAYER_SHOT_RANGE = SCREEN_WIDTH // 2
-
-PLAYER_START_Y = SCREEN_HEIGHT // 2
-PLAYER_SHOT_SPEED = 4
-PLAYER_SHOT_RANGE = SCREEN_WIDTH // 2
 PLAYER_SPEED_LIMIT = 5
 PLAYER_INVINCIBILTY_SECONDS = 5
 
@@ -41,7 +34,8 @@ PLAYER_FIRE_KEY = arcade.key.SPACE
 
 # Asteroids variables
 ASTEROIDS_PR_LEVEL = 5
-ASTEROIDS_SPEED = 1.
+ASTEROIDS_SPEED = 1
+ASTEROID_POINT_VALUE = 50
 
 # UFO constants
 UFO_SPEED = 2  # both for x and y note: has to be int
@@ -91,7 +85,7 @@ class Player(arcade.Sprite):
         """
         Setup new Player object
         """
-        
+
         # Graphics to use for Player
         super().__init__("images/playerShip1_red.png")
 
@@ -134,7 +128,7 @@ class Player(arcade.Sprite):
     def is_invincible(self):
         return self.invincibility_timer > 0
 
-    def on_update(self, delta_time: float = 1 / 60):
+    def on_update(self, delta_time):
         """
         Move the sprite and wrap
         """
@@ -160,14 +154,14 @@ class Player(arcade.Sprite):
 
 
 class Asteroid(arcade.Sprite):
-    
+
     def __init__(self):
-        
+
         # Initialize the asteroid
-        
+
         # Graphics
         super().__init__(
-            filename="images/Meteors/meteorGrey_big1.png", 
+            filename="images/Meteors/meteorGrey_big1.png",
             scale=SPRITE_SCALING
         )
 
@@ -176,9 +170,9 @@ class Asteroid(arcade.Sprite):
         self.center_y = random.randint(0, SCREEN_HEIGHT)
         self.change_x = math.sin(self.radians) * ASTEROIDS_SPEED
         self.change_y = math.cos(self.radians) * ASTEROIDS_SPEED
-        
+
     def update(self):
-         
+
         # Update position
         self.center_x += self.change_x
         self.center_y += self.change_y
@@ -195,8 +189,6 @@ class PlayerShot(arcade.Sprite):
     sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
 
     def __init__(self, center_x=0, center_y=0, angle=0):
-
-
         """
         Setup new PlayerShot object
         """
@@ -206,11 +198,14 @@ class PlayerShot(arcade.Sprite):
 
         self.center_x = center_x
         self.center_y = center_y
-        self.change_y = PLAYER_SHOT_SPEED
+        self.angle = angle
+        self.change_x = math.cos(self.radians + math.pi / 2) * PLAYER_SHOT_SPEED
+        self.change_y = math.sin(self.radians + math.pi / 2) * PLAYER_SHOT_SPEED
         self.distance_traveled = 0
         self.speed = PLAYER_SHOT_SPEED
 
         PlayerShot.sound_fire.play()
+
     def update(self):
         """
         Move the sprite
@@ -251,14 +246,16 @@ class UFOShot(arcade.Sprite):
 
 
 class BonusUFO(arcade.Sprite):
+    """occasionally moves across the screen. Grants the player points if shot"""
+
     sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
     sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
-    """occasionally moves across the screen. Grants the player points if shot"""
 
     def __int__(self, shot_list, **kwargs):
 
         kwargs['filename'] = "images/ufoBlue.png"
-        # UFO's are big or small
+
+        # UFOs are big or small
         kwargs['scale'] = SPRITE_SCALING * random.choice([UFO_SIZE_SMALL, UFO_SIZE_BIG])
 
         # set random position off-screen
@@ -345,7 +342,7 @@ class IntroView(arcade.View):
         self.title_graphics = arcade.load_texture("images/UI/asteroidsTitle.png")
         self.play_button = arcade.load_texture("images/UI/asteroidsStartButton.png")
 
-        arcade.set_background_color(arcade.color.AMAZON)
+        arcade.set_background_color(SCREEN_COLOR)
 
     def on_draw(self):
         """
@@ -385,17 +382,15 @@ class InGameView(arcade.View):
         """
 
         # Call the parent class initializer
-        super().__init__(width, height)
+        super().__init__()
 
         # loading sounds
         self.sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
         self.sound_thrust = arcade.load_sound("sounds/spaceEngine_003.ogg")
         self.sound_thrust_player = None
-        
+
         # game state variable.
         self.game_state = None
-
-
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = None
@@ -463,8 +458,6 @@ class InGameView(arcade.View):
 
         self.sound_thrust_player = None
 
-        self.game_state = GameState.INTRO
-
         # No points when the game starts
         self.player_score = 0
 
@@ -482,7 +475,7 @@ class InGameView(arcade.View):
             lives=PLAYER_START_LIVES,
             scale=SPRITE_SCALING
         )
-        
+
         # Spawn Asteroids
         for r in range(ASTEROIDS_PR_LEVEL):
             self.asteroid_list.append(Asteroid())
@@ -514,86 +507,82 @@ class InGameView(arcade.View):
         self.ufo_shot_list.draw()
 
 
-            # and their shots
-            self.ufo_shot_list.draw()
+        # and their shots
+        self.ufo_shot_list.draw()
 
-            # Draw players score on screen
-            arcade.draw_text(
-                "SCORE: {}".format(self.player_score),  # Text to show
-                10,  # X position
-                SCREEN_HEIGHT - 20,  # Y_position
-                arcade.color.WHITE  # Color of text
-            )
-            arcade.draw_text(
-                "LIVES: {}".format(self.player_sprite.lives),  # Text to show
-                10,  # X position
-                SCREEN_HEIGHT - 45, # Y positon
-                arcade.color.WHITE  # Color of text
-            )
-
-
-        # only post-game
-        elif self.game_state == GameState.GAME_OVER:
-            pass
+        # Draw players score on screen
+        arcade.draw_text(
+            "SCORE: {}".format(self.player_score),  # Text to show
+            10,  # X position
+            SCREEN_HEIGHT - 20,  # Y_position
+            arcade.color.WHITE  # Color of text
+        )
+        arcade.draw_text(
+            "LIVES: {}".format(self.player_sprite.lives),  # Text to show
+            10,  # X position
+            SCREEN_HEIGHT - 45, # Y positon
+            arcade.color.WHITE  # Color of text
+        )
 
     def on_update(self, delta_time):
         """
         Movement and game logic
         """
 
-        if self.game_state == GameState.IN_GAME:
-            # Calculate player speed based on the keys pressed
-            # Move player with keyboard
-            if self.left_pressed and not self.right_pressed:
-                self.player_sprite.angle+= PLAYER_ROTATE_SPEED
-            elif self.right_pressed and not self.left_pressed:
-                self.player_sprite.angle+= -PLAYER_ROTATE_SPEED
+        # Calculate player speed based on the keys pressed
+        # Move player with keyboard
+        if self.left_pressed and not self.right_pressed:
+            self.player_sprite.angle+= PLAYER_ROTATE_SPEED
+        elif self.right_pressed and not self.left_pressed:
+            self.player_sprite.angle+= -PLAYER_ROTATE_SPEED
 
-            # rotate player with joystick if present
-            if self.joystick:
-                self.player_sprite.angle += round(self.joystick.x) * -PLAYER_ROTATE_SPEED
+        # rotate player with joystick if present
+        if self.joystick:
+            self.player_sprite.angle += round(self.joystick.x) * -PLAYER_ROTATE_SPEED
 
-            # checks if ufo shot collides with player
-            if any(self.player_sprite.collides_with_list(self.ufo_shot_list)):
+        # checks if ufo shot collides with player
+        if any(self.player_sprite.collides_with_list(self.ufo_shot_list)):
+            self.player_sprite.lives -= 1
+
+        # Check if collision with Asteroids and dies and kills the Asteroid
+        for a in self.player_sprite.collides_with_list(self.asteroid_list):
+            if not self.player_sprite.is_invincible:
+                # In the future, the Player will explode instead of disappearing.
                 self.player_sprite.lives -= 1
+                self.player_sprite.reset()
+                a.kill()
 
-            #player shot
-            for shot in self.player_shot_list:
+        #player shot
+        for shot in self.player_shot_list:
 
-                for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
-                    shot.kill()
-                    self.sound_explosion.play()
-                    ufo_hit.destroy()
-                    self.player_score += UFO_POINTS_REWARD
+            for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
+                shot.kill()
+                self.sound_explosion.play()
+                ufo_hit.destroy()
+                self.player_score += UFO_POINTS_REWARD
 
-            if self.sound_thrust_player is not None and self.thrust_pressed is False and self.sound_thrust.is_playing(
-                    self.sound_thrust_player):
-                v = self.sound_thrust.get_volume(self.sound_thrust_player) * 0.95
-                self.sound_thrust.set_volume(v, self.sound_thrust_player)
-                if v == 0:
-                    self.sound_thrust.stop(self.sound_thrust_player)
+        if self.sound_thrust_player is not None and self.thrust_pressed is False and self.sound_thrust.is_playing(
+                self.sound_thrust_player):
+            v = self.sound_thrust.get_volume(self.sound_thrust_player) * 0.95
+            self.sound_thrust.set_volume(v, self.sound_thrust_player)
+            if v == 0:
+                self.sound_thrust.stop(self.sound_thrust_player)
 
-            # Check for PlayerShot - Asteroid collisions
-            for s in self.player_shot_list:
+        # Check for PlayerShot - Asteroid collisions
+        for s in self.player_shot_list:
 
-                for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
-                    s.kill()
-                    a.kill()
-                    self.sound_explosion.play()
-                    self.player_score += ASTEROID_POINT_VALUE
+            for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
+                s.kill()
+                a.kill()
+                self.sound_explosion.play()
+                self.player_score += ASTEROID_POINT_VALUE
 
-            # check for thrust
-            if self.thrust_pressed:
-                self.player_sprite.thrust()
-
-            # Update player sprite
-            self.player_sprite.update()
-
-            # Update the player shots
-            self.player_shot_list.update()
+        # check for thrust
+        if self.thrust_pressed:
+            self.player_sprite.thrust()
 
         # Update player sprite
-        self.player_sprite.update()
+        self.player_sprite.on_update(delta_time)
 
         # Update the player shots
         self.player_shot_list.update()
@@ -628,6 +617,7 @@ class InGameView(arcade.View):
             self.right_pressed = True
         elif key == arcade.key.SPACE:
             self.space_pressed = True
+
         if key == PLAYER_THRUST_KEY:
             #if thrust just got pressed start sound loop
             if self.thrust_pressed is False:
@@ -635,16 +625,15 @@ class InGameView(arcade.View):
                     self.sound_thrust.stop(self.sound_thrust_player)
                 self.sound_thrust_player = self.sound_thrust.play(loop=True)
             self.thrust_pressed = True
+
         if key == PLAYER_FIRE_KEY:
             new_shot = PlayerShot(
                 self.player_sprite.center_x,
-                self.player_sprite.center_y
+                self.player_sprite.center_y,
+                self.player_sprite.angle
             )
 
             self.player_shot_list.append(new_shot)
-
-        if key == PLAYER_THRUST_KEY:
-            self.player_sprite.thrust()
 
 
     def on_key_release(self, key, modifiers):
@@ -690,6 +679,9 @@ class GameOverView(arcade.View):
 
         self.game_over_sign = arcade.load_texture("images/UI/asteroidsGameOverSign.png")
         self.restart_button = arcade.load_texture("images/UI/asteroidsRestartButton.png")
+
+        #set background color
+        arcade.set_background_color(SCREEN_COLOR)
 
     def on_draw(self):
         """
