@@ -153,7 +153,7 @@ class Player(arcade.Sprite):
         wrap(self)
 
 
-class Asteroid(arcade.Sprite
+class Asteroid(arcade.Sprite):
     
     # A list of valid sizes for asteroids and their respective graphics
     valid_sizes = {1: "images/Meteors/meteorGrey_tiny1.png", 2: "images/Meteors/meteorGrey_small1.png", 3: "images/Meteors/meteorGrey_med1.png", 4: "images/Meteors/meteorGrey_big1.png"}
