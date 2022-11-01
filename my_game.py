@@ -157,10 +157,13 @@ class Asteroid(arcade.Sprite):
 
     valid_sizes = {1: "images/Meteors/meteorGrey_tiny1.png", 2: "images/Meteors/meteorGrey_small1.png", 3: "images/Meteors/meteorGrey_med1.png", 4: "images/Meteors/meteorGrey_big1.png"}
 
-    def __init__(self, size):
+    def __init__(self, size=None):
 
         # Initialize the asteroid
-
+        
+        if size is None:
+            size = random.randrange(1, 4)
+        
         # Graphics
         super().__init__(
             filename=Asteroid.valid_sizes[size],
@@ -480,7 +483,7 @@ class InGameView(arcade.View):
 
         # Spawn Asteroids
         for r in range(ASTEROIDS_PR_LEVEL):
-            self.asteroid_list.append(Asteroid(random.randrange(1, 4)))
+            self.asteroid_list.append(Asteroid())
 
         # setup spawn_ufo to run regularly
         arcade.schedule(self.spawn_ufo, UFO_SPAWN_RATE)
