@@ -394,7 +394,7 @@ class InGameView(arcade.View):
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = None
-        self.player_shot_fire_rate_counter = 0
+        self.player_shot_fire_rate_timer = 0
 
         # Asteroid SpriteList
         self.asteroid_list = None
