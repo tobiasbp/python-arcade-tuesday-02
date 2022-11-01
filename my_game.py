@@ -28,9 +28,9 @@ PLAYER_SHOT_RANGE = SCREEN_WIDTH // 2
 PLAYER_SPEED_LIMIT = 5
 PLAYER_INVINCIBILTY_SECONDS = 5
 
-
 PLAYER_THRUST_KEY = arcade.key.UP
 PLAYER_FIRE_KEY = arcade.key.SPACE
+PLAYER_FIRE_RATE = 0.2
 
 # Asteroids variables
 ASTEROIDS_PR_LEVEL = 5
@@ -581,7 +581,7 @@ class InGameView(arcade.View):
         if self.thrust_pressed:
             self.player_sprite.thrust()
 
-        if self.player_shot_fire_rate_counter < 0.2:
+        if self.player_shot_fire_rate_counter < PLAYER_FIRE_RATE:
             self.player_shot_fire_rate_counter += delta_time
 
         # Update player sprite
@@ -630,7 +630,7 @@ class InGameView(arcade.View):
             self.thrust_pressed = True
 
         if key == PLAYER_FIRE_KEY:
-            if self.player_shot_fire_rate_counter > 0.2:
+            if self.player_shot_fire_rate_counter > PLAYER_FIRE_RATE:
 
                 new_shot = PlayerShot(
                     self.player_sprite.center_x,
