@@ -581,8 +581,8 @@ class InGameView(arcade.View):
         if self.thrust_pressed:
             self.player_sprite.thrust()
 
-        if self.player_shot_fire_rate_counter < PLAYER_FIRE_RATE:
-            self.player_shot_fire_rate_counter += delta_time
+        if self.player_shot_fire_rate_timer < PLAYER_FIRE_RATE:
+            self.player_shot_fire_rate_timer += delta_time
 
         # Update player sprite
         self.player_sprite.on_update(delta_time)
@@ -630,7 +630,7 @@ class InGameView(arcade.View):
             self.thrust_pressed = True
 
         if key == PLAYER_FIRE_KEY:
-            if self.player_shot_fire_rate_counter > PLAYER_FIRE_RATE:
+            if self.player_shot_fire_rate_timer > PLAYER_FIRE_RATE:
 
                 new_shot = PlayerShot(
                     self.player_sprite.center_x,
@@ -639,7 +639,7 @@ class InGameView(arcade.View):
                 )
 
                 self.player_shot_list.append(new_shot)
-                self.player_shot_fire_rate_counter = 0
+                self.player_shot_fire_rate_timer = 0
 
     def on_key_release(self, key, modifiers):
         """
