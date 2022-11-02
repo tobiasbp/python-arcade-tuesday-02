@@ -163,7 +163,7 @@ class Asteroid(arcade.Sprite):
         # Initialize the asteroid
         
         if size is None:
-            size = random.randrange(Asteroid.valid_sizes[0], Asteroid.valid_sizes[3])
+            size = random.choice(Asteroid.valid_sizes)
         
         # Graphics
         super().__init__(
