@@ -155,19 +155,19 @@ class Player(arcade.Sprite):
 
 class Asteroid(arcade.Sprite):
 
-    valid_sizes = (1, 2, 3, 4)
-    graphics = {1: "images/Meteors/meteorGrey_tiny1.png", 2: "images/Meteors/meteorGrey_small1.png", 3: "images/Meteors/meteorGrey_med1.png", 4: "images/Meteors/meteorGrey_big1.png"}
+    valid_sizes = {1: "images/Meteors/meteorGrey_tiny1.png", 2: "images/Meteors/meteorGrey_small1.png", 3: "images/Meteors/meteorGrey_med1.png", 4: "images/Meteors/meteorGrey_big1.png"}
+    
     
     def __init__(self, size=None):
 
         # Initialize the asteroid
         
         if size is None:
-            size = random.choice(Asteroid.valid_sizes)
+            size = random.choice(list(Asteroid.valid_sizes.keys()))
         
         # Graphics
         super().__init__(
-            filename=Asteroid.graphics[size],
+            filename=Asteroid.valid_sizes[size],
             scale=SPRITE_SCALING
         )
 
