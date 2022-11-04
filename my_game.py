@@ -627,7 +627,7 @@ class InGameView(arcade.View):
             self.thrust_pressed = True
 
         if key == PLAYER_FIRE_KEY:
-            if self.player_shot_fire_rate_timer > PLAYER_FIRE_RATE:
+            if self.player_shot_fire_rate_timer >= PLAYER_FIRE_RATE:
                 new_shot = PlayerShot(
                     self.player_sprite.center_x,
                     self.player_sprite.center_y,
