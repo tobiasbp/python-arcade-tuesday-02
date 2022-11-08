@@ -143,11 +143,13 @@ class Player(arcade.Sprite):
             if self.invincibility_timer < 3:
                 # Visible
                 if self.alpha == 0:
-                    self.alpha = 255
+                    self.alpha = 155
                     self.center_x = PLAYER_START_X
                     self.center_y = PLAYER_START_Y
                     self.change_y = 0
                     self.change_x = 0
+            if self.invincibility_timer < 0.1:
+                self.alpha = 255
 
         # wrap
         wrap(self)
@@ -631,15 +633,16 @@ class InGameView(arcade.View):
             self.thrust_pressed = True
 
         if key == PLAYER_FIRE_KEY:
-            if self.player_shot_fire_rate_timer >= PLAYER_FIRE_RATE:
-                new_shot = PlayerShot(
-                    self.player_sprite.center_x,
-                    self.player_sprite.center_y,
-                    self.player_sprite.angle
-                )
+            if not self.player_sprite.is_invincible:
+                if self.player_shot_fire_rate_timer >= PLAYER_FIRE_RATE:
+                    new_shot = PlayerShot(
+                        self.player_sprite.center_x,
+                        self.player_sprite.center_y,
+                        self.player_sprite.angle
+                    )
 
-                self.player_shot_list.append(new_shot)
-                self.player_shot_fire_rate_timer = 0
+                    self.player_shot_list.append(new_shot)
+                    self.player_shot_fire_rate_timer = 0
 
     def on_key_release(self, key, modifiers):
         """
