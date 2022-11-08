@@ -171,6 +171,7 @@ class Asteroid(arcade.Sprite):
             scale=SPRITE_SCALING
         )
 
+        self.size = size
         self.angle = arcade.rand_angle_360_deg()
         self.center_x = random.randint(0, SCREEN_WIDTH)
         self.center_y = random.randint(0, SCREEN_HEIGHT)
