@@ -148,8 +148,8 @@ class Player(arcade.Sprite):
                     self.center_y = PLAYER_START_Y
                     self.change_y = 0
                     self.change_x = 0
-            if self.invincibility_timer < 0.1:
-                self.alpha = 255
+        else:
+            self.alpha = 255
 
         # wrap
         wrap(self)
