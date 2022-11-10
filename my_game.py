@@ -35,7 +35,7 @@ PLAYER_FIRE_RATE = 0.2
 # Asteroids variables
 ASTEROIDS_PR_LEVEL = 5
 ASTEROIDS_SPEED = 1
-ASTEROID_POINT_VALUE = 50
+ASTEROID_SCORE_VALUES = [20, 30, 40, 50]
 ASTEROIDS_PR_SPLIT = 2
 
 # UFO constants
@@ -597,8 +597,8 @@ class InGameView(arcade.View):
                 s.kill()
                 a.kill()
                 self.sound_explosion.play()
-                self.player_score += ASTEROID_POINT_VALUE
-
+                self.player_score += ASTEROID_SCORE_VALUES[a.size-1]
+                
         # check for thrust
         if self.thrust_pressed:
             self.player_sprite.thrust()
