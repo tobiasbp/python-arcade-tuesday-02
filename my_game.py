@@ -36,6 +36,7 @@ PLAYER_FIRE_RATE = 0.2
 ASTEROIDS_PR_LEVEL = 5
 ASTEROIDS_SPEED = 1
 ASTEROID_POINT_VALUE = 50
+ASTEROIDS_PR_SPLIT = 2
 
 # UFO constants
 UFO_SPEED = 2  # both for x and y note: has to be int
@@ -157,7 +158,7 @@ class Asteroid(arcade.Sprite):
 
     valid_sizes = {1: "images/Meteors/meteorGrey_tiny1.png", 2: "images/Meteors/meteorGrey_small1.png", 3: "images/Meteors/meteorGrey_med1.png", 4: "images/Meteors/meteorGrey_big1.png"}
     
-    def __init__(self, size=None):
+    def __init__(self, size=None, center_x=None, center_y=None, angle=None):
         # Initialize the asteroid
         
         if size is None:
@@ -171,8 +172,12 @@ class Asteroid(arcade.Sprite):
 
         self.size = size
         self.angle = arcade.rand_angle_360_deg()
-        self.center_x = random.randint(0, SCREEN_WIDTH)
-        self.center_y = random.randint(0, SCREEN_HEIGHT)
+        if center_x == None:
+            self.center_x = random.randint(0, SCREEN_WIDTH)
+            self.center_y = random.randint(0, SCREEN_HEIGHT)
+        else:
+            self.center_x = center_x
+            self.center_y = center_y
         self.change_x = math.sin(self.radians) * ASTEROIDS_SPEED
         self.change_y = math.cos(self.radians) * ASTEROIDS_SPEED
         self.rotation_speed = random.randrange(0, 5)
@@ -579,6 +584,11 @@ class InGameView(arcade.View):
         for s in self.player_shot_list:
 
             for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
+                for n in range(ASTEROIDS_PR_SPLIT):
+                    if a.size > 1:
+                        self.asteroid_list.append(Asteroid(a.size-1, a.center_x, a.center_y))
+                    else:
+                        pass
                 s.kill()
                 a.kill()
                 self.sound_explosion.play()
