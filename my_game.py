@@ -184,8 +184,8 @@ class Asteroid(arcade.Sprite):
         self.change_x = math.sin(self.radians) * ASTEROIDS_SPEED
         self.change_y = math.cos(self.radians) * ASTEROIDS_SPEED
         self.rotation_speed = random.randrange(0, 5)
-        # The direction variable is neccessary for splitting the asteroid
         self.direction = self.angle
+        self.value = ASTEROID_SCORE_VALUES[self.size-1]
         
     def update(self):
         # Update position
@@ -597,7 +597,7 @@ class InGameView(arcade.View):
                 s.kill()
                 a.kill()
                 self.sound_explosion.play()
-                self.player_score += ASTEROID_SCORE_VALUES[a.size-1]
+                self.player_score += a.value
                 
         # check for thrust
         if self.thrust_pressed:
