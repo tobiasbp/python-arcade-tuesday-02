@@ -19,19 +19,9 @@ SCREEN_COLOR = arcade.color.BLACK
 
 # Variables controlling the player
 PLAYER_GRAPHICS_CORRECTION = math.pi / 2  # the player graphic is turned 45 degrees too much compared to actual angle
-PLAYER_START_X = CONFIG['SCREEN_WIDTH'] // 2
-PLAYER_SHOT_RANGE = CONFIG['SCREEN_WIDTH'] // 2
 
-CONFIG['PLAYER_THRUST_KEY'] = arcade.key.UP
+PLAYER_THRUST_KEY = arcade.key.UP
 PLAYER_FIRE_KEY = arcade.key.SPACE
-
-# intro screen constants
-BUTTON_X = CONFIG['SCREEN_WIDTH'] // 2
-BUTTON_Y = CONFIG['SCREEN_HEIGHT'] // 2
-
-# titles (intro sign and game over sign)
-TITLE_X = CONFIG['SCREEN_WIDTH'] // 2
-TITLE_Y = CONFIG['SCREEN_HEIGHT'] * 0.75
 
 
 def wrap(sprite: arcade.Sprite):
@@ -118,7 +108,7 @@ class Player(arcade.Sprite):
                 # Visible
                 if self.alpha == 0:
                     self.alpha = 155
-                    self.center_x = PLAYER_START_X
+                    self.center_x = CONFIG['PLAYER_START_X']
                     self.center_y = CONFIG['PLAYER_START_Y']
                     self.change_y = 0
                     self.change_x = 0
@@ -215,7 +205,7 @@ class PlayerShot(arcade.Sprite):
         self.distance_traveled += self.speed
 
         # When distance made kill it
-        if self.distance_traveled > PLAYER_SHOT_RANGE:
+        if self.distance_traveled > CONFIG['PLAYER_SHOT_RANGE']:
             self.kill()
 
 
@@ -344,13 +334,13 @@ class IntroView(arcade.View):
         arcade.start_render()
 
         self.title_graphics.draw_scaled(
-            center_x=TITLE_X,
-            center_y=TITLE_Y
+            center_x=CONFIG['TITLE_X'],
+            center_y=CONFIG['TITLE_Y']
         )
 
         self.play_button.draw_scaled(
-            center_x=BUTTON_X,
-            center_y=BUTTON_Y,
+            center_x=CONFIG['BUTTON_X'],
+            center_y=CONFIG['BUTTON_Y'],
         )
 
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
@@ -358,7 +348,7 @@ class IntroView(arcade.View):
         called whenever the mouse is clicked on the screen
         """
 
-        if arcade.get_distance(x, y, BUTTON_X, BUTTON_Y) < self.play_button.width // 2:
+        if arcade.get_distance(x, y, CONFIG['BUTTON_X'], CONFIG['BUTTON_Y']) < self.play_button.width // 2:
             in_game_view = InGameView()
             self.window.show_view(in_game_view)
 
@@ -463,7 +453,7 @@ class InGameView(arcade.View):
 
         # Create a Player object
         self.player_sprite = Player(
-            center_x=PLAYER_START_X,
+            center_x=CONFIG['PLAYER_START_X'],
             center_y=CONFIG['PLAYER_START_Y'],
             lives=CONFIG['PLAYER_START_LIVES'],
             scale=CONFIG['SPRITE_SCALING']
@@ -619,7 +609,7 @@ class InGameView(arcade.View):
         elif key == arcade.key.SPACE:
             self.space_pressed = True
 
-        if key == CONFIG['PLAYER_THRUST_KEY']:
+        if key == PLAYER_THRUST_KEY:
             # if thrust just got pressed start sound loop
             if self.thrust_pressed is False:
                 if self.sound_thrust_player is not None:
@@ -654,7 +644,7 @@ class InGameView(arcade.View):
             self.right_pressed = False
         elif key == arcade.key.SPACE:
             self.space_pressed = False
-        if key == CONFIG['PLAYER_THRUST_KEY']:
+        if key == PLAYER_THRUST_KEY:
             self.thrust_pressed = False
 
     def on_joybutton_press(self, joystick, button_no):
@@ -694,13 +684,13 @@ class GameOverView(arcade.View):
         arcade.start_render()
 
         self.game_over_sign.draw_scaled(
-            center_x=TITLE_X,
-            center_y=TITLE_Y
+            center_x=CONFIG['TITLE_X'],
+            center_y=CONFIG['TITLE_Y']
         )
 
         self.restart_button.draw_scaled(
-            center_x=BUTTON_X,
-            center_y=BUTTON_Y
+            center_x=CONFIG['BUTTON_X'],
+            center_y=CONFIG['BUTTON_Y']
         )
 
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
@@ -708,7 +698,7 @@ class GameOverView(arcade.View):
         called whenever the mouse is clicked on the screen.
         """
 
-        if arcade.get_distance(x, y, BUTTON_X, BUTTON_Y) < self.restart_button.height // 2:
+        if arcade.get_distance(x, y, CONFIG['BUTTON_X'], CONFIG['BUTTON_Y']) < self.restart_button.height // 2:
             in_game_view = InGameView()
             self.window.show_view(in_game_view)
 
