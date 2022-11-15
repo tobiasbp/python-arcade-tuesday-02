@@ -2,11 +2,11 @@
 
 SPRITE_SCALING = 0.5
 
-[screen_constants]
+# screen_constants
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
-[player_constants]
+# player_constants
 PLAYER_START_LIVES = 3
 PLAYER_ROTATE_SPEED = 5
 PLAYER_THRUST = 0.05  # speed gained from thrusting
@@ -14,13 +14,15 @@ PLAYER_START_Y = 50
 PLAYER_SHOT_SPEED = 4
 PLAYER_SPEED_LIMIT = 5
 PLAYER_INVINCIBILITY_SECONDS = 5
+PLAYER_FIRE_RATE = 0.2
 
-[asteroid_constants]
+# asteroid_constants
 ASTEROIDS_PR_LEVEL = 5
 ASTEROIDS_SPEED = 1
-ASTEROID_POINT_VALUE = 50
+ASTEROID_SCORE_VALUES = [20, 30, 40, 50]
+ASTEROIDS_PR_SPLIT = 2
 
-[ufo_constants]
+# ufo_constants
 UFO_SPEED = 2  # both for x and y note: has to be int
 UFO_DIR_CHANGE_RATE = 3
 UFO_SPAWN_RATE = 10  # seconds
