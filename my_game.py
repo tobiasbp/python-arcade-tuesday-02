@@ -7,17 +7,15 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 import arcade
 import math
 import random
-
 import tomli
 
+# load the config file as a dict
 with open('my_game.toml', 'rb') as fp:
     CONFIG = tomli.load(fp)
 
-print(CONFIG)
-
+# has to be defined here since they use libraries
 SCREEN_COLOR = arcade.color.BLACK
 
-# Variables controlling the player
 PLAYER_GRAPHICS_CORRECTION = math.pi / 2  # the player graphic is turned 45 degrees too much compared to actual angle
 
 PLAYER_THRUST_KEY = arcade.key.UP
