@@ -311,6 +311,7 @@ class BonusUFO(arcade.Sprite):
         """
         fire a new shot
         """
+        arcade.play_sound(BonusUFO.sound_fire)
         new_ufo_shot = UFOShot()  # sprites created with arcade.schedule don't __init__ it has to be manually called
         new_ufo_shot.__init__(
             filename="images/Lasers/laserGreen07.png",
@@ -322,7 +323,6 @@ class BonusUFO(arcade.Sprite):
         new_ufo_shot.change_x = random.randrange(-UFO_SHOT_SPEED, UFO_SHOT_SPEED)
         new_ufo_shot.change_y = new_ufo_shot.change_x - UFO_SHOT_SPEED
         self.shot_list.append(new_ufo_shot)
-        arcade.play_sound(BonusUFO.sound_fire)
     def update(self):
         """update position, and kill if out of bounds"""
 
@@ -621,6 +621,7 @@ class InGameView(arcade.View):
 
         # check if the player is dead
         if self.player_sprite.lives <= 0:
+            arcade.unschedule(self.spawn_ufo)
             self.sound_thrust.stop(self.sound_thrust_player)
             game_over_view = GameOverView()
             self.window.show_view(game_over_view)
