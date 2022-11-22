@@ -60,6 +60,9 @@ TITLE_Y = SCREEN_HEIGHT * 0.75
 RESTART_BUTTON_X = PLAY_BUTTON_X
 RESTART_BUTTON_Y = PLAY_BUTTON_Y
 
+# Particle effects constants
+TEXTURES = [arcade.make_soft_circle_texture(8, arcade.color.WHITE),
+            arcade.make_soft_circle_texture(8, arcade.color.PASTEL_YELLOW)]
 
 def wrap(sprite: arcade.Sprite):
     """
@@ -157,15 +160,15 @@ class Player(arcade.Sprite):
 
 
 class Asteroid(arcade.Sprite):
+    valid_sizes = {1: "images/Meteors/meteorGrey_tiny1.png", 2: "images/Meteors/meteorGrey_small1.png",
+                   3: "images/Meteors/meteorGrey_med1.png", 4: "images/Meteors/meteorGrey_big1.png"}
 
-    valid_sizes = {1: "images/Meteors/meteorGrey_tiny1.png", 2: "images/Meteors/meteorGrey_small1.png", 3: "images/Meteors/meteorGrey_med1.png", 4: "images/Meteors/meteorGrey_big1.png"}
-    
     def __init__(self, size=None, center_x=None, center_y=None, angle=None):
         # Initialize the asteroid
-        
+
         if size is None:
             size = random.choice(list(Asteroid.valid_sizes.keys()))
-        
+
         # Graphics
         super().__init__(
             filename=Asteroid.valid_sizes[size],
@@ -187,16 +190,16 @@ class Asteroid(arcade.Sprite):
         self.change_y = math.cos(self.radians) * ASTEROIDS_SPEED
         self.rotation_speed = random.randrange(0, 5)
         self.direction = self.angle
-        self.value = ASTEROID_SCORE_VALUES[self.size-1]
-        
+        self.value = ASTEROID_SCORE_VALUES[self.size - 1]
+
     def update(self):
         # Update position
         self.center_x += self.change_x
         self.center_y += self.change_y
-        
+
         # Rotate Asteroid
         self.angle += self.rotation_speed
-        
+
         # wrap
         wrap(self)
 
@@ -404,6 +407,7 @@ class InGameView(arcade.View):
         super().__init__()
 
         # loading sounds
+
         self.sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
         self.sound_thrust = arcade.load_sound("sounds/spaceEngine_003.ogg")
         self.sound_thrust_player = None
@@ -424,6 +428,8 @@ class InGameView(arcade.View):
         self.player_lives = None
         self.player_speed = 0
         self.opposite_angle = 0
+        self.player_thrust = None
+        self.spinner = None
 
         # set up ufo info
         self.ufo_list = None
@@ -496,12 +502,28 @@ class InGameView(arcade.View):
             scale=SPRITE_SCALING
         )
 
+        image_source = "images/Effects/fire10.png"
+        self.player_thrust = arcade.Sprite(image_source)
+        self.player_thrust.scale = SPRITE_SCALING
+        self.player_thrust.top = self.player_sprite.bottom
+
         # Spawn Asteroids
         for r in range(ASTEROIDS_PR_LEVEL):
             self.asteroid_list.append(Asteroid())
 
         # setup spawn_ufo to run regularly
         arcade.schedule(self.spawn_ufo, UFO_SPAWN_RATE)
+
+        self.spinner = arcade.Emitter(
+            center_xy=(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2),
+            emit_controller=arcade.EmitterIntervalWithTime(0.025, 100.0),
+            particle_factory=lambda emitter: arcade.FadeParticle(
+                filename_or_texture=random.choice(TEXTURES),
+                change_xy=(0, 6.0),
+                lifetime=0.2,
+            )
+        )
+        self.spinner.change_angle = 15.38
 
     def on_draw(self):
         """
@@ -517,6 +539,9 @@ class InGameView(arcade.View):
         # Draw the player sprite
         self.player_sprite.draw()
 
+        # Draw the player thrust sprite
+        self.player_thrust.draw()
+
         # Draw asteroids
         self.asteroid_list.draw()
 
@@ -528,6 +553,9 @@ class InGameView(arcade.View):
 
         # and their shots
         self.ufo_shot_list.draw()
+
+        # particle show
+        self.spinner.draw()
 
         # Draw players score on screen
         arcade.draw_text(
@@ -552,8 +580,12 @@ class InGameView(arcade.View):
         # Move player with keyboard
         if self.left_pressed and not self.right_pressed:
             self.player_sprite.angle += PLAYER_ROTATE_SPEED
+            self.player_sprite.rotate = True
         elif self.right_pressed and not self.left_pressed:
             self.player_sprite.angle += -PLAYER_ROTATE_SPEED
+            self.player_sprite.rotate = True
+        else:
+            self.player_sprite.rotate = False
 
         # rotate player with joystick if present
         if self.joystick:
@@ -593,14 +625,15 @@ class InGameView(arcade.View):
             for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
                 for n in range(ASTEROIDS_PR_SPLIT):
                     if a.size > 1:
-                        self.asteroid_list.append(Asteroid(a.size-1, a.center_x, a.center_y, random.randrange(a.direction-30, a.direction+30)))
+                        self.asteroid_list.append(Asteroid(a.size - 1, a.center_x, a.center_y,
+                                                           random.randrange(a.direction - 30, a.direction + 30)))
                     else:
                         pass
                 s.kill()
                 a.kill()
                 self.sound_explosion.play()
                 self.player_score += a.value
-                
+
         # check for thrust
         if self.thrust_pressed:
             self.player_sprite.thrust()
@@ -627,6 +660,10 @@ class InGameView(arcade.View):
         if self.player_sprite.lives <= 0:
             game_over_view = GameOverView()
             self.window.show_view(game_over_view)
+
+        self.player_thrust.center_x = self.player_sprite.center_x
+
+        self.spinner.update()
 
     def on_key_press(self, key, modifiers):
         """
