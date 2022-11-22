@@ -211,6 +211,7 @@ class UFOShot(arcade.Sprite):
     """shot fired by the ufo"""
 
     def __int__(self, **kwargs):
+
         super().__init__(**kwargs)
 
     def update(self):
@@ -219,11 +220,16 @@ class UFOShot(arcade.Sprite):
         self.center_x += self.change_x
         self.center_y += self.change_y
 
+        self.distance_traveled += CONFIG['UFO_SHOT_SPEED']
+
         self.angle = ((self.change_x / self.change_y) * -90)  # set ange based on our direction
 
-        # kill if out of bounds
-        if self.center_x > CONFIG['SCREEN_WIDTH'] or self.center_x < 0 and self.center_y > CONFIG['SCREEN_HEIGHT'] or self.center_y < 0:
+        # kill when traveled far enough
+        if self.distance_traveled > CONFIG['UFO_SHOT_RANGE']:
             self.kill()
+
+        # wrap
+        wrap(self)
 
 
 class BonusUFO(arcade.Sprite):
@@ -287,6 +293,7 @@ class BonusUFO(arcade.Sprite):
 
         new_ufo_shot.change_x = random.randrange(-CONFIG['UFO_SHOT_SPEED'], CONFIG['UFO_SHOT_SPEED'])
         new_ufo_shot.change_y = new_ufo_shot.change_x - CONFIG['UFO_SHOT_SPEED']
+        new_ufo_shot.distance_traveled = 0
         self.shot_list.append(new_ufo_shot)
 
     def update(self):
@@ -562,7 +569,7 @@ class InGameView(arcade.View):
                 a.kill()
                 self.sound_explosion.play()
                 self.player_score += a.value
-                
+
         # check for thrust
         if self.thrust_pressed:
             self.player_sprite.thrust()
