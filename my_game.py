@@ -621,11 +621,10 @@ class InGameView(arcade.View):
 
         # check if the player is dead
         if self.player_sprite.lives <= 0:
-            arcade.unschedule(self.spawn_ufo)
             self.sound_thrust.stop(self.sound_thrust_player)
             game_over_view = GameOverView()
             self.window.show_view(game_over_view)
-
+            arcade.unschedule(self.spawn_ufo)
     def on_key_press(self, key, modifiers):
         """
         Called whenever a key is pressed.
