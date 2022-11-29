@@ -376,9 +376,6 @@ class InGameView(arcade.View):
         self.sound_thrust = arcade.load_sound("sounds/spaceEngine_003.ogg")
         self.sound_thrust_player = None
 
-        # game state variable.
-        self.game_state = None
-
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = None
         self.player_shot_fire_rate_timer = 0
