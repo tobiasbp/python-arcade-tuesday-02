@@ -22,8 +22,8 @@ PLAYER_THRUST_KEY = arcade.key.UP
 PLAYER_FIRE_KEY = arcade.key.SPACE
 
 TEXTURES = [
-    arcade.make_soft_circle_texture(8, arcade.color.YELLOW_ORANGE),
-    arcade.make_soft_circle_texture(8, arcade.color.SUNGLOW),
+    arcade.make_soft_circle_texture(25, arcade.color.YELLOW_ORANGE),
+    arcade.make_soft_circle_texture(25, arcade.color.SUNGLOW),
 ]
 
 
@@ -626,7 +626,7 @@ class InGameView(arcade.View):
         self.thrust_emitter.angle = self.player_sprite.angle - 180 + random.randint(-CONFIG['PLAYER_ENGINE_SHAKE'],
                                                                                     CONFIG['PLAYER_ENGINE_SHAKE'])
         self.thrust_emitter.center_x = self.player_sprite.center_x
-        self.thrust_emitter.center_y = self.player_sprite.center_y - 2
+        self.thrust_emitter.center_y = self.player_sprite.center_y - 10
 
     def on_key_press(self, key, modifiers):
         """
