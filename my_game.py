@@ -398,7 +398,7 @@ class InGameView(arcade.View):
         self.player_lives = None
         self.player_speed = 0
         self.opposite_angle = 0
-        self.spinner = None
+        self.thrust_emitter = None
 
         # set up ufo info
         self.ufo_list = None
@@ -478,7 +478,7 @@ class InGameView(arcade.View):
         # setup spawn_ufo to run regularly
         arcade.schedule(self.spawn_ufo, CONFIG['UFO_SPAWN_RATE'])
 
-        self.spinner = arcade.Emitter(
+        self.thrust_emitter = arcade.Emitter(
             center_xy=(self.player_sprite.center_x, self.player_sprite.center_y),
             emit_controller=arcade.EmitterIntervalWithTime(0.025, 100.0),
             particle_factory=lambda emitter: arcade.FadeParticle(
@@ -487,8 +487,8 @@ class InGameView(arcade.View):
                 lifetime=0.2,
             )
         )
-        self.spinner.angle = self.player_sprite.angle
-        self.spinner.scale = 1
+        self.thrust_emitter.angle = self.player_sprite.angle
+        self.thrust_emitter.scale = 1
 
     def on_draw(self):
         """
@@ -518,7 +518,7 @@ class InGameView(arcade.View):
 
         # draw spinner
         if not self.player_sprite.is_invincible and self.thrust_pressed:
-            self.spinner.draw()
+            self.thrust_emitter.draw()
 
         # Draw players score on screen
         arcade.draw_text(
@@ -622,11 +622,11 @@ class InGameView(arcade.View):
             game_over_view = GameOverView()
             self.window.show_view(game_over_view)
 
-        self.spinner.update()
-        self.spinner.angle = self.player_sprite.angle - 180 + random.randint(-CONFIG['ENGINE_PARTICLES'],
-                                                                             CONFIG['ENGINE_PARTICLES'])
-        self.spinner.center_x = self.player_sprite.center_x
-        self.spinner.center_y = self.player_sprite.center_y - 2
+        self.thrust_emitter.update()
+        self.thrust_emitter.angle = self.player_sprite.angle - 180 + random.randint(-CONFIG['PLAYER_ENGINE_SHAKE'],
+                                                                                    CONFIG['PLAYER_ENGINE_SHAKE'])
+        self.thrust_emitter.center_x = self.player_sprite.center_x
+        self.thrust_emitter.center_y = self.player_sprite.center_y - 2
 
     def on_key_press(self, key, modifiers):
         """
