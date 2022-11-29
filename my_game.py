@@ -389,9 +389,7 @@ class InGameView(arcade.View):
         # Set up the player info
         self.player_sprite: Player = None
         self.player_score = None
-        self.player_lives = None
         self.player_speed = 0
-        self.opposite_angle = 0
 
         # set up ufo info
         self.ufo_list = None
