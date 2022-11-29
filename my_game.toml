@@ -34,6 +34,7 @@ UFO_SHOT_RANGE = 200  # px
 UFO_FIRE_RATE = 1.5  # secs
 UFO_SIZE_SMALL = 0.9  # multiplier for original file
 UFO_SIZE_BIG = 1.5  # multiplier for original file
+ENGINE_PARTICLES = 15 # The maximum + minimum of the shaking of the particles
 
 # UI
 TITLE_X = 400  # px

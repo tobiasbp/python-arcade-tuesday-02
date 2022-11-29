@@ -21,6 +21,11 @@ PLAYER_GRAPHICS_CORRECTION = math.pi / 2  # the player graphic is turned 45 degr
 PLAYER_THRUST_KEY = arcade.key.UP
 PLAYER_FIRE_KEY = arcade.key.SPACE
 
+TEXTURES = [
+    arcade.make_soft_circle_texture(8, arcade.color.YELLOW_ORANGE),
+    arcade.make_soft_circle_texture(8, arcade.color.SUNGLOW),
+]
+
 
 def wrap(sprite: arcade.Sprite):
     """
@@ -372,6 +377,7 @@ class InGameView(arcade.View):
         super().__init__()
 
         # loading sounds
+
         self.sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
         self.sound_thrust = arcade.load_sound("sounds/spaceEngine_003.ogg")
         self.sound_thrust_player = None
@@ -392,6 +398,7 @@ class InGameView(arcade.View):
         self.player_lives = None
         self.player_speed = 0
         self.opposite_angle = 0
+        self.spinner = None
 
         # set up ufo info
         self.ufo_list = None
@@ -471,6 +478,18 @@ class InGameView(arcade.View):
         # setup spawn_ufo to run regularly
         arcade.schedule(self.spawn_ufo, CONFIG['UFO_SPAWN_RATE'])
 
+        self.spinner = arcade.Emitter(
+            center_xy=(self.player_sprite.center_x, self.player_sprite.center_y),
+            emit_controller=arcade.EmitterIntervalWithTime(0.025, 100.0),
+            particle_factory=lambda emitter: arcade.FadeParticle(
+                filename_or_texture=random.choice(TEXTURES),
+                change_xy=(0, 12.0),
+                lifetime=0.2,
+            )
+        )
+        self.spinner.angle = self.player_sprite.angle
+        self.spinner.scale = 1
+
     def on_draw(self):
         """
         Render the screen.
@@ -496,6 +515,10 @@ class InGameView(arcade.View):
 
         # and their shots
         self.ufo_shot_list.draw()
+
+        # draw spinner
+        if not self.player_sprite.is_invincible and self.thrust_pressed:
+            self.spinner.draw()
 
         # Draw players score on screen
         arcade.draw_text(
@@ -598,6 +621,12 @@ class InGameView(arcade.View):
             arcade.unschedule(self.spawn_ufo)
             game_over_view = GameOverView()
             self.window.show_view(game_over_view)
+
+        self.spinner.update()
+        self.spinner.angle = self.player_sprite.angle - 180 + random.randint(-CONFIG['ENGINE_PARTICLES'],
+                                                                             CONFIG['ENGINE_PARTICLES'])
+        self.spinner.center_x = self.player_sprite.center_x
+        self.spinner.center_y = self.player_sprite.center_y - 2
 
     def on_key_press(self, key, modifiers):
         """
