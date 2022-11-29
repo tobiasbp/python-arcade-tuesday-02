@@ -385,6 +385,9 @@ class InGameView(arcade.View):
         # Asteroid SpriteList
         self.asteroid_list = None
 
+        # The current level
+        self.level = None
+
         # Set up the player info
         self.player_sprite: Player = None
         self.player_score = None
@@ -427,6 +430,23 @@ class InGameView(arcade.View):
         # Set the background color
         arcade.set_background_color(SCREEN_COLOR)
 
+    def next_level(self, level=None):
+        """
+        Advance the game to the next level
+        or start a specific level
+        """
+        if level is None:
+            self.level += 1
+        else:
+            self.level = level
+
+        # FIXME: Add stuff to make the game harder as level rises
+        # FIXME: Player needs to know that level was cleared
+
+        # Spawn Asteroids
+        for r in range(CONFIG['ASTEROIDS_PR_LEVEL']):
+            self.asteroid_list.append(Asteroid())
+
     def spawn_ufo(self, delta_time):
         """
         spawns an ufo object into self.ufo_list.
@@ -460,12 +480,12 @@ class InGameView(arcade.View):
             scale=CONFIG['SPRITE_SCALING']
         )
 
-        # Spawn Asteroids
-        for r in range(CONFIG['ASTEROIDS_PR_LEVEL']):
-            self.asteroid_list.append(Asteroid())
-
         # setup spawn_ufo to run regularly
         arcade.schedule(self.spawn_ufo, CONFIG['UFO_SPAWN_RATE'])
+
+        # Start level 1
+        self.next_level(1)
+
 
     def on_draw(self):
         """
@@ -505,6 +525,12 @@ class InGameView(arcade.View):
             10,  # X position
             CONFIG['SCREEN_HEIGHT'] - 45,  # Y positon
             arcade.color.WHITE  # Color of text
+        )
+        arcade.draw_text(
+            "LEVEL: {}".format(self.level),
+            10,
+            CONFIG['SCREEN_HEIGHT'] - 70,
+            arcade.color.WHITE
         )
 
     def on_update(self, delta_time):
@@ -594,6 +620,9 @@ class InGameView(arcade.View):
             arcade.unschedule(self.spawn_ufo)
             game_over_view = GameOverView()
             self.window.show_view(game_over_view)
+
+        if len(self.asteroid_list) == 0:
+            self.next_level()
 
     def on_key_press(self, key, modifiers):
         """
