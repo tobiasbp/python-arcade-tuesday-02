@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 Simple program to show moving a sprite with the keyboard.
 This program uses the Arcade library found at http://arcade.academy
