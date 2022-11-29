@@ -21,7 +21,7 @@ PLAYER_GRAPHICS_CORRECTION = math.pi / 2  # the player graphic is turned 45 degr
 PLAYER_THRUST_KEY = arcade.key.UP
 PLAYER_FIRE_KEY = arcade.key.SPACE
 
-TEXTURES = [
+PARTICLE_TEXTURES = [
     arcade.make_soft_circle_texture(25, arcade.color.YELLOW_ORANGE),
     arcade.make_soft_circle_texture(25, arcade.color.SUNGLOW),
 ]
@@ -482,7 +482,7 @@ class InGameView(arcade.View):
             center_xy=(self.player_sprite.center_x, self.player_sprite.center_y),
             emit_controller=arcade.EmitterIntervalWithTime(0.025, 100.0),
             particle_factory=lambda emitter: arcade.FadeParticle(
-                filename_or_texture=random.choice(TEXTURES),
+                filename_or_texture=random.choice(PARTICLE_TEXTURES),
                 change_xy=(0, 12.0),
                 lifetime=0.2,
             )
