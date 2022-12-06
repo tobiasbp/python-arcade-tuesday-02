@@ -8,7 +8,7 @@ SCREEN_HEIGHT = 600  # px
 
 # player_constants
 PLAYER_START_X = 400  # px
-PLAYER_START_Y = 50  # px
+PLAYER_START_Y = 300  # px
 PLAYER_START_LIVES = 3
 PLAYER_ROTATE_SPEED = 5  # px/update
 PLAYER_THRUST = 0.05  # speed gained from thrusting
@@ -19,6 +19,7 @@ PLAYER_FIRE_RATE = 0.2  # secs
 PLAYER_SHOT_RANGE = 400  # px
 
 # asteroid_constants
+ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER = 350 # px
 ASTEROIDS_PR_LEVEL = 5
 ASTEROIDS_SPEED = 1  # px/update
 ASTEROID_SCORE_VALUES = [20, 30, 40, 50]  # points
