@@ -501,6 +501,10 @@ class InGameView(arcade.View):
         # This command has to happen before we start drawing
         arcade.start_render()
 
+        # draw particle emitter
+        if not self.player_sprite.is_invincible and self.thrust_pressed:
+            self.thrust_emitter.draw()
+
         # Draw the player shot
         self.player_shot_list.draw()
 
@@ -518,10 +522,6 @@ class InGameView(arcade.View):
 
         # and their shots
         self.ufo_shot_list.draw()
-
-        # draw particle emitter
-        if not self.player_sprite.is_invincible and self.thrust_pressed:
-            self.thrust_emitter.draw()
 
         # Draw players score on screen
         arcade.draw_text(
