@@ -140,18 +140,26 @@ class Asteroid(arcade.Sprite):
             self.angle = random.randrange(0, 360)
         else:
             self.angle = angle
-        if center_x == None:
+
+        #spawning astroits until the distance to the player is longer than ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER
+        while True:
             self.center_x = random.randint(0, CONFIG['SCREEN_WIDTH'])
             self.center_y = random.randint(0, CONFIG['SCREEN_HEIGHT'])
-        else:
-            self.center_x = center_x
-            self.center_y = center_y
+
+            if arcade.get_distance(
+                    self.center_x,
+                    self.center_y,
+                    CONFIG['PLAYER_START_X'],
+                    CONFIG['PLAYER_START_Y']
+            ) > CONFIG['ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER']:
+                break
+
         self.change_x = math.sin(self.radians) * CONFIG['ASTEROIDS_SPEED']
         self.change_y = math.cos(self.radians) * CONFIG['ASTEROIDS_SPEED']
         self.rotation_speed = random.randrange(0, 5)
         self.direction = self.angle
         self.value = CONFIG['ASTEROID_SCORE_VALUES'][self.size-1]
-        
+
     def update(self):
         # Update position
         self.center_x += self.change_x
