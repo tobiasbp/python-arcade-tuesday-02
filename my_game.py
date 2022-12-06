@@ -23,6 +23,12 @@ PLAYER_GRAPHICS_CORRECTION = math.pi / 2  # the player graphic is turned 45 degr
 PLAYER_THRUST_KEY = arcade.key.UP
 PLAYER_FIRE_KEY = arcade.key.SPACE
 
+# The thrust effects textures and scale
+PARTICLE_TEXTURES = [
+    arcade.make_soft_circle_texture(25, arcade.color.YELLOW_ORANGE),
+    arcade.make_soft_circle_texture(25, arcade.color.SUNGLOW),
+]
+
 
 def wrap(sprite: arcade.Sprite):
     """
@@ -382,6 +388,8 @@ class InGameView(arcade.View):
         super().__init__()
 
         # loading sounds
+
+
         self.sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
         self.sound_thrust = arcade.load_sound("sounds/spaceEngine_003.ogg")
         self.sound_thrust_player = None
@@ -399,6 +407,11 @@ class InGameView(arcade.View):
         # Set up the player info
         self.player_sprite: Player = None
         self.player_score = None
+        self.player_lives = None
+        self.player_speed = 0
+        self.opposite_angle = 0
+        self.thrust_emitter = None
+        self.explosion = None
 
         # set up ufo info
         self.ufo_list = None
@@ -491,9 +504,20 @@ class InGameView(arcade.View):
         # setup spawn_ufo to run regularly
         arcade.schedule(self.spawn_ufo, CONFIG['UFO_SPAWN_RATE'])
 
+        # Add an emitter that makes the thrusting particles
+        self.thrust_emitter = arcade.Emitter(
+            center_xy=(self.player_sprite.center_x, self.player_sprite.center_y),
+            emit_controller=arcade.EmitterIntervalWithTime(0.025, 100.0),
+            particle_factory=lambda emitter: arcade.FadeParticle(
+                filename_or_texture=random.choice(PARTICLE_TEXTURES),
+                change_xy=(0, 12.0),
+                lifetime=0.2,
+            )
+        )
+        self.thrust_emitter.angle = self.player_sprite.angle
+
         # Start level 1
         self.next_level(1)
-
 
     def on_draw(self):
         """
@@ -502,6 +526,10 @@ class InGameView(arcade.View):
 
         # This command has to happen before we start drawing
         arcade.start_render()
+
+        # draw particle emitter
+        if not self.player_sprite.is_invincible and self.thrust_pressed:
+            self.thrust_emitter.draw()
 
         # Draw the player shot
         self.player_shot_list.draw()
@@ -628,6 +656,14 @@ class InGameView(arcade.View):
             arcade.unschedule(self.spawn_ufo)
             game_over_view = GameOverView(player_score=self.player_score, level=self.level)
             self.window.show_view(game_over_view)
+
+        self.thrust_emitter.update()
+        self.thrust_emitter.angle = self.player_sprite.angle - 180 + random.randint(
+            -CONFIG['PLAYER_ENGINE_SHAKE'],
+            CONFIG['PLAYER_ENGINE_SHAKE']
+        )
+        self.thrust_emitter.center_x = self.player_sprite.center_x
+        self.thrust_emitter.center_y = self.player_sprite.center_y
 
         if len(self.asteroid_list) == 0:
             self.next_level()
