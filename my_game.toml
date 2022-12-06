@@ -40,3 +40,5 @@ TITLE_X = 400  # px
 TITLE_Y = 450  # px
 BUTTON_X = 400  # px
 BUTTON_Y = 300  # px
+SETTINGS_BUTTON_X = 400 # px
+SETTINGS_BUTTON_Y = 200 # px

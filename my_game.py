@@ -347,8 +347,8 @@ class IntroView(arcade.View):
         )
 
         self.settings_button.draw_scaled(
-            center_x=SETTINGS_BUTTON_X,
-            center_y=SETTINGS_BUTTON_Y
+            center_x=CONFIG['SETTINGS_BUTTON_X'],
+            center_y=CONFIG['SETTINGS_BUTTON_Y']
         )
 
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
@@ -360,7 +360,7 @@ class IntroView(arcade.View):
             in_game_view = InGameView()
             self.window.show_view(in_game_view)
 
-        if arcade.get_distance(x, y, SETTINGS_BUTTON_X, SETTINGS_BUTTON_Y) < self.settings_button.width // 2:
+        if arcade.get_distance(x, y, CONFIG['SETTINGS_BUTTON_X'], CONFIG['SETTINGS_BUTTON_Y']) < self.settings_button.width // 2:
             settings_view = SettingsView()
             self.window.show_view(settings_view)
 
@@ -396,7 +396,7 @@ class SettingsView(arcade.View):
                 anchor_y="center_y",
                 child=self.v_box)
         )
-        
+
     def on_click_test(self, event):
         print(event)
 
