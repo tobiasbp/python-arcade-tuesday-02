@@ -618,7 +618,7 @@ class InGameView(arcade.View):
         if self.player_sprite.lives <= 0:
             arcade.stop_sound(self.sound_thrust_player)
             arcade.unschedule(self.spawn_ufo)
-            game_over_view = GameOverView()
+            game_over_view = GameOverView(player_score=self.player_score, level=self.level)
             self.window.show_view(game_over_view)
 
         if len(self.asteroid_list) == 0:
@@ -699,11 +699,14 @@ class GameOverView(arcade.View):
     the game over screen
     """
 
-    def __init__(self):
+    def __init__(self, player_score, level):
         super().__init__()
 
         self.game_over_sign = arcade.load_texture("images/UI/asteroidsGameOverSign.png")
         self.restart_button = arcade.load_texture("images/UI/asteroidsRestartButton.png")
+
+        self.player_score = player_score
+        self.level = level
 
         # set background color
         arcade.set_background_color(SCREEN_COLOR)
@@ -724,6 +727,13 @@ class GameOverView(arcade.View):
             center_x=CONFIG['BUTTON_X'],
             center_y=CONFIG['BUTTON_Y']
         )
+
+        arcade.draw_text(
+            f"SCORE: {self.player_score}    LEVEL: {self.level}",
+            CONFIG['SCREEN_WIDTH'] * 0.4,
+            CONFIG['SCREEN_HEIGHT'] * 0.6,
+            arcade.color.WHITE
+                         )
 
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
         """
