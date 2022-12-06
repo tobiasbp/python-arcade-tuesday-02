@@ -7,6 +7,7 @@ Artwork from https://kenney.nl/assets/space-shooter-redux
 """
 
 import arcade
+import arcade.gui
 import math
 import random
 import tomli
@@ -17,12 +18,6 @@ with open('my_game.toml', 'rb') as fp:
 
 # has to be defined here since they use libraries
 SCREEN_COLOR = arcade.color.BLACK
-
-PLAYER_GRAPHICS_CORRECTION = math.pi / 2  # the player graphic is turned 45 degrees too much compared to actual angle
-
-PLAYER_THRUST_KEY = arcade.key.UP
-PLAYER_FIRE_KEY = arcade.key.SPACE
-
 
 def wrap(sprite: arcade.Sprite):
     """
@@ -330,6 +325,7 @@ class IntroView(arcade.View):
 
         self.title_graphics = arcade.load_texture("images/UI/asteroidsTitle.png")
         self.play_button = arcade.load_texture("images/UI/asteroidsStartButton.png")
+        self.settings_button = arcade.load_texture("images/UI/asteroidsSettingsButton.png")
 
         arcade.set_background_color(SCREEN_COLOR)
 
@@ -350,6 +346,11 @@ class IntroView(arcade.View):
             center_y=CONFIG['BUTTON_Y'],
         )
 
+        self.settings_button.draw_scaled(
+            center_x=SETTINGS_BUTTON_X,
+            center_y=SETTINGS_BUTTON_Y
+        )
+
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
         """
         called whenever the mouse is clicked on the screen
@@ -359,6 +360,49 @@ class IntroView(arcade.View):
             in_game_view = InGameView()
             self.window.show_view(in_game_view)
 
+        if arcade.get_distance(x, y, SETTINGS_BUTTON_X, SETTINGS_BUTTON_Y) < self.settings_button.width // 2:
+            settings_view = SettingsView()
+            self.window.show_view(settings_view)
+
+class SettingsView(arcade.View):
+    """
+    Veiw for the Settings Screen
+    """
+    
+    def __init__(self):
+        super().__init__()
+        
+        # Initialize UI Manager
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+        
+        # Create layout for buttons
+        self.v_box = arcade.gui.UIBoxLayout()
+
+        # Initialize the buttons
+        test_button = arcade.gui.UIFlatButton(text="This is a test", width=200)
+        self.v_box.add(test_button.with_space_around(bottom=20))
+
+        # Assign click functions to buttons
+        test_button.on_click = self.on_click_test
+
+        # Background Color
+        arcade.set_background_color(SCREEN_COLOR)
+        
+        # Add layout to UI Manager
+        self.manager.add(
+            arcade.gui.UIAnchorWidget(
+                anchor_x="center_x",
+                anchor_y="center_y",
+                child=self.v_box)
+        )
+        
+    def on_click_test(self, event):
+        print(event)
+
+    def on_draw(self):
+        arcade.start_render()
+        self.manager.draw()
 
 class InGameView(arcade.View):
     """
@@ -640,7 +684,7 @@ class InGameView(arcade.View):
             self.right_pressed = True
         elif key == arcade.key.SPACE:
             self.space_pressed = True
-
+        
         if key == PLAYER_THRUST_KEY:
             # if thrust just got pressed start sound loop
             if self.thrust_pressed is False:
