@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """
 Simple program to show moving a sprite with the keyboard.
 This program uses the Arcade library found at http://arcade.academy
@@ -20,6 +22,12 @@ PLAYER_GRAPHICS_CORRECTION = math.pi / 2  # the player graphic is turned 45 degr
 
 PLAYER_THRUST_KEY = arcade.key.UP
 PLAYER_FIRE_KEY = arcade.key.SPACE
+
+# The thrust effects textures and scale
+PARTICLE_TEXTURES = [
+    arcade.make_soft_circle_texture(25, arcade.color.YELLOW_ORANGE),
+    arcade.make_soft_circle_texture(25, arcade.color.SUNGLOW),
+]
 
 
 def wrap(sprite: arcade.Sprite):
@@ -119,7 +127,7 @@ class Player(arcade.Sprite):
 
 class Asteroid(arcade.Sprite):
 
-    def __init__(self, size, center_x=None, center_y=None, angle=None):
+    def __init__(self, size=3, center_x=None, center_y=None, angle=None):
         # Initialize the asteroid
         
         # Graphics
@@ -133,12 +141,19 @@ class Asteroid(arcade.Sprite):
             self.angle = random.randrange(0, 360)
         else:
             self.angle = angle
-        if center_x == None:
+
+        #spawning astroits until the distance to the player is longer than ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER
+        while True:
             self.center_x = random.randint(0, CONFIG['SCREEN_WIDTH'])
             self.center_y = random.randint(0, CONFIG['SCREEN_HEIGHT'])
-        else:
-            self.center_x = center_x
-            self.center_y = center_y
+
+            if arcade.get_distance(
+                    self.center_x,
+                    self.center_y,
+                    CONFIG['PLAYER_START_X'],
+                    CONFIG['PLAYER_START_Y']
+            ) > CONFIG['ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER']:
+                break
 
         self.change_x = math.sin(self.radians) * CONFIG['ASTEROIDS_SPEED']
         self.change_y = math.cos(self.radians) * CONFIG['ASTEROIDS_SPEED']
@@ -146,7 +161,7 @@ class Asteroid(arcade.Sprite):
 
         self.direction = self.angle  # placeholder for initial angle - angle changes during the game
         self.value = CONFIG['ASTEROID_SCORE_VALUES'][self.size-1]
-        
+
     def update(self):
         # Update position
         self.center_x += self.change_x
@@ -369,12 +384,11 @@ class InGameView(arcade.View):
         super().__init__()
 
         # loading sounds
+
+
         self.sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
         self.sound_thrust = arcade.load_sound("sounds/spaceEngine_003.ogg")
         self.sound_thrust_player = None
-
-        # game state variable.
-        self.game_state = None
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = None
@@ -383,12 +397,17 @@ class InGameView(arcade.View):
         # Asteroid SpriteList
         self.asteroid_list = None
 
+        # The current level
+        self.level = None
+
         # Set up the player info
         self.player_sprite: Player = None
         self.player_score = None
         self.player_lives = None
         self.player_speed = 0
         self.opposite_angle = 0
+        self.thrust_emitter = None
+        self.explosion = None
 
         # set up ufo info
         self.ufo_list = None
@@ -428,6 +447,23 @@ class InGameView(arcade.View):
         # Set the background color
         arcade.set_background_color(SCREEN_COLOR)
 
+    def next_level(self, level=None):
+        """
+        Advance the game to the next level
+        or start a specific level
+        """
+        if level is None:
+            self.level += 1
+        else:
+            self.level = level
+
+        # FIXME: Add stuff to make the game harder as level rises
+        # FIXME: Player needs to know that level was cleared
+
+        # Spawn Asteroids
+        for r in range(CONFIG['ASTEROIDS_PR_LEVEL']):
+            self.asteroid_list.append(Asteroid())
+
     def spawn_ufo(self, delta_time):
         """
         spawns an ufo object into self.ufo_list.
@@ -461,12 +497,23 @@ class InGameView(arcade.View):
             scale=CONFIG['SPRITE_SCALING']
         )
 
-        # Spawn Asteroids
-        for r in range(CONFIG['ASTEROIDS_PR_LEVEL']):
-            self.asteroid_list.append(Asteroid(3))
-
         # setup spawn_ufo to run regularly
         arcade.schedule(self.spawn_ufo, CONFIG['UFO_SPAWN_RATE'])
+
+        # Add an emitter that makes the thrusting particles
+        self.thrust_emitter = arcade.Emitter(
+            center_xy=(self.player_sprite.center_x, self.player_sprite.center_y),
+            emit_controller=arcade.EmitterIntervalWithTime(0.025, 100.0),
+            particle_factory=lambda emitter: arcade.FadeParticle(
+                filename_or_texture=random.choice(PARTICLE_TEXTURES),
+                change_xy=(0, 12.0),
+                lifetime=0.2,
+            )
+        )
+        self.thrust_emitter.angle = self.player_sprite.angle
+
+        # Start level 1
+        self.next_level(1)
 
     def on_draw(self):
         """
@@ -475,6 +522,10 @@ class InGameView(arcade.View):
 
         # This command has to happen before we start drawing
         arcade.start_render()
+
+        # draw particle emitter
+        if not self.player_sprite.is_invincible and self.thrust_pressed:
+            self.thrust_emitter.draw()
 
         # Draw the player shot
         self.player_shot_list.draw()
@@ -506,6 +557,12 @@ class InGameView(arcade.View):
             10,  # X position
             CONFIG['SCREEN_HEIGHT'] - 45,  # Y positon
             arcade.color.WHITE  # Color of text
+        )
+        arcade.draw_text(
+            "LEVEL: {}".format(self.level),
+            10,
+            CONFIG['SCREEN_HEIGHT'] - 70,
+            arcade.color.WHITE
         )
 
     def on_update(self, delta_time):
@@ -593,8 +650,19 @@ class InGameView(arcade.View):
         if self.player_sprite.lives <= 0:
             arcade.stop_sound(self.sound_thrust_player)
             arcade.unschedule(self.spawn_ufo)
-            game_over_view = GameOverView()
+            game_over_view = GameOverView(player_score=self.player_score, level=self.level)
             self.window.show_view(game_over_view)
+
+        self.thrust_emitter.update()
+        self.thrust_emitter.angle = self.player_sprite.angle - 180 + random.randint(
+            -CONFIG['PLAYER_ENGINE_SHAKE'],
+            CONFIG['PLAYER_ENGINE_SHAKE']
+        )
+        self.thrust_emitter.center_x = self.player_sprite.center_x
+        self.thrust_emitter.center_y = self.player_sprite.center_y
+
+        if len(self.asteroid_list) == 0:
+            self.next_level()
 
     def on_key_press(self, key, modifiers):
         """
@@ -671,11 +739,14 @@ class GameOverView(arcade.View):
     the game over screen
     """
 
-    def __init__(self):
+    def __init__(self, player_score, level):
         super().__init__()
 
         self.game_over_sign = arcade.load_texture("images/UI/asteroidsGameOverSign.png")
         self.restart_button = arcade.load_texture("images/UI/asteroidsRestartButton.png")
+
+        self.player_score = player_score
+        self.level = level
 
         # set background color
         arcade.set_background_color(SCREEN_COLOR)
@@ -696,6 +767,13 @@ class GameOverView(arcade.View):
             center_x=CONFIG['BUTTON_X'],
             center_y=CONFIG['BUTTON_Y']
         )
+
+        arcade.draw_text(
+            f"SCORE: {self.player_score}    LEVEL: {self.level}",
+            CONFIG['SCREEN_WIDTH'] * 0.4,
+            CONFIG['SCREEN_HEIGHT'] * 0.6,
+            arcade.color.WHITE
+                         )
 
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
         """
