@@ -127,7 +127,7 @@ class Player(arcade.Sprite):
 
 class Asteroid(arcade.Sprite):
 
-    def __init__(self, size=3, center_x=None, center_y=None, angle=None):
+    def __init__(self, size=3, spawn_pos=None, angle=None):
         # Initialize the asteroid
         
         # Graphics
@@ -143,17 +143,20 @@ class Asteroid(arcade.Sprite):
             self.angle = angle
 
         #spawning astroits until the distance to the player is longer than ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER
-        while True:
-            self.center_x = random.randint(0, CONFIG['SCREEN_WIDTH'])
-            self.center_y = random.randint(0, CONFIG['SCREEN_HEIGHT'])
+        if not spawn_pos is None:
+            self.position = spawn_pos
+        else:
+            while True:
+                self.center_x = random.randint(0, CONFIG['SCREEN_WIDTH'])
+                self.center_y = random.randint(0, CONFIG['SCREEN_HEIGHT'])
 
-            if arcade.get_distance(
-                    self.center_x,
-                    self.center_y,
-                    CONFIG['PLAYER_START_X'],
-                    CONFIG['PLAYER_START_Y']
-            ) > CONFIG['ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER']:
-                break
+                if arcade.get_distance(
+                        self.center_x,
+                        self.center_y,
+                        CONFIG['PLAYER_START_X'],
+                        CONFIG['PLAYER_START_Y']
+                ) > CONFIG['ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER']:
+                    break
 
         self.change_x = math.sin(self.radians) * CONFIG['ASTEROIDS_SPEED']
         self.change_y = math.cos(self.radians) * CONFIG['ASTEROIDS_SPEED']
@@ -616,7 +619,10 @@ class InGameView(arcade.View):
             for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
                 for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
                     if a.size > 1:
-                        self.asteroid_list.append(Asteroid(a.size-1, a.center_x, a.center_y, random.randrange(a.direction-30, a.direction+30)))
+                        a_angle = random.randrange(a.direction - 30, a.direction + 30)
+                        self.asteroid_list.append(
+                            Asteroid(a.size-1, a.position, a_angle)
+                        )
                     else:
                         pass
                 s.kill()
