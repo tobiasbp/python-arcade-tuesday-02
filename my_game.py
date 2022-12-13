@@ -19,6 +19,14 @@ with open('my_game.toml', 'rb') as fp:
 # has to be defined here since they use libraries
 SCREEN_COLOR = arcade.color.BLACK
 
+PLAYER_GRAPHICS_CORRECTION = math.pi / 2  # the player graphic is turned 45 degrees too much compared to actual angle
+
+DEFAULT_PLAYER_THRUST_KEY = arcade.key.UP
+DEFAULT_PLAYER_FIRE_KEY = arcade.key.SPACE
+DEFAULT_EXIT_SETTINGS_KEY = arcade.key.ESCAPE
+DEFAULT_PLAYER_TURN_RIGHT_KEY = arcade.key.RIGHT
+DEFAULT_PLAYER_TURN_LEFT_KEY = arcade.key.LEFT
+
 def wrap(sprite: arcade.Sprite):
     """
     if sprite is off-screen move it to the other side of the screen
@@ -369,8 +377,19 @@ class SettingsView(arcade.View):
     Veiw for the Settings Screen
     """
     
+    player_thrust_key = DEFAULT_PLAYER_THRUST_KEY
+    player_fire_key = DEFAULT_PLAYER_FIRE_KEY
+    exit_settings_key = DEFAULT_EXIT_SETTINGS_KEY
+    player_turn_right_key = DEFAULT_PLAYER_TURN_RIGHT_KEY
+    player_turn_left_key = DEFAULT_PLAYER_TURN_LEFT_KEY
+    
     def __init__(self):
         super().__init__()
+        
+        self.change_thrust_key = False
+        self.change_fire_key = False
+        self.change_turn_right_key = False
+        self.change_turn_left_key = False
         
         # Initialize UI Manager
         self.manager = arcade.gui.UIManager()
@@ -382,9 +401,33 @@ class SettingsView(arcade.View):
         # Initialize the buttons
         test_button = arcade.gui.UIFlatButton(text="This is a test", width=200)
         self.v_box.add(test_button.with_space_around(bottom=20))
+        
+        change_player_thrust_key_button = arcade.gui.UIFlatButton(text=str("Thrust"), width=200)
+        self.v_box.add(change_player_thrust_key_button.with_space_around(bottom=20))
+        
+        change_player_fire_key_button = arcade.gui.UIFlatButton(text=str("Fire"), width=200)
+        self.v_box.add(change_player_fire_key_button.with_space_around(bottom=20))
+        
+        change_player_turn_right_key_button = arcade.gui.UIFlatButton(text=str("Right"), width=200)
+        self.v_box.add(change_player_turn_right_key_button.with_space_around(bottom=20))
+        
+        change_player_turn_left_key_button = arcade.gui.UIFlatButton(text=str("Left"), width=200)
+        self.v_box.add(change_player_turn_left_key_button.with_space_around(bottom=20))
 
         # Assign click functions to buttons
         test_button.on_click = self.on_click_test
+        
+        change_player_thrust_key_button.on_click = self.on_click_change_player_thrust_key
+        
+        change_player_fire_key_button.on_click = self.on_click_change_player_fire_key
+        
+        change_player_turn_right_key_button.on_click = self.on_click_change_turn_right_key
+        
+        change_player_turn_left_key_button.on_click = self.on_click_change_turn_left_key
+        
+        # Buttons to be made
+            # Keybinds (Which keys do what)
+        
 
         # Background Color
         arcade.set_background_color(SCREEN_COLOR)
@@ -400,10 +443,44 @@ class SettingsView(arcade.View):
     def on_click_test(self, event):
         print(event)
 
+    def on_click_change_player_thrust_key(self, event):
+        self.change_thrust_key = True
+
+    def on_click_change_turn_right_key(self, event):
+        self.change_turn_right_key = True
+
+    def on_click_change_turn_left_key(self, event):
+        self.change_turn_left_key = True
+
+    def on_click_change_player_fire_key(self, event):
+        self.change_fire_key = True
+
     def on_draw(self):
         arcade.start_render()
         self.manager.draw()
 
+    def on_key_press(self, key, modifiers):
+        
+        if self.change_thrust_key == True:
+            SettingsView.player_thrust_key = key
+            self.change_thrust_key = False
+        
+        elif self.change_fire_key == True:
+            SettingsView.player_fire_key = key
+            self.change_fire_key = False
+        
+        elif self.change_turn_right_key == True:
+            SettingsView.player_turn_right_key = key
+            self.change_turn_right_key = False
+
+        elif self.change_turn_left_key == True:
+            SettingsView.player_turn_left_key = key
+            self.change_turn_left_key = False
+
+        if key == SettingsView.exit_settings_key:
+            intro_view = IntroView()
+            self.window.show_view(intro_view)
+        
 class InGameView(arcade.View):
     """
     Main application class.
@@ -447,7 +524,9 @@ class InGameView(arcade.View):
         self.up_pressed = False
         self.down_pressed = False
         self.thrust_pressed = False
-
+        self.turn_right_pressed = False
+        self.turn_left_pressed = False
+        
         # Get list of joysticks
         joysticks = arcade.get_joysticks()
 
@@ -581,12 +660,12 @@ class InGameView(arcade.View):
         """
         Movement and game logic
         """
-
+#Here
         # Calculate player speed based on the keys pressed
         # Move player with keyboard
-        if self.left_pressed and not self.right_pressed:
+        if self.turn_left_pressed and not self.turn_right_pressed:
             self.player_sprite.angle += CONFIG['PLAYER_ROTATE_SPEED']
-        elif self.right_pressed and not self.left_pressed:
+        elif self.turn_right_pressed and not self.turn_left_pressed:
             self.player_sprite.angle += -CONFIG['PLAYER_ROTATE_SPEED']
 
         # rotate player with joystick if present
@@ -684,8 +763,14 @@ class InGameView(arcade.View):
             self.right_pressed = True
         elif key == arcade.key.SPACE:
             self.space_pressed = True
+        if key == SettingsView.player_thrust_key:
+            self.thrust_pressed = False
+        if key == SettingsView.player_turn_right_key:
+            self.turn_right_pressed = True
+        if key == SettingsView.player_turn_left_key:
+            self.turn_left_pressed = True
         
-        if key == PLAYER_THRUST_KEY:
+        if key == SettingsView.player_thrust_key:
             # if thrust just got pressed start sound loop
             if self.thrust_pressed is False:
                 if self.sound_thrust_player is not None:
@@ -693,7 +778,7 @@ class InGameView(arcade.View):
                 self.sound_thrust_player = self.sound_thrust.play(loop=True)
             self.thrust_pressed = True
 
-        if key == PLAYER_FIRE_KEY:
+        if key == SettingsView.player_fire_key:
             if not self.player_sprite.is_invincible:
                 if self.player_shot_fire_rate_timer >= CONFIG['PLAYER_FIRE_RATE']:
                     new_shot = PlayerShot(
@@ -701,7 +786,6 @@ class InGameView(arcade.View):
                         self.player_sprite.center_y,
                         self.player_sprite.angle
                     )
-
                     self.player_shot_list.append(new_shot)
                     self.player_shot_fire_rate_timer = 0
 
@@ -720,13 +804,17 @@ class InGameView(arcade.View):
             self.right_pressed = False
         elif key == arcade.key.SPACE:
             self.space_pressed = False
-        if key == PLAYER_THRUST_KEY:
+        if key == SettingsView.player_thrust_key:
             self.thrust_pressed = False
+        if key == SettingsView.player_turn_right_key:
+            self.turn_right_pressed = False
+        if key == SettingsView.player_turn_left_key:
+            self.turn_left_pressed = False
 
     def on_joybutton_press(self, joystick, button_no):
         print("Button pressed:", button_no)
         # Press the fire key
-        self.on_key_press(PLAYER_FIRE_KEY, [])
+        self.on_key_press(SettingsView.player_fire_key, [])
 
     def on_joybutton_release(self, joystick, button_no):
         print("Button released:", button_no)
