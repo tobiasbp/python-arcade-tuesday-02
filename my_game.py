@@ -401,7 +401,8 @@ class InGameView(arcade.View):
         self.asteroid_list = None
 
         # The current level
-        self.level = None
+        global level
+        level = None
 
         # Set up the player info
         self.player_sprite: Player = None
@@ -450,17 +451,19 @@ class InGameView(arcade.View):
         # Set the background color
         arcade.set_background_color(SCREEN_COLOR)
 
-    def next_level(self, level=None):
+    def next_level(self, set_level=None):
         """
         Advance the game to the next level
         or start a specific level
         """
-        if level is None:
-            self.level += 1
-        else:
-            self.level = level
 
-        # FIXME: Add stuff to make the game harder as level rises
+        global level
+
+        if set_level is None:
+            level += 1
+        else:
+            level = set_level
+
         # FIXME: Player needs to know that level was cleared
 
         # Spawn Asteroids
@@ -562,7 +565,7 @@ class InGameView(arcade.View):
             arcade.color.WHITE  # Color of text
         )
         arcade.draw_text(
-            "LEVEL: {}".format(self.level),
+            "LEVEL: {}".format(level),
             10,
             CONFIG['SCREEN_HEIGHT'] - 70,
             arcade.color.WHITE
@@ -656,7 +659,7 @@ class InGameView(arcade.View):
         if self.player_sprite.lives <= 0:
             arcade.stop_sound(self.sound_thrust_player)
             arcade.unschedule(self.spawn_ufo)
-            game_over_view = GameOverView(player_score=self.player_score, level=self.level)
+            game_over_view = GameOverView(player_score=self.player_score, level=level)
             self.window.show_view(game_over_view)
 
         self.thrust_emitter.update()
@@ -752,7 +755,7 @@ class GameOverView(arcade.View):
         self.restart_button = arcade.load_texture("images/UI/asteroidsRestartButton.png")
 
         self.player_score = player_score
-        self.level = level
+        level = level
 
         # set background color
         arcade.set_background_color(SCREEN_COLOR)
@@ -775,7 +778,7 @@ class GameOverView(arcade.View):
         )
 
         arcade.draw_text(
-            f"SCORE: {self.player_score}    LEVEL: {self.level}",
+            f"SCORE: {self.player_score}    LEVEL: {level}",
             CONFIG['SCREEN_WIDTH'] * 0.4,
             CONFIG['SCREEN_HEIGHT'] * 0.6,
             arcade.color.WHITE
