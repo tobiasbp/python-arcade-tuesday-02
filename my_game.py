@@ -409,7 +409,7 @@ class InGameView(arcade.View):
         self.player_speed = 0
         self.opposite_angle = 0
         self.thrust_emitter = None
-        self.explosion_effect = None
+        self.explosion_emitter = None
 
         # set up ufo info
         self.ufo_list = None
@@ -476,23 +476,22 @@ class InGameView(arcade.View):
         new_ufo_obj.__int__(self.ufo_shot_list)  # it needs the list so it can send shots to MyGame
         self.ufo_list.append(new_ufo_obj)
 
-    def explosion(self, x, y, scale):
+    def explosion(self, position):
         """
         Makes an explosion effect
         """
 
-        particle_amount = 500
-        particle_speed = 5
-        particle_lifetime = random.randint(1, 2)
+        particle_lifetime = random.randint(CONFIG['EXPLOSION_PARTICLE_LIFETIME_MIN'],
+                                           CONFIG['EXPLOSION_PARTICLE_LIFETIME_MAX'])
 
-        self.explosion_effect = arcade.make_burst_emitter(
-            (x, y),
+        self.explosion_emitter = arcade.make_burst_emitter(
+            position,
             PARTICLE_TEXTURES,
-            particle_amount,
-            particle_speed,
+            CONFIG['EXPLOSION_PARTICLE_AMOUNT'],
+            CONFIG['EXPLOSION_PARTICLE_SPEED'],
             particle_lifetime // 2,
             particle_lifetime,
-            scale)
+            CONFIG['EXPLOSION_PARTICLE_SCALE'])
 
     def on_show_view(self):
         """ Set up the game and initialize the variables. """
@@ -535,7 +534,7 @@ class InGameView(arcade.View):
         # Start level 1
         self.next_level(1)
 
-        self.explosion_effect = arcade.make_burst_emitter((0, 0), PARTICLE_TEXTURES, 0, 0, 0, 0, 0)
+        # self.explosion_emitter = self.explosion()
 
     def on_draw(self):
         """
@@ -568,7 +567,8 @@ class InGameView(arcade.View):
         self.ufo_shot_list.draw()
 
         # draw explosion
-        self.explosion_effect.draw()
+        if self.explosion_emitter is not None:
+            self.explosion_emitter.draw()
 
         # Draw players score on screen
         arcade.draw_text(
@@ -617,7 +617,7 @@ class InGameView(arcade.View):
                 # In the future, the Player will explode instead of disappearing.
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
-                self.explosion(self.player_sprite.center_x, self.player_sprite.center_y, 5)
+                self.explosion(self.player_sprite.position)
                 a.kill()
 
         # Player shot
@@ -693,7 +693,8 @@ class InGameView(arcade.View):
         if len(self.asteroid_list) == 0:
             self.next_level()
 
-        self.explosion_effect.update()
+        if self.explosion_emitter is not None:
+            self.explosion_emitter.update()
 
     def on_key_press(self, key, modifiers):
         """
