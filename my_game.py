@@ -390,8 +390,8 @@ class SettingsView(arcade.View):
         self.v_box = arcade.gui.UIBoxLayout()
 
         # Initialize the buttons
-        test_button = arcade.gui.UIFlatButton(text="This is a test", width=200)
-        self.v_box.add(test_button.with_space_around(bottom=20))
+        reset_settings_button = arcade.gui.UIFlatButton(text="Reset Settings", width=200)
+        self.v_box.add(reset_settings_button.with_space_around(bottom=20))
         
         change_player_thrust_key_button = arcade.gui.UIFlatButton(text=str("Thrust"), width=200)
         self.v_box.add(change_player_thrust_key_button.with_space_around(bottom=20))
@@ -406,7 +406,7 @@ class SettingsView(arcade.View):
         self.v_box.add(change_player_turn_left_key_button.with_space_around(bottom=20))
 
         # Assign click functions to buttons
-        test_button.on_click = self.on_click_test
+        reset_settings_button.on_click = self.on_click_reset
         
         change_player_thrust_key_button.on_click = self.on_click_change_player_thrust_key
         
@@ -431,9 +431,15 @@ class SettingsView(arcade.View):
                 child=self.v_box)
         )
 
-    def on_click_test(self, event):
-        print(event)
-
+    def on_click_reset(self, event):
+        with open('my_game (Original).toml', 'rb') as fp:
+            originalCONFIG = tomli.load(fp)
+        for k in originalCONFIG.keys():
+            CONFIG[str(k)] = originalCONFIG[str(k)]
+        with open("my_game.toml", "wb") as f:
+                tomli_w.dump(CONFIG, f)
+        print(CONFIG, originalCONFIG)
+        
     def on_click_change_player_thrust_key(self, event):
         self.change_thrust_key = True
 
