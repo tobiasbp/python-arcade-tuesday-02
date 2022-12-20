@@ -11,6 +11,7 @@ import arcade.gui
 import math
 import random
 import tomli
+import tomli_w
 
 # load the config file as a dict
 with open('my_game.toml', 'rb') as fp:
@@ -452,39 +453,35 @@ class SettingsView(arcade.View):
     def on_key_press(self, key, modifiers):
         
         if self.change_thrust_key == True:
-            InGameView.player_thrust_key = key
-            print(InGameView.player_thrust_key)
+            CONFIG["PLAYER_THRUST_KEY"] = key
             self.change_thrust_key = False
-        
+
         elif self.change_fire_key == True:
-            InGameView.player_fire_key = key
+            CONFIG["PLAYER_FIRE_KEY"] = key
             self.change_fire_key = False
         
         elif self.change_turn_right_key == True:
-            InGameView.player_turn_right_key = key
+            CONFIG["PLAYER_TURN_LEFT_KEY"] = key
             self.change_turn_right_key = False
 
         elif self.change_turn_left_key == True:
-            InGameView.player_turn_left_key = key
+            CONFIG["PLAYER_TURN_RIGHT_KEY"] = key
             self.change_turn_left_key = False
 
         if key == CONFIG["EXIT_SETTINGS_KEY"]:
+            # Update the my_game.toml config file
+            with open("my_game.toml", "wb") as f:
+                tomli_w.dump(CONFIG, f)
+                
             intro_view = IntroView()
             self.window.show_view(intro_view)
-        
+
+            print(CONFIG)
+
 class InGameView(arcade.View):
     """
     Main application class.
     """
-    # If the keybinds don't already exist then we create them
-    try:
-        player_thrust_key == None
-    except NameError:
-        player_thrust_key = CONFIG["DEFAULT_PLAYER_THRUST_KEY"]
-        player_fire_key = CONFIG["DEFAULT_PLAYER_FIRE_KEY"]
-        player_turn_right_key = CONFIG["DEFAULT_TURN_RIGHT_KEY"]
-        player_turn_left_key = CONFIG["DEFAULT_TURN_LEFT_KEY"]
-
     def __init__(self):
         """
         Initializer
@@ -762,14 +759,14 @@ class InGameView(arcade.View):
             self.right_pressed = True
         elif key == arcade.key.SPACE:
             self.space_pressed = True
-        if key == InGameView.player_thrust_key:
+        if key == CONFIG["PLAYER_THRUST_KEY"]:
             self.thrust_pressed = False
-        if key == InGameView.player_turn_right_key:
+        if key == CONFIG["PLAYER_TURN_RIGHT_KEY"]:
             self.turn_right_pressed = True
-        if key == InGameView.player_turn_left_key:
+        if key == CONFIG["PLAYER_TURN_LEFT_KEY"]:
             self.turn_left_pressed = True
         
-        if key == InGameView.player_thrust_key:
+        if key == CONFIG["PLAYER_THRUST_KEY"]:
             # if thrust just got pressed start sound loop
             if self.thrust_pressed is False:
                 if self.sound_thrust_player is not None:
@@ -777,7 +774,7 @@ class InGameView(arcade.View):
                 self.sound_thrust_player = self.sound_thrust.play(loop=True)
             self.thrust_pressed = True
 
-        if key == InGameView.player_fire_key:
+        if key == CONFIG["PLAYER_FIRE_KEY"]:
             if not self.player_sprite.is_invincible:
                 if self.player_shot_fire_rate_timer >= CONFIG['PLAYER_FIRE_RATE']:
                     new_shot = PlayerShot(
@@ -803,17 +800,17 @@ class InGameView(arcade.View):
             self.right_pressed = False
         elif key == arcade.key.SPACE:
             self.space_pressed = False
-        if key == InGameView.player_thrust_key:
+        if key == CONFIG["PLAYER_THRUST_KEY"]:
             self.thrust_pressed = False
-        if key == InGameView.player_turn_right_key:
+        if key == CONFIG["PLAYER_TURN_RIGHT_KEY"]:
             self.turn_right_pressed = False
-        if key == InGameView.player_turn_left_key:
+        if key == CONFIG["PLAYER_TURN_LEFT_KEY"]:
             self.turn_left_pressed = False
 
     def on_joybutton_press(self, joystick, button_no):
         print("Button pressed:", button_no)
         # Press the fire key
-        self.on_key_press(InGameView.player_fire_key, [])
+        self.on_key_press(CONFIG["PLAYER_FIRE_KEY"], [])
 
     def on_joybutton_release(self, joystick, button_no):
         print("Button released:", button_no)

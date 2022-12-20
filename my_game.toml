@@ -1,12 +1,6 @@
-# this is the config file for the project, storing (almost) all the game file constants
-
 SPRITE_SCALING = 0.5
-
-# screen_constants
 SCREEN_WIDTH = 800  # px
 SCREEN_HEIGHT = 600  # px
-
-# player_constants
 PLAYER_START_X = 400  # px
 PLAYER_START_Y = 50  # px
 PLAYER_START_LIVES = 3
@@ -22,14 +16,10 @@ DEFAULT_PLAYER_FIRE_KEY = 32
 EXIT_SETTINGS_KEY = 65307
 DEFAULT_TURN_RIGHT_KEY = 65363
 DEFAULT_TURN_LEFT_KEY = 65361
-
-# asteroid_constants
 ASTEROIDS_PR_LEVEL = 5
 ASTEROIDS_SPEED = 1  # px/update
 ASTEROID_SCORE_VALUES = [20, 30, 40, 50]  # points
 ASTEROIDS_PR_SPLIT = 2
-
-# ufo_constants
 UFO_SPEED = 2  # px/update. both for x and y note: has to be int
 UFO_DIR_CHANGE_RATE = 3  # secs
 UFO_SPAWN_RATE = 10  # seconds
@@ -39,8 +29,6 @@ UFO_SHOT_RANGE = 200  # px
 UFO_FIRE_RATE = 1.5  # secs
 UFO_SIZE_SMALL = 0.9  # multiplier for original file
 UFO_SIZE_BIG = 1.5  # multiplier for original file
-
-# UI
 TITLE_X = 400  # px
 TITLE_Y = 450  # px
 BUTTON_X = 400  # px
