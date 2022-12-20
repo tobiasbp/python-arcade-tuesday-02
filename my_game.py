@@ -481,16 +481,13 @@ class InGameView(arcade.View):
         Makes an explosion effect
         """
 
-        particle_lifetime = random.randint(CONFIG['EXPLOSION_PARTICLE_LIFETIME_MIN'],
-                                           CONFIG['EXPLOSION_PARTICLE_LIFETIME_MAX'])
-
         self.explosion_emitter = arcade.make_burst_emitter(
             center_xy=position,
             filenames_and_textures=PARTICLE_TEXTURES,
             particle_count=CONFIG['EXPLOSION_PARTICLE_AMOUNT'],
             particle_speed=CONFIG['EXPLOSION_PARTICLE_SPEED'],
-            particle_lifetime_min=particle_lifetime // 2,
-            particle_lifetime_max=particle_lifetime,
+            particle_lifetime_min=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MIN'] // 2,
+            particle_lifetime_max=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MAX'],
             particle_scale=CONFIG['EXPLOSION_PARTICLE_SIZE'])
 
     def on_show_view(self):
