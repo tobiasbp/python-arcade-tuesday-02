@@ -124,7 +124,7 @@ class Asteroid(arcade.Sprite):
 
     def __init__(self, size=3, spawn_pos=None, angle=None):
         # Initialize the asteroid
-        
+
         # Graphics
         super().__init__(
             filename='images/Meteors/meteorGrey_med1.png',
@@ -137,7 +137,7 @@ class Asteroid(arcade.Sprite):
         else:
             self.angle = angle
 
-        #spawning astroits until the distance to the player is longer than ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER
+        # spawning astroits until the distance to the player is longer than ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER
         if not spawn_pos is None:
             self.position = spawn_pos
         else:
@@ -157,16 +157,16 @@ class Asteroid(arcade.Sprite):
         self.rotation_speed = random.randrange(0, 5)
 
         self.direction = self.angle  # placeholder for initial angle - angle changes during the game
-        self.value = CONFIG['ASTEROID_SCORE_VALUES'][self.size-1]
+        self.value = CONFIG['ASTEROID_SCORE_VALUES'][self.size - 1]
 
     def update(self):
         # Update position
         self.center_x += self.change_x
         self.center_y += self.change_y
-        
+
         # Rotate Asteroid
         self.angle += self.rotation_speed
-        
+
         # wrap
         wrap(self)
 
@@ -222,7 +222,6 @@ class UFOShot(arcade.Sprite):
     """shot fired by the ufo"""
 
     def __int__(self, **kwargs):
-
         super().__init__(**kwargs)
 
     def update(self):
@@ -317,7 +316,8 @@ class BonusUFO(arcade.Sprite):
         self.center_y += self.change_y
 
         # kill if out of bounds
-        if self.center_x > CONFIG['SCREEN_WIDTH'] or self.center_x < 0 or self.center_y > CONFIG['SCREEN_HEIGHT'] or self.center_y < 0:
+        if self.center_x > CONFIG['SCREEN_WIDTH'] or self.center_x < 0 or self.center_y > CONFIG[
+            'SCREEN_HEIGHT'] or self.center_y < 0:
             self.destroy()
 
     def destroy(self):
@@ -384,7 +384,6 @@ class InGameView(arcade.View):
 
         # loading sounds
 
-
         self.sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
         self.sound_thrust = arcade.load_sound("sounds/spaceEngine_003.ogg")
         self.sound_thrust_player = None
@@ -406,7 +405,7 @@ class InGameView(arcade.View):
         self.player_speed = 0
         self.opposite_angle = 0
         self.thrust_emitter = None
-        self.explosion = None
+        self.explosion_emitter = None
 
         # set up ufo info
         self.ufo_list = None
@@ -472,6 +471,20 @@ class InGameView(arcade.View):
         new_ufo_obj = BonusUFO()
         new_ufo_obj.__int__(self.ufo_shot_list)  # it needs the list so it can send shots to MyGame
         self.ufo_list.append(new_ufo_obj)
+
+    def explosion(self, position):
+        """
+        Makes an explosion effect
+        """
+
+        self.explosion_emitter = arcade.make_burst_emitter(
+            center_xy=position,
+            filenames_and_textures=PARTICLE_TEXTURES,
+            particle_count=CONFIG['EXPLOSION_PARTICLE_AMOUNT'],
+            particle_speed=CONFIG['EXPLOSION_PARTICLE_SPEED'],
+            particle_lifetime_min=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MIN'],
+            particle_lifetime_max=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MAX'],
+            particle_scale=CONFIG['EXPLOSION_PARTICLE_SIZE'])
 
     def on_show_view(self):
         """ Set up the game and initialize the variables. """
@@ -544,6 +557,10 @@ class InGameView(arcade.View):
         # and their shots
         self.ufo_shot_list.draw()
 
+        # draw explosion
+        if self.explosion_emitter is not None:
+            self.explosion_emitter.draw()
+
         # Draw players score on screen
         arcade.draw_text(
             "SCORE: {}".format(self.player_score),  # Text to show
@@ -591,6 +608,7 @@ class InGameView(arcade.View):
                 # In the future, the Player will explode instead of disappearing.
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
+                self.explosion(self.player_sprite.position)
                 a.kill()
 
         # Player shot
@@ -615,9 +633,10 @@ class InGameView(arcade.View):
             for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
                 for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
                     if a.size > 1:
-                        a_angle = random.randrange(s.angle - 30, s.angle + 30)
-                        new_a = Asteroid(a.size-1, a.position, s.angle)
-                        self.asteroid_list.append(new_a)
+                        a_angle = random.randrange(a.direction - 30, a.direction + 30)
+                        self.asteroid_list.append(
+                            Asteroid(a.size - 1, a.position, a_angle)
+                        )
                     else:
                         pass
                 s.kill()
@@ -664,6 +683,9 @@ class InGameView(arcade.View):
 
         if len(self.asteroid_list) == 0:
             self.next_level()
+
+        if self.explosion_emitter is not None:
+            self.explosion_emitter.update()
 
     def on_key_press(self, key, modifiers):
         """
@@ -774,7 +796,7 @@ class GameOverView(arcade.View):
             CONFIG['SCREEN_WIDTH'] * 0.4,
             CONFIG['SCREEN_HEIGHT'] * 0.6,
             arcade.color.WHITE
-                         )
+        )
 
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
         """
