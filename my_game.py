@@ -133,12 +133,14 @@ class Asteroid(arcade.Sprite):
         )
 
         self.size = size
+        self.level = level
+
         if angle == None:
             self.angle = random.randrange(0, 360)
         else:
             self.angle = angle
 
-        # spawning astroits until the distance to the player is longer than ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER
+        # Spawning Astroids until the distance to the player is longer than ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER
         if not spawn_pos is None:
             self.position = spawn_pos
         else:
@@ -156,11 +158,8 @@ class Asteroid(arcade.Sprite):
         self.angle += random.randint(-CONFIG['ASTEROIDS_SPREAD'], CONFIG['ASTEROIDS_SPREAD'])
         self.forward(CONFIG['ASTEROIDS_SPEED'])
 
-        self.level = level
-
-        # the speed increases linearly, with current level
-        self.change_x = math.sin(self.radians) * CONFIG['ASTEROIDS_SPEED'] + (self.level - 1) * CONFIG['ASTEROIDS_SPEED_MOD_PR_LEVEL']
-        self.change_y = math.cos(self.radians) * CONFIG['ASTEROIDS_SPEED'] + (self.level - 1) * CONFIG['ASTEROIDS_SPEED_MOD_PR_LEVEL']
+        self.angle += random.randint(-CONFIG['ASTEROIDS_SPREAD'], CONFIG['ASTEROIDS_SPREAD'])
+        self.forward(CONFIG['ASTEROIDS_SPEED'])
         self.rotation_speed = random.randrange(0, 5)
 
         self.direction = self.angle  # placeholder for initial angle - angle changes during the game
@@ -660,10 +659,9 @@ class InGameView(arcade.View):
             for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
                 for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
                     if a.size > 1:
-                        a_angle = random.randrange(a.direction - 30, a.direction + 30)
-                        self.asteroid_list.append(
-                            Asteroid(a.size-1, self.level, a.position, a_angle)
-                        )
+                        a_angle = random.randrange(s.angle - 30, s.angle + 30)
+                        new_a = Asteroid(a.size-1, self.level, a.position, a_angle)
+                        self.asteroid_list.append(new_a)
                     else:
                         pass
                 s.kill()
