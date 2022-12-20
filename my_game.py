@@ -136,8 +136,6 @@ class Asteroid(arcade.Sprite):
             scale=size * CONFIG['SPRITE_SCALING']
         )
 
-        print(level)
-
         self.size = size
         if angle == None:
             self.angle = random.randrange(0, 360)
@@ -160,8 +158,10 @@ class Asteroid(arcade.Sprite):
                 ) > CONFIG['ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER']:
                     break
 
-        self.change_x = math.sin(self.radians) * CONFIG['ASTEROIDS_SPEED']
-        self.change_y = math.cos(self.radians) * CONFIG['ASTEROIDS_SPEED']
+        self.level = level
+
+        self.change_x = math.sin(self.radians) * CONFIG['ASTEROIDS_SPEED'] + (self.level - 1) * CONFIG['ASTEROID_SPEED_MOD_PR_LEVEL']
+        self.change_y = math.cos(self.radians) * CONFIG['ASTEROIDS_SPEED'] + (self.level - 1) * CONFIG['ASTEROID_SPEED_MOD_PR_LEVEL']
         self.rotation_speed = random.randrange(0, 5)
 
         self.direction = self.angle  # placeholder for initial angle - angle changes during the game
@@ -269,16 +269,15 @@ class BonusUFO(arcade.Sprite):
         # send arguments upstairs
         super().__init__(**kwargs)
 
-        print(level)
-
+        self.level = level
         self.shot_list = shot_list
 
         # set random direction. always point towards center, with noise
-        self.change_x = random.randrange(1, CONFIG['UFO_SPEED'])
+        self.change_x = random.randrange(1, CONFIG['UFO_SPEED']) + (self.level - 1) * CONFIG['UFO_SPEED_MOD_PR_LEVEL']
         if self.center_x > CONFIG['SCREEN_WIDTH'] / 2:
             self.change_x *= -1
 
-        self.change_y = CONFIG['UFO_SPEED'] - self.change_x
+        self.change_y = CONFIG['UFO_SPEED'] - self.change_x + (self.level - 1) * CONFIG['UFO_SPEED_MOD_PR_LEVEL']
         if self.center_y > CONFIG['SCREEN_HEIGHT'] / 2:
             self.change_y *= -1
 
@@ -286,7 +285,7 @@ class BonusUFO(arcade.Sprite):
         arcade.schedule(self.change_dir, CONFIG['UFO_DIR_CHANGE_RATE'])
 
         # setup shooting
-        arcade.schedule(self.shoot, CONFIG['UFO_FIRE_RATE'])
+        arcade.schedule(self.shoot, CONFIG['UFO_FIRE_RATE'] + (self.level - 1) * CONFIG['UFO_FIRE_RATE_MOD_PR_LEVEL'])
 
     def change_dir(self, delta_time):
         """
@@ -405,7 +404,7 @@ class InGameView(arcade.View):
         self.asteroid_list = None
 
         # The current level
-        self.level = None
+        self.level = 1
 
         # Set up the player info
         self.player_sprite: Player = None
@@ -468,7 +467,7 @@ class InGameView(arcade.View):
         # FIXME: Player needs to know that level was cleared
 
         # Spawn Asteroids
-        for r in range(CONFIG['ASTEROIDS_PR_LEVEL']):
+        for r in range(CONFIG['ASTEROIDS_PR_LEVEL'] + (self.level - 1) * CONFIG['ASTEROID_NUM_MOD_PR_LEVEL']):
             self.asteroid_list.append(Asteroid(level=self.level))
 
     def spawn_ufo(self, delta_time):
@@ -505,7 +504,7 @@ class InGameView(arcade.View):
         )
 
         # setup spawn_ufo to run regularly
-        arcade.schedule(self.spawn_ufo, CONFIG['UFO_SPAWN_RATE'])
+        arcade.schedule(self.spawn_ufo, CONFIG['UFO_SPAWN_RATE'] + (self.level - 1) * CONFIG['UFO_SPAWN_RATE_MOD_PR_LEVEL'])
 
         # Add an emitter that makes the thrusting particles
         self.thrust_emitter = arcade.Emitter(
