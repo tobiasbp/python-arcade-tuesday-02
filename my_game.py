@@ -486,7 +486,7 @@ class InGameView(arcade.View):
             filenames_and_textures=PARTICLE_TEXTURES,
             particle_count=CONFIG['EXPLOSION_PARTICLE_AMOUNT'],
             particle_speed=CONFIG['EXPLOSION_PARTICLE_SPEED'],
-            particle_lifetime_min=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MIN'] // 2,
+            particle_lifetime_min=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MIN'],
             particle_lifetime_max=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MAX'],
             particle_scale=CONFIG['EXPLOSION_PARTICLE_SIZE'])
 
