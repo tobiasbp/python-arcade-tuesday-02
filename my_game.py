@@ -534,8 +534,6 @@ class InGameView(arcade.View):
         # Start level 1
         self.next_level(1)
 
-        # self.explosion_emitter = self.explosion()
-
     def on_draw(self):
         """
         Render the screen.
