@@ -24,11 +24,6 @@ SCREEN_COLOR = arcade.color.BLACK
 
 PLAYER_GRAPHICS_CORRECTION = math.pi / 2  # the player graphic is turned 45 degrees too much compared to actual angle
 
-# The thrust effects textures and scale
-PARTICLE_TEXTURES = [
-    arcade.make_soft_circle_texture(25, arcade.color.YELLOW_ORANGE),
-    arcade.make_soft_circle_texture(25, arcade.color.SUNGLOW),
-]
 def wrap(sprite: arcade.Sprite):
     """
     if sprite is off-screen move it to the other side of the screen
@@ -126,13 +121,18 @@ class Player(arcade.Sprite):
 
 class Asteroid(arcade.Sprite):
 
-    def __init__(self, size=3, spawn_pos=None, angle=None):
+    valid_sizes = {1: "images/Meteors/meteorGrey_tiny1.png", 2: "images/Meteors/meteorGrey_small1.png", 3: "images/Meteors/meteorGrey_med1.png", 4: "images/Meteors/meteorGrey_big1.png"}
+    
+    def __init__(self, size=None, center_x=None, center_y=None, angle=None):
         # Initialize the asteroid
+        
+        if size is None:
+            size = random.choice(list(Asteroid.valid_sizes.keys()))
         
         # Graphics
         super().__init__(
-            filename='images/Meteors/meteorGrey_med1.png',
-            scale=size * CONFIG['SPRITE_SCALING']
+            filename=Asteroid.valid_sizes[size],
+            scale=CONFIG['SPRITE_SCALING']
         )
 
         self.size = size
@@ -140,30 +140,18 @@ class Asteroid(arcade.Sprite):
             self.angle = random.randrange(0, 360)
         else:
             self.angle = angle
-
-        #spawning astroits until the distance to the player is longer than ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER
-        if not spawn_pos is None:
-            self.position = spawn_pos
+        if center_x == None:
+            self.center_x = random.randint(0, CONFIG['SCREEN_WIDTH'])
+            self.center_y = random.randint(0, CONFIG['SCREEN_HEIGHT'])
         else:
-            while True:
-                self.center_x = random.randint(0, CONFIG['SCREEN_WIDTH'])
-                self.center_y = random.randint(0, CONFIG['SCREEN_HEIGHT'])
-
-                if arcade.get_distance(
-                        self.center_x,
-                        self.center_y,
-                        CONFIG['PLAYER_START_X'],
-                        CONFIG['PLAYER_START_Y']
-                ) > CONFIG['ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER']:
-                    break
-
+            self.center_x = center_x
+            self.center_y = center_y
         self.change_x = math.sin(self.radians) * CONFIG['ASTEROIDS_SPEED']
         self.change_y = math.cos(self.radians) * CONFIG['ASTEROIDS_SPEED']
         self.rotation_speed = random.randrange(0, 5)
-
-        self.direction = self.angle  # placeholder for initial angle - angle changes during the game
+        self.direction = self.angle
         self.value = CONFIG['ASTEROID_SCORE_VALUES'][self.size-1]
-
+        
     def update(self):
         # Update position
         self.center_x += self.change_x
@@ -509,8 +497,6 @@ class InGameView(arcade.View):
         super().__init__()
         
         # loading sounds
-
-
         self.sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
         self.sound_thrust = arcade.load_sound("sounds/spaceEngine_003.ogg")
         self.sound_thrust_player = None
@@ -528,11 +514,6 @@ class InGameView(arcade.View):
         # Set up the player info
         self.player_sprite: Player = None
         self.player_score = None
-        self.player_lives = None
-        self.player_speed = 0
-        self.opposite_angle = 0
-        self.thrust_emitter = None
-        self.explosion = None
 
         # set up ufo info
         self.ufo_list = None
@@ -627,20 +608,9 @@ class InGameView(arcade.View):
         # setup spawn_ufo to run regularly
         arcade.schedule(self.spawn_ufo, CONFIG['UFO_SPAWN_RATE'])
 
-        # Add an emitter that makes the thrusting particles
-        self.thrust_emitter = arcade.Emitter(
-            center_xy=(self.player_sprite.center_x, self.player_sprite.center_y),
-            emit_controller=arcade.EmitterIntervalWithTime(0.025, 100.0),
-            particle_factory=lambda emitter: arcade.FadeParticle(
-                filename_or_texture=random.choice(PARTICLE_TEXTURES),
-                change_xy=(0, 12.0),
-                lifetime=0.2,
-            )
-        )
-        self.thrust_emitter.angle = self.player_sprite.angle
-
         # Start level 1
         self.next_level(1)
+
 
     def on_draw(self):
         """
@@ -649,10 +619,6 @@ class InGameView(arcade.View):
 
         # This command has to happen before we start drawing
         arcade.start_render()
-
-        # draw particle emitter
-        if not self.player_sprite.is_invincible and self.thrust_pressed:
-            self.thrust_emitter.draw()
 
         # Draw the player shot
         self.player_shot_list.draw()
@@ -743,10 +709,7 @@ class InGameView(arcade.View):
             for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
                 for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
                     if a.size > 1:
-                        a_angle = random.randrange(a.direction - 30, a.direction + 30)
-                        self.asteroid_list.append(
-                            Asteroid(a.size-1, a.position, a_angle)
-                        )
+                        self.asteroid_list.append(Asteroid(a.size-1, a.center_x, a.center_y, random.randrange(a.direction-30, a.direction+30)))
                     else:
                         pass
                 s.kill()
@@ -780,16 +743,8 @@ class InGameView(arcade.View):
         if self.player_sprite.lives <= 0:
             arcade.stop_sound(self.sound_thrust_player)
             arcade.unschedule(self.spawn_ufo)
-            game_over_view = GameOverView(player_score=self.player_score, level=self.level)
+            game_over_view = GameOverView()
             self.window.show_view(game_over_view)
-
-        self.thrust_emitter.update()
-        self.thrust_emitter.angle = self.player_sprite.angle - 180 + random.randint(
-            -CONFIG['PLAYER_ENGINE_SHAKE'],
-            CONFIG['PLAYER_ENGINE_SHAKE']
-        )
-        self.thrust_emitter.center_x = self.player_sprite.center_x
-        self.thrust_emitter.center_y = self.player_sprite.center_y
 
         if len(self.asteroid_list) == 0:
             self.next_level()
@@ -878,14 +833,11 @@ class GameOverView(arcade.View):
     the game over screen
     """
 
-    def __init__(self, player_score, level):
+    def __init__(self):
         super().__init__()
 
         self.game_over_sign = arcade.load_texture("images/UI/asteroidsGameOverSign.png")
         self.restart_button = arcade.load_texture("images/UI/asteroidsRestartButton.png")
-
-        self.player_score = player_score
-        self.level = level
 
         # set background color
         arcade.set_background_color(SCREEN_COLOR)
@@ -906,13 +858,6 @@ class GameOverView(arcade.View):
             center_x=CONFIG['BUTTON_X'],
             center_y=CONFIG['BUTTON_Y']
         )
-
-        arcade.draw_text(
-            f"SCORE: {self.player_score}    LEVEL: {self.level}",
-            CONFIG['SCREEN_WIDTH'] * 0.4,
-            CONFIG['SCREEN_HEIGHT'] * 0.6,
-            arcade.color.WHITE
-                         )
 
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
         """
