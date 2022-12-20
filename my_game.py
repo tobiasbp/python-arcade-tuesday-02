@@ -485,13 +485,13 @@ class InGameView(arcade.View):
                                            CONFIG['EXPLOSION_PARTICLE_LIFETIME_MAX'])
 
         self.explosion_emitter = arcade.make_burst_emitter(
-            position,
-            PARTICLE_TEXTURES,
-            CONFIG['EXPLOSION_PARTICLE_AMOUNT'],
-            CONFIG['EXPLOSION_PARTICLE_SPEED'],
-            particle_lifetime // 2,
-            particle_lifetime,
-            CONFIG['EXPLOSION_PARTICLE_SCALE'])
+            center_xy=position,
+            filenames_and_textures=PARTICLE_TEXTURES,
+            particle_count=CONFIG['EXPLOSION_PARTICLE_AMOUNT'],
+            particle_speed=CONFIG['EXPLOSION_PARTICLE_SPEED'],
+            particle_lifetime_min=particle_lifetime // 2,
+            particle_lifetime_max=particle_lifetime,
+            particle_scale=CONFIG['EXPLOSION_PARTICLE_SIZE'])
 
     def on_show_view(self):
         """ Set up the game and initialize the variables. """
