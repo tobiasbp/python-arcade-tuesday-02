@@ -12,12 +12,21 @@ import math
 import random
 import tomli
 import tomli_w
+import os
 
 # load the config file as a dict
 with open('my_game.toml', 'rb') as fp:
     CONFIG = tomli.load(fp)
 
-print(CONFIG)
+# Load the saved settings file into the CONFIG dict
+
+try:
+    with open("my_game_edit.toml", "rb") as f:
+        CONFIG_edit = tomli.load(f)
+    for k in CONFIG_edit.keys():
+        CONFIG[k] = CONFIG_edit[k]
+except FileNotFoundError:
+    pass
 
 # has to be defined here since they use libraries
 SCREEN_COLOR = arcade.color.BLACK
@@ -381,6 +390,8 @@ class SettingsView(arcade.View):
         self.change_fire_key = False
         self.change_turn_right_key = False
         self.change_turn_left_key = False
+        self.reset_settings = False
+        self.changed_settings = {}
         
         # Initialize UI Manager
         self.manager = arcade.gui.UIManager()
@@ -432,14 +443,8 @@ class SettingsView(arcade.View):
         )
 
     def on_click_reset(self, event):
-        with open('my_game (Original).toml', 'rb') as fp:
-            originalCONFIG = tomli.load(fp)
-        for k in originalCONFIG.keys():
-            CONFIG[str(k)] = originalCONFIG[str(k)]
-        with open("my_game.toml", "wb") as f:
-                tomli_w.dump(CONFIG, f)
-        print(CONFIG, originalCONFIG)
-        
+        self.reset_settings = True
+            
     def on_click_change_player_thrust_key(self, event):
         self.change_thrust_key = True
 
@@ -459,30 +464,50 @@ class SettingsView(arcade.View):
     def on_key_press(self, key, modifiers):
         
         if self.change_thrust_key == True:
-            CONFIG["PLAYER_THRUST_KEY"] = key
+            self.changed_settings["PLAYER_THRUST_KEY"] = key
             self.change_thrust_key = False
+            #Update the edited configuration file
+            with open("my_game_edit.toml", "wb") as f:
+                tomli_w.dump(self.changed_settings, f)
 
         elif self.change_fire_key == True:
-            CONFIG["PLAYER_FIRE_KEY"] = key
+            self.changed_settings["PLAYER_FIRE_KEY"] = key
             self.change_fire_key = False
+            with open("my_game_edit.toml", "wb") as f:
+                tomli_w.dump(self.changed_settings, f)
         
         elif self.change_turn_right_key == True:
-            CONFIG["PLAYER_TURN_LEFT_KEY"] = key
+            self.changed_settings["PLAYER_TURN_LEFT_KEY"] = key
             self.change_turn_right_key = False
+            with open("my_game_edit.toml", "wb") as f:
+                tomli_w.dump(self.changed_settings, f)
 
         elif self.change_turn_left_key == True:
-            CONFIG["PLAYER_TURN_RIGHT_KEY"] = key
+            self.changed_settings["PLAYER_TURN_RIGHT_KEY"] = key
             self.change_turn_left_key = False
+            with open("my_game_edit.toml", "wb") as f:
+                tomli_w.dump(self.changed_settings, f)
 
         if key == CONFIG["EXIT_SETTINGS_KEY"]:
-            # Update the my_game.toml config file
-            with open("my_game.toml", "wb") as f:
-                tomli_w.dump(CONFIG, f)
-                
+            if self.reset_settings == True:
+                # Delete edited config file
+                try:
+                    os.remove("my_game_edit.toml")
+                except FileNotFoundError:
+                    pass
+        
+                # Reset CONFIG dict
+                with open('my_game.toml', 'rb') as fp:
+                    CONFIG_reset = tomli.load(fp)
+                for k in CONFIG_reset:
+                        CONFIG[k] = CONFIG_reset[k]
+                self.changed_settings = {}
+            else:
+                # Update the CONFIG dict
+                for k in self.changed_settings.keys():
+                    CONFIG[k] = self.changed_settings[k]
             intro_view = IntroView()
             self.window.show_view(intro_view)
-
-            print(CONFIG)
 
 class InGameView(arcade.View):
     """
