@@ -1,4 +1,6 @@
 # this is the config file for the project, storing (almost) all the game file constants
+# Link to the arcade key ID translation page used in the keybinds
+# https://api.arcade.academy/en/latest/arcade.key.html#key
 
 SPRITE_SCALING = 0.5
 
