@@ -218,7 +218,7 @@ class PlayerShot(arcade.Sprite):
         self.center_y += self.change_y
 
         # Smooth fade
-        self.alpha += CONFIG['PLAYER_SHOT_FADE']
+        self.alpha += -CONFIG['PLAYER_SHOT_FADE']
 
         # wrap
         wrap(self)
