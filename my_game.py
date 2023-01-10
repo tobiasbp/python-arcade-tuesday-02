@@ -203,6 +203,8 @@ class PlayerShot(arcade.Sprite):
         self.change_y = math.sin(self.radians + math.pi / 2) * CONFIG['PLAYER_SHOT_SPEED']
         self.distance_traveled = 0
         self.speed = CONFIG['PLAYER_SHOT_SPEED']
+        # Sets alpha to max visibility
+        self.alpha = 255
 
         PlayerShot.sound_fire.play()
 
@@ -214,6 +216,9 @@ class PlayerShot(arcade.Sprite):
         # Update position
         self.center_x += self.change_x
         self.center_y += self.change_y
+
+        # Smooth fade
+        self.alpha += CONFIG['PLAYER_SHOT_FADE']
 
         # wrap
         wrap(self)
