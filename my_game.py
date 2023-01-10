@@ -165,8 +165,8 @@ class Asteroid(arcade.Sprite):
         self.level = level
 
         # the speed increases linearly, with current level
-        self.change_x = math.sin(self.radians) * CONFIG['ASTEROIDS_SPEED'] + (self.level - 1) * CONFIG['ASTEROID_SPEED_MOD_PR_LEVEL']
-        self.change_y = math.cos(self.radians) * CONFIG['ASTEROIDS_SPEED'] + (self.level - 1) * CONFIG['ASTEROID_SPEED_MOD_PR_LEVEL']
+        self.change_x = math.sin(self.radians) * CONFIG['ASTEROIDS_SPEED'] + (self.level - 1) * CONFIG['ASTEROIDS_SPEED_MOD_PR_LEVEL']
+        self.change_y = math.cos(self.radians) * CONFIG['ASTEROIDS_SPEED'] + (self.level - 1) * CONFIG['ASTEROIDS_SPEED_MOD_PR_LEVEL']
         self.rotation_speed = random.randrange(0, 5)
 
         self.direction = self.angle  # placeholder for initial angle - angle changes during the game
