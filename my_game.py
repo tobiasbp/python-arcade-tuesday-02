@@ -160,6 +160,7 @@ class Asteroid(arcade.Sprite):
 
         self.level = level
 
+        # the speed increases linearly, with current level
         self.change_x = math.sin(self.radians) * CONFIG['ASTEROIDS_SPEED'] + (self.level - 1) * CONFIG['ASTEROID_SPEED_MOD_PR_LEVEL']
         self.change_y = math.cos(self.radians) * CONFIG['ASTEROIDS_SPEED'] + (self.level - 1) * CONFIG['ASTEROID_SPEED_MOD_PR_LEVEL']
         self.rotation_speed = random.randrange(0, 5)
@@ -459,6 +460,7 @@ class InGameView(arcade.View):
         or start a specific level
         """
 
+        # if no specific level was requested, advance to the next level
         if level is None:
             self.level += 1
         else:
