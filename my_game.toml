@@ -1,4 +1,6 @@
 # this is the config file for the project, storing (almost) all the game file constants
+# Link to the arcade key ID translation page used in the keybinds
+# https://api.arcade.academy/en/latest/arcade.key.html#key
 
 SPRITE_SCALING = 0.5
 
@@ -17,6 +19,10 @@ PLAYER_SPEED_LIMIT = 5  # px/update
 PLAYER_INVINCIBILITY_SECONDS = 5  # secs
 PLAYER_FIRE_RATE = 0.2  # secs
 PLAYER_SHOT_RANGE = 400  # px
+PLAYER_THRUST_KEY = 65362 # arrowup key
+PLAYER_FIRE_KEY = 32 # space key
+PLAYER_TURN_RIGHT_KEY = 65363 # arrowright key
+PLAYER_TURN_LEFT_KEY = 65361 # arrowleft key
 
 # asteroid_constants
 ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER = 350 # px

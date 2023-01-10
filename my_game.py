@@ -20,9 +20,6 @@ SCREEN_COLOR = arcade.color.BLACK
 
 PLAYER_GRAPHICS_CORRECTION = math.pi / 2  # the player graphic is turned 45 degrees too much compared to actual angle
 
-PLAYER_THRUST_KEY = arcade.key.UP
-PLAYER_FIRE_KEY = arcade.key.SPACE
-
 # The thrust effects textures and scale
 PARTICLE_TEXTURES = [
     arcade.make_soft_circle_texture(25, arcade.color.YELLOW_ORANGE),
@@ -430,6 +427,8 @@ class InGameView(arcade.View):
         self.up_pressed = False
         self.down_pressed = False
         self.thrust_pressed = False
+        self.turn_right_pressed = False
+        self.turn_left_pressed = False
 
         # Get list of joysticks
         joysticks = arcade.get_joysticks()
@@ -603,9 +602,9 @@ class InGameView(arcade.View):
 
         # Calculate player speed based on the keys pressed
         # Move player with keyboard
-        if self.left_pressed and not self.right_pressed:
+        if self.turn_left_pressed and not self.turn_right_pressed:
             self.player_sprite.angle += CONFIG['PLAYER_ROTATE_SPEED']
-        elif self.right_pressed and not self.left_pressed:
+        elif self.turn_right_pressed and not self.turn_left_pressed:
             self.player_sprite.angle += -CONFIG['PLAYER_ROTATE_SPEED']
 
         # rotate player with joystick if present
@@ -721,7 +720,11 @@ class InGameView(arcade.View):
         """
 
         # Track state of arrow keys
-        if key == arcade.key.UP:
+        if key == CONFIG["PLAYER_TURN_RIGHT_KEY"]:
+            self.turn_right_pressed = True
+        elif key == CONFIG["PLAYER_TURN_LEFT_KEY"]:
+            self.turn_left_pressed = True
+        elif key == arcade.key.UP:
             self.up_pressed = True
         elif key == arcade.key.DOWN:
             self.down_pressed = True
@@ -732,7 +735,7 @@ class InGameView(arcade.View):
         elif key == arcade.key.SPACE:
             self.space_pressed = True
 
-        if key == PLAYER_THRUST_KEY:
+        if key == CONFIG["PLAYER_THRUST_KEY"]:
             # if thrust just got pressed start sound loop
             if self.thrust_pressed is False:
                 if self.sound_thrust_player is not None:
@@ -740,7 +743,7 @@ class InGameView(arcade.View):
                 self.sound_thrust_player = self.sound_thrust.play(loop=True)
             self.thrust_pressed = True
 
-        if key == PLAYER_FIRE_KEY:
+        if key == CONFIG["PLAYER_FIRE_KEY"]:
             if not self.player_sprite.is_invincible:
                 if self.player_shot_fire_rate_timer >= CONFIG['PLAYER_FIRE_RATE']:
                     new_shot = PlayerShot(
@@ -767,13 +770,17 @@ class InGameView(arcade.View):
             self.right_pressed = False
         elif key == arcade.key.SPACE:
             self.space_pressed = False
-        if key == PLAYER_THRUST_KEY:
+        if key == CONFIG["PLAYER_THRUST_KEY"]:
             self.thrust_pressed = False
+        elif key == CONFIG["PLAYER_TURN_RIGHT_KEY"]:
+            self.turn_right_pressed = False
+        elif key == CONFIG["PLAYER_TURN_LEFT_KEY"]:
+            self.turn_left_pressed = False
 
     def on_joybutton_press(self, joystick, button_no):
         print("Button pressed:", button_no)
         # Press the fire key
-        self.on_key_press(PLAYER_FIRE_KEY, [])
+        self.on_key_press(CONFIG["PLAYER_FIRE_KEY"], [])
 
     def on_joybutton_release(self, joystick, button_no):
         print("Button released:", button_no)
