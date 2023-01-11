@@ -626,13 +626,14 @@ class InGameView(arcade.View):
                 self.get_explosion(self.player_sprite.position)
                 a.kill()
 
+        # check for collision with bonus_ufo
         for ufo in self.player_sprite.collides_with_list(self.ufo_list):
             if not self.player_sprite.is_invincible:
                 # In the future, the Player will explode instead of disappearing.
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
                 self.get_explosion(self.player_sprite.position)
-                ufo.kill()
+                ufo.destroy()
 
         # Player shot
         for shot in self.player_shot_list:
