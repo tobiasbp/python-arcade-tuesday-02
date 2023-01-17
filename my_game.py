@@ -20,6 +20,9 @@ SCREEN_COLOR = arcade.color.BLACK
 
 PLAYER_GRAPHICS_CORRECTION = math.pi / 2  # the player graphic is turned 45 degrees too much compared to actual angle
 
+PLAYER_THRUST_KEY = arcade.key.UP
+PLAYER_FIRE_KEY = arcade.key.SPACE
+
 # The thrust effects textures and scale
 PARTICLE_TEXTURES = [
     arcade.make_soft_circle_texture(25, arcade.color.YELLOW_ORANGE),
@@ -128,7 +131,7 @@ class Player(arcade.Sprite):
 
 class Asteroid(arcade.Sprite):
 
-    def __init__(self, size=3, level=1, spawn_pos=None, angle=None):
+    def __init__(self, size=3, spawn_pos=None, angle=None):
         # Initialize the asteroid
 
         # Graphics
@@ -159,11 +162,8 @@ class Asteroid(arcade.Sprite):
                 ) > CONFIG['ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER']:
                     break
 
-        self.level = level
-
-        # the speed increases linearly, with current level
-        self.change_x = math.sin(self.radians) * CONFIG['ASTEROIDS_SPEED'] + (self.level - 1) * CONFIG['ASTEROIDS_SPEED_MOD_PR_LEVEL']
-        self.change_y = math.cos(self.radians) * CONFIG['ASTEROIDS_SPEED'] + (self.level - 1) * CONFIG['ASTEROIDS_SPEED_MOD_PR_LEVEL']
+        self.change_x = math.sin(self.radians) * CONFIG['ASTEROIDS_SPEED']
+        self.change_y = math.cos(self.radians) * CONFIG['ASTEROIDS_SPEED']
         self.rotation_speed = random.randrange(0, 5)
 
         self.direction = self.angle  # placeholder for initial angle - angle changes during the game
@@ -203,7 +203,6 @@ class PlayerShot(arcade.Sprite):
         self.change_y = math.sin(self.radians + math.pi / 2) * CONFIG['PLAYER_SHOT_SPEED']
         self.distance_traveled = 0
         self.speed = CONFIG['PLAYER_SHOT_SPEED']
-        self.fade_speed = CONFIG['PLAYER_SHOT_FADE_SPEED']*0.5
 
         PlayerShot.sound_fire.play()
 
@@ -218,12 +217,6 @@ class PlayerShot(arcade.Sprite):
 
         # wrap
         wrap(self)
-
-        # Checks when the distance of the shot is almost over
-        if self.distance_traveled > 350:
-            new_alpha = self.fade_speed
-            # Alpha can't go under 0 so the max function always checks after the highest number over 0
-            self.alpha -= max(0, new_alpha)
 
         # Has a range of how long the shot can last for
         self.distance_traveled += self.speed
@@ -263,7 +256,7 @@ class BonusUFO(arcade.Sprite):
     sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
     sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
 
-    def __int__(self, shot_list, level=1, **kwargs):
+    def __int__(self, shot_list, **kwargs):
 
         kwargs['filename'] = "images/ufoBlue.png"
 
@@ -277,15 +270,14 @@ class BonusUFO(arcade.Sprite):
         # send arguments upstairs
         super().__init__(**kwargs)
 
-        self.level = level
         self.shot_list = shot_list
 
         # set random direction. always point towards center, with noise
-        self.change_x = random.randrange(1, CONFIG['UFO_SPEED']) + (self.level - 1) * CONFIG['UFO_SPEED_MOD_PR_LEVEL']
+        self.change_x = random.randrange(1, CONFIG['UFO_SPEED'])
         if self.center_x > CONFIG['SCREEN_WIDTH'] / 2:
             self.change_x *= -1
 
-        self.change_y = CONFIG['UFO_SPEED'] - self.change_x + (self.level - 1) * CONFIG['UFO_SPEED_MOD_PR_LEVEL']
+        self.change_y = CONFIG['UFO_SPEED'] - self.change_x
         if self.center_y > CONFIG['SCREEN_HEIGHT'] / 2:
             self.change_y *= -1
 
@@ -293,7 +285,7 @@ class BonusUFO(arcade.Sprite):
         arcade.schedule(self.change_dir, CONFIG['UFO_DIR_CHANGE_RATE'])
 
         # setup shooting
-        arcade.schedule(self.shoot, CONFIG['UFO_FIRE_RATE'] + (self.level - 1) * CONFIG['UFO_FIRE_RATE_MOD_PR_LEVEL'])
+        arcade.schedule(self.shoot, CONFIG['UFO_FIRE_RATE'])
 
     def change_dir(self, delta_time):
         """
@@ -412,7 +404,7 @@ class InGameView(arcade.View):
         self.asteroid_list = None
 
         # The current level
-        self.level = 1
+        self.level = None
 
         # Set up the player info
         self.player_sprite: Player = None
@@ -434,8 +426,6 @@ class InGameView(arcade.View):
         self.up_pressed = False
         self.down_pressed = False
         self.thrust_pressed = False
-        self.turn_right_pressed = False
-        self.turn_left_pressed = False
 
         # Get list of joysticks
         joysticks = arcade.get_joysticks()
@@ -468,18 +458,17 @@ class InGameView(arcade.View):
         Advance the game to the next level
         or start a specific level
         """
-
-        # if no specific level was requested, advance to the next level
         if level is None:
             self.level += 1
         else:
             self.level = level
 
+        # FIXME: Add stuff to make the game harder as level rises
         # FIXME: Player needs to know that level was cleared
 
         # Spawn Asteroids
-        for r in range(CONFIG['ASTEROIDS_PR_LEVEL'] + (self.level - 1) * CONFIG['ASTEROID_NUM_MOD_PR_LEVEL']):
-            self.asteroid_list.append(Asteroid(level=self.level))
+        for r in range(CONFIG['ASTEROIDS_PR_LEVEL']):
+            self.asteroid_list.append(Asteroid())
 
     def spawn_ufo(self, delta_time):
         """
@@ -488,7 +477,7 @@ class InGameView(arcade.View):
         """
 
         new_ufo_obj = BonusUFO()
-        new_ufo_obj.__int__(self.ufo_shot_list, self.level)  # it needs the list so it can send shots to MyGame
+        new_ufo_obj.__int__(self.ufo_shot_list)  # it needs the list so it can send shots to MyGame
         self.ufo_list.append(new_ufo_obj)
 
     def get_explosion(self, position, textures=None):
@@ -531,7 +520,7 @@ class InGameView(arcade.View):
         )
 
         # setup spawn_ufo to run regularly
-        arcade.schedule(self.spawn_ufo, CONFIG['UFO_SPAWN_RATE'] + (self.level - 1) * CONFIG['UFO_SPAWN_RATE_MOD_PR_LEVEL'])
+        arcade.schedule(self.spawn_ufo, CONFIG['UFO_SPAWN_RATE'])
 
         # Add an emitter that makes the thrusting particles
         self.thrust_emitter = arcade.Emitter(
@@ -609,9 +598,9 @@ class InGameView(arcade.View):
 
         # Calculate player speed based on the keys pressed
         # Move player with keyboard
-        if self.turn_left_pressed and not self.turn_right_pressed:
+        if self.left_pressed and not self.right_pressed:
             self.player_sprite.angle += CONFIG['PLAYER_ROTATE_SPEED']
-        elif self.turn_right_pressed and not self.turn_left_pressed:
+        elif self.right_pressed and not self.left_pressed:
             self.player_sprite.angle += -CONFIG['PLAYER_ROTATE_SPEED']
 
         # rotate player with joystick if present
@@ -633,14 +622,13 @@ class InGameView(arcade.View):
                 self.get_explosion(self.player_sprite.position)
                 a.kill()
 
-        # check for collision with bonus_ufo
         for ufo in self.player_sprite.collides_with_list(self.ufo_list):
             if not self.player_sprite.is_invincible:
                 # In the future, the Player will explode instead of disappearing.
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
                 self.get_explosion(self.player_sprite.position)
-                ufo.destroy()
+                ufo.kill()
 
         # Player shot
         for shot in self.player_shot_list:
@@ -670,7 +658,7 @@ class InGameView(arcade.View):
                     if a.size > 1:
                         a_angle = random.randrange(a.direction - 30, a.direction + 30)
                         self.asteroid_list.append(
-                            Asteroid(a.size-1, self.level, a.position, a_angle)
+                            Asteroid(a.size - 1, a.position, a_angle)
                         )
                     else:
                         pass
@@ -728,11 +716,7 @@ class InGameView(arcade.View):
         """
 
         # Track state of arrow keys
-        if key == CONFIG["PLAYER_TURN_RIGHT_KEY"]:
-            self.turn_right_pressed = True
-        elif key == CONFIG["PLAYER_TURN_LEFT_KEY"]:
-            self.turn_left_pressed = True
-        elif key == arcade.key.UP:
+        if key == arcade.key.UP:
             self.up_pressed = True
         elif key == arcade.key.DOWN:
             self.down_pressed = True
@@ -743,7 +727,7 @@ class InGameView(arcade.View):
         elif key == arcade.key.SPACE:
             self.space_pressed = True
 
-        if key == CONFIG["PLAYER_THRUST_KEY"]:
+        if key == PLAYER_THRUST_KEY:
             # if thrust just got pressed start sound loop
             if self.thrust_pressed is False:
                 if self.sound_thrust_player is not None:
@@ -751,7 +735,7 @@ class InGameView(arcade.View):
                 self.sound_thrust_player = self.sound_thrust.play(loop=True)
             self.thrust_pressed = True
 
-        if key == CONFIG["PLAYER_FIRE_KEY"]:
+        if key == PLAYER_FIRE_KEY:
             if not self.player_sprite.is_invincible:
                 if self.player_shot_fire_rate_timer >= CONFIG['PLAYER_FIRE_RATE']:
                     new_shot = PlayerShot(
@@ -778,17 +762,13 @@ class InGameView(arcade.View):
             self.right_pressed = False
         elif key == arcade.key.SPACE:
             self.space_pressed = False
-        if key == CONFIG["PLAYER_THRUST_KEY"]:
+        if key == PLAYER_THRUST_KEY:
             self.thrust_pressed = False
-        elif key == CONFIG["PLAYER_TURN_RIGHT_KEY"]:
-            self.turn_right_pressed = False
-        elif key == CONFIG["PLAYER_TURN_LEFT_KEY"]:
-            self.turn_left_pressed = False
 
     def on_joybutton_press(self, joystick, button_no):
         print("Button pressed:", button_no)
         # Press the fire key
-        self.on_key_press(CONFIG["PLAYER_FIRE_KEY"], [])
+        self.on_key_press(PLAYER_FIRE_KEY, [])
 
     def on_joybutton_release(self, joystick, button_no):
         print("Button released:", button_no)

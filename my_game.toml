@@ -1,6 +1,4 @@
 # this is the config file for the project, storing (almost) all the game file constants
-# Link to the arcade key ID translation page used in the keybinds
-# https://api.arcade.academy/en/latest/arcade.key.html#key
 
 SPRITE_SCALING = 0.5
 
@@ -19,32 +17,22 @@ PLAYER_SPEED_LIMIT = 5  # px/update
 PLAYER_INVINCIBILITY_SECONDS = 5  # secs
 PLAYER_FIRE_RATE = 0.2  # secs
 PLAYER_SHOT_RANGE = 400  # px
-PLAYER_THRUST_KEY = 65362 # arrowup key
-PLAYER_FIRE_KEY = 32 # space key
-PLAYER_TURN_RIGHT_KEY = 65363 # arrowright key
-PLAYER_TURN_LEFT_KEY = 65361 # arrowleft key
-PLAYER_SHOT_FADE_SPEED = 30
 
 # asteroid_constants
 ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER = 350 # px
 ASTEROIDS_PR_LEVEL = 5
-ASTEROID_NUM_MOD_PR_LEVEL = 1  # added to ASTEROIDS_PR_LEVEL on level increase
 ASTEROIDS_SPEED = 1  # px/update
-ASTEROIDS_SPEED_MOD_PR_LEVEL = 0.7  # added to ASTEROIDS_SPEED on level increase
 ASTEROID_SCORE_VALUES = [20, 30, 40, 50]  # points
 ASTEROIDS_PR_SPLIT = 2
 
 # ufo_constants
 UFO_SPEED = 2  # px/update. both for x and y note: has to be int
-UFO_SPEED_MOD_PR_LEVEL = 1  # added to UFO_SPEED on level increase
 UFO_DIR_CHANGE_RATE = 3  # secs
 UFO_SPAWN_RATE = 10  # seconds
-UFO_SPAWN_RATE_MOD_PR_LEVEL = -0.5  # added to UFO_SPAWN_RATE on level increase
 UFO_POINTS_REWARD = 300  # points
 UFO_SHOT_SPEED = 2  # px/update
 UFO_SHOT_RANGE = 200  # px
 UFO_FIRE_RATE = 1.5  # secs
-UFO_FIRE_RATE_MOD_PR_LEVEL = -0.15  # added to UFO_FIRE_RATE on level increase
 UFO_SIZE_SMALL = 0.9  # multiplier for original file
 UFO_SIZE_BIG = 1.5  # multiplier for original file
 PLAYER_ENGINE_SHAKE = 20 # The maximum + minimum of the shaking of the particles
