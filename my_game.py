@@ -160,6 +160,8 @@ class Asteroid(arcade.Sprite):
 
         self.angle += random.randint(-CONFIG['ASTEROIDS_SPREAD'], CONFIG['ASTEROIDS_SPREAD'])
         self.forward(CONFIG['ASTEROIDS_SPEED'])
+        self.level = level
+
         self.rotation_speed = random.randrange(0, 5)
 
         self.direction = self.angle  # placeholder for initial angle - angle changes during the game
@@ -662,6 +664,7 @@ class InGameView(arcade.View):
                         a_angle = random.randrange(s.angle - 30, s.angle + 30)
                         new_a = Asteroid(a.size-1, self.level, a.position, a_angle)
                         self.asteroid_list.append(new_a)
+
                     else:
                         pass
                 s.kill()
