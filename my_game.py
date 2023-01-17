@@ -661,7 +661,7 @@ class InGameView(arcade.View):
             for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
                 for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
                     if a.size > 1:
-                        a_angle = random.randrange(s.angle - 30, s.angle + 30)
+                        a_angle = random.randrange(s.angle - CONFIG["ASTEROIDS_SPREAD"], s.angle + CONFIG["ASTEROIDS_SPREAD"])
                         new_a = Asteroid(a.size-1, self.level, a.position, a_angle)
                         self.asteroid_list.append(new_a)
 
