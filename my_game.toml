@@ -21,6 +21,7 @@ PLAYER_FIRE_RATE = 0.2  # secs
 PLAYER_SHOT_RANGE = 400  # px
 PLAYER_THRUST_KEY = 65362 # arrowup key
 PLAYER_FIRE_KEY = 32 # space key
+EXIT_SETTINGS_KEY = 65307 # escape key
 PLAYER_TURN_RIGHT_KEY = 65363 # arrowright key
 PLAYER_TURN_LEFT_KEY = 65361 # arrowleft key
 
@@ -58,3 +59,5 @@ TITLE_X = 400  # pCha
 TITLE_Y = 450  # px
 BUTTON_X = 400  # px
 BUTTON_Y = 300  # px
+SETTINGS_BUTTON_X = 400  # px
+SETTINGS_BUTTON_Y = 200  # px
