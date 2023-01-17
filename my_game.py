@@ -221,6 +221,7 @@ class PlayerShot(arcade.Sprite):
 
         # Checks when the distance of the shot is almost over
         if self.distance_traveled > 350:
+            # Makes the new variable that.
             new_alpha = self.fade_speed
             # Alpha can't go under 0 so the max function always checks after the highest number over 0
             self.alpha -= max(0, new_alpha)
