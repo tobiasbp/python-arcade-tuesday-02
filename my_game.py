@@ -368,14 +368,19 @@ class IntroView(arcade.View):
             center_y=CONFIG['BUTTON_Y'],
         )
 
+    def on_key_press(self, symbol: int, modifiers: int):
+        self.start_game()
+
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
         """
         called whenever the mouse is clicked on the screen
         """
-
         if arcade.get_distance(x, y, CONFIG['BUTTON_X'], CONFIG['BUTTON_Y']) < self.play_button.width // 2:
-            in_game_view = InGameView()
-            self.window.show_view(in_game_view)
+            self.start_game()
+
+    def start_game(self):
+        in_game_view = InGameView()
+        self.window.show_view(in_game_view)
 
 
 class InGameView(arcade.View):
@@ -834,14 +839,20 @@ class GameOverView(arcade.View):
             arcade.color.WHITE
         )
 
+    def on_key_press(self, symbol: int, modifiers: int):
+        self.new_game()
+
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
         """
         called whenever the mouse is clicked on the screen.
         """
 
         if arcade.get_distance(x, y, CONFIG['BUTTON_X'], CONFIG['BUTTON_Y']) < self.restart_button.height // 2:
-            in_game_view = InGameView()
-            self.window.show_view(in_game_view)
+            self.new_game()
+
+    def new_game(self):
+        in_game_view = InGameView()
+        self.window.show_view(in_game_view)
 
 
 def main():
