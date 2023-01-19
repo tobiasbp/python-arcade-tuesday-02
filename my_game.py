@@ -18,6 +18,16 @@ import os
 with open('my_game.toml', 'rb') as fp:
     CONFIG = tomli.load(fp)
 
+# Load the saved settings file into the CONFIG dict
+try:
+    with open("my_game_edit.toml", "rb") as f:
+        CONFIG_edit = tomli.load(f)
+    for k in CONFIG_edit.keys():
+        CONFIG[k] = CONFIG_edit[k]
+except FileNotFoundError:
+    pass
+
+
 # has to be defined here since they use libraries
 SCREEN_COLOR = arcade.color.BLACK
 
@@ -425,16 +435,16 @@ class SettingsView(arcade.View):
         reset_settings_button = arcade.gui.UIFlatButton(text="Reset Settings", width=200)
         self.v_box.add(reset_settings_button.with_space_around(bottom=20))
         
-        change_player_thrust_key_button = arcade.gui.UIFlatButton(text=str("Thrust"), width=200)
+        change_player_thrust_key_button = arcade.gui.UIFlatButton(text=str("Thrust Key: " + str(CONFIG["PLAYER_THRUST_KEY"])), width=200)
         self.v_box.add(change_player_thrust_key_button.with_space_around(bottom=20))
         
-        change_player_fire_key_button = arcade.gui.UIFlatButton(text=str("Fire"), width=200)
+        change_player_fire_key_button = arcade.gui.UIFlatButton(text=str("Fire Key: " + str(CONFIG["PLAYER_FIRE_KEY"])), width=200)
         self.v_box.add(change_player_fire_key_button.with_space_around(bottom=20))
         
-        change_player_turn_right_key_button = arcade.gui.UIFlatButton(text=str("Right"), width=200)
+        change_player_turn_right_key_button = arcade.gui.UIFlatButton(text=str("Turn Right Key: " + str(CONFIG["PLAYER_TURN_RIGHT_KEY"])), width=200)
         self.v_box.add(change_player_turn_right_key_button.with_space_around(bottom=20))
         
-        change_player_turn_left_key_button = arcade.gui.UIFlatButton(text=str("Left"), width=200)
+        change_player_turn_left_key_button = arcade.gui.UIFlatButton(text=str("Turn Left Key: " + str(CONFIG["PLAYER_TURN_LEFT_KEY"])), width=200)
         self.v_box.add(change_player_turn_left_key_button.with_space_around(bottom=20))
 
         # Assign click functions to buttons
@@ -509,13 +519,13 @@ class SettingsView(arcade.View):
                 tomli_w.dump(self.changed_settings, f)
         
         elif self.change_turn_right_key == True:
-            self.changed_settings["PLAYER_TURN_LEFT_KEY"] = key
+            self.changed_settings["PLAYER_TURN_RIGHT_KEY"] = key
             self.change_turn_right_key = False
             with open("my_game_edit.toml", "wb") as f:
                 tomli_w.dump(self.changed_settings, f)
 
         elif self.change_turn_left_key == True:
-            self.changed_settings["PLAYER_TURN_RIGHT_KEY"] = key
+            self.changed_settings["PLAYER_TURN_LEFT_KEY"] = key
             self.change_turn_left_key = False
             with open("my_game_edit.toml", "wb") as f:
                 tomli_w.dump(self.changed_settings, f)
