@@ -619,6 +619,7 @@ class InGameView(arcade.View):
         # checks if ufo shot collides with player
         for ufo_shot_hit in self.player_sprite.collides_with_list(self.ufo_shot_list):
             self.player_sprite.lives -= 1
+            self.player_sprite.reset()
             self.get_explosion(self.player_sprite.position)
             ufo_shot_hit.kill()
 
