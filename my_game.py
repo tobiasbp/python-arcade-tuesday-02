@@ -203,7 +203,6 @@ class PlayerShot(arcade.Sprite):
         self.change_y = math.sin(self.radians + math.pi / 2) * CONFIG['PLAYER_SHOT_SPEED']
         self.distance_traveled = 0
         self.speed = CONFIG['PLAYER_SHOT_SPEED']
-        self.fade_speed = CONFIG['PLAYER_SHOT_FADE_SPEED'] * 0.5
 
         PlayerShot.sound_fire.play()
 
@@ -220,11 +219,9 @@ class PlayerShot(arcade.Sprite):
         wrap(self)
 
         # Checks when the distance of the shot is almost over
-        if self.distance_traveled > 350:
-            # Makes the new variable that.
-            new_alpha = self.fade_speed
-            # Alpha can't go under 0 so the max function always checks after the highest number over 0
-            self.alpha -= max(0, new_alpha)
+        if self.distance_traveled > 300:
+            # 5% of the alpha every frame.
+            self.alpha *= CONFIG['PLAYER_SHOT_FADE_SPEED']
 
         # Has a range of how long the shot can last for
         self.distance_traveled += self.speed
