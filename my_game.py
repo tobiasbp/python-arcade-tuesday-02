@@ -555,8 +555,7 @@ class InGameView(arcade.View):
         arcade.start_render()
 
         # draw particle emitter
-        if not self.player_sprite.is_invincible:
-            self.thrust_emitter.draw()
+        self.thrust_emitter.draw()
 
         # Draw the player shot
         self.player_shot_list.draw()
