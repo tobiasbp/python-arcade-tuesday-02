@@ -21,6 +21,7 @@ PLAYER_SHOT_FADE_SPEED = 0.95  # the procentage of fade in player shots fade (Ha
 PLAYER_SHOT_FADE_START = 100  # the number of when the player shot starts to fade
 
 # asteroid_constants
+ASTEROIDS_SPREAD = 30
 ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER = 350 # px
 ASTEROIDS_PR_LEVEL = 5
 ASTEROIDS_SPEED = 1  # px/update

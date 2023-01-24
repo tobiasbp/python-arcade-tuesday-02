@@ -18,11 +18,6 @@ with open('my_game.toml', 'rb') as fp:
 # has to be defined here since they use libraries
 SCREEN_COLOR = arcade.color.BLACK
 
-PLAYER_GRAPHICS_CORRECTION = math.pi / 2  # the player graphic is turned 45 degrees too much compared to actual angle
-
-PLAYER_THRUST_KEY = arcade.key.UP
-PLAYER_FIRE_KEY = arcade.key.SPACE
-
 # The thrust effects textures and scale
 PARTICLE_TEXTURES = [
     arcade.make_soft_circle_texture(25, arcade.color.YELLOW_ORANGE),
@@ -61,8 +56,7 @@ class Player(arcade.Sprite):
         """
 
         # Graphics to use for Player
-        super().__init__("images/playerShip1_red.png")
-
+        super().__init__("images/playerShip1_red.png", flipped_horizontally=True ,flipped_diagonally=True)
         self.invincibility_timer = 0
         self.angle = 0
         self.lives = lives
@@ -75,9 +69,7 @@ class Player(arcade.Sprite):
         increase speed in the direction pointing
         """
 
-        self.change_x += math.cos(self.radians + PLAYER_GRAPHICS_CORRECTION) * CONFIG['PLAYER_THRUST']
-        self.change_y += math.sin(self.radians + PLAYER_GRAPHICS_CORRECTION) * CONFIG['PLAYER_THRUST']
-
+        self.forward(CONFIG['PLAYER_THRUST'])
         # Keep track of Player Speed
         player_speed_vector_length = math.sqrt(self.change_x ** 2 + self.change_y ** 2)
 
@@ -141,12 +133,14 @@ class Asteroid(arcade.Sprite):
         )
 
         self.size = size
+        self.level = level
+
         if angle == None:
             self.angle = random.randrange(0, 360)
         else:
             self.angle = angle
 
-        # spawning astroits until the distance to the player is longer than ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER
+        # Spawning Astroids until the distance to the player is longer than ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER
         if not spawn_pos is None:
             self.position = spawn_pos
         else:
@@ -161,9 +155,13 @@ class Asteroid(arcade.Sprite):
                         CONFIG['PLAYER_START_Y']
                 ) > CONFIG['ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER']:
                     break
+        self.angle += random.randint(-CONFIG['ASTEROIDS_SPREAD'], CONFIG['ASTEROIDS_SPREAD'])
+        self.forward(CONFIG['ASTEROIDS_SPEED'])
 
-        self.change_x = math.sin(self.radians) * CONFIG['ASTEROIDS_SPEED']
-        self.change_y = math.cos(self.radians) * CONFIG['ASTEROIDS_SPEED']
+        self.angle += random.randint(-CONFIG['ASTEROIDS_SPREAD'], CONFIG['ASTEROIDS_SPREAD'])
+        self.forward(CONFIG['ASTEROIDS_SPEED'])
+        self.level = level
+
         self.rotation_speed = random.randrange(0, 5)
 
         self.direction = self.angle  # placeholder for initial angle - angle changes during the game
@@ -194,13 +192,15 @@ class PlayerShot(arcade.Sprite):
         """
 
         # Set the graphics to use for the sprite
-        super().__init__("images/Lasers/laserBlue01.png", CONFIG['SPRITE_SCALING'])
+        super().__init__("images/Lasers/laserBlue01.png",
+                         CONFIG['SPRITE_SCALING'],
+                         flipped_horizontally=True ,
+                         flipped_diagonally=True)
 
         self.center_x = center_x
         self.center_y = center_y
         self.angle = angle
-        self.change_x = math.cos(self.radians + math.pi / 2) * CONFIG['PLAYER_SHOT_SPEED']
-        self.change_y = math.sin(self.radians + math.pi / 2) * CONFIG['PLAYER_SHOT_SPEED']
+        self.forward(CONFIG['PLAYER_SHOT_SPEED'])
         self.distance_traveled = 0
         self.speed = CONFIG['PLAYER_SHOT_SPEED']
 
@@ -372,14 +372,19 @@ class IntroView(arcade.View):
             center_y=CONFIG['BUTTON_Y'],
         )
 
+    def on_key_press(self, symbol: int, modifiers: int):
+        self.start_game()
+
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
         """
         called whenever the mouse is clicked on the screen
         """
-
         if arcade.get_distance(x, y, CONFIG['BUTTON_X'], CONFIG['BUTTON_Y']) < self.play_button.width // 2:
-            in_game_view = InGameView()
-            self.window.show_view(in_game_view)
+            self.start_game()
+
+    def start_game(self):
+        in_game_view = InGameView()
+        self.window.show_view(in_game_view)
 
 
 class InGameView(arcade.View):
@@ -615,6 +620,7 @@ class InGameView(arcade.View):
         # checks if ufo shot collides with player
         for ufo_shot_hit in self.player_sprite.collides_with_list(self.ufo_shot_list):
             self.player_sprite.lives -= 1
+            self.player_sprite.reset()
             self.get_explosion(self.player_sprite.position)
             ufo_shot_hit.kill()
 
@@ -661,10 +667,9 @@ class InGameView(arcade.View):
             for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
                 for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
                     if a.size > 1:
-                        a_angle = random.randrange(a.direction - 30, a.direction + 30)
-                        self.asteroid_list.append(
-                            Asteroid(a.size - 1, a.position, a_angle)
-                        )
+                        a_angle = random.randrange(s.angle - CONFIG["ASTEROIDS_SPREAD"], s.angle + CONFIG["ASTEROIDS_SPREAD"])
+                        new_a = Asteroid(a.size-1, self.level, a.position, a_angle)
+                        self.asteroid_list.append(new_a)
                     else:
                         pass
                 s.kill()
@@ -702,7 +707,7 @@ class InGameView(arcade.View):
             self.window.show_view(game_over_view)
 
         self.thrust_emitter.update()
-        self.thrust_emitter.angle = self.player_sprite.angle - 180 + random.randint(
+        self.thrust_emitter.angle = self.player_sprite.angle - 270 + random.randint(
             -CONFIG['PLAYER_ENGINE_SHAKE'],
             CONFIG['PLAYER_ENGINE_SHAKE']
         )
@@ -826,14 +831,20 @@ class GameOverView(arcade.View):
             arcade.color.WHITE
         )
 
+    def on_key_press(self, symbol: int, modifiers: int):
+        self.new_game()
+
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
         """
         called whenever the mouse is clicked on the screen.
         """
 
         if arcade.get_distance(x, y, CONFIG['BUTTON_X'], CONFIG['BUTTON_Y']) < self.restart_button.height // 2:
-            in_game_view = InGameView()
-            self.window.show_view(in_game_view)
+            self.new_game()
+
+    def new_game(self):
+        in_game_view = InGameView()
+        self.window.show_view(in_game_view)
 
 
 def main():
