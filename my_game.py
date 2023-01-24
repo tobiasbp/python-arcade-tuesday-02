@@ -534,7 +534,7 @@ class InGameView(arcade.View):
         # Add an emitter that makes the thrusting particles
         self.thrust_emitter = arcade.Emitter(
             center_xy=(self.player_sprite.center_x, self.player_sprite.center_y),
-            emit_controller=arcade.EmitterIntervalWithTime(0.025, 100.0),
+            emit_controller=arcade.EmitterIntervalWithTime(0, 0),  # setting a blank controller when not thrusting.
             particle_factory=lambda emitter: arcade.FadeParticle(
                 filename_or_texture=random.choice(PARTICLE_TEXTURES),
                 change_xy=(0, 12.0),
@@ -555,7 +555,7 @@ class InGameView(arcade.View):
         arcade.start_render()
 
         # draw particle emitter
-        if not self.player_sprite.is_invincible and self.thrust_pressed:
+        if not self.player_sprite.is_invincible:
             self.thrust_emitter.draw()
 
         # Draw the player shot
@@ -706,6 +706,10 @@ class InGameView(arcade.View):
             arcade.unschedule(self.spawn_ufo)
             game_over_view = GameOverView(player_score=self.player_score, level=self.level)
             self.window.show_view(game_over_view)
+
+        # create a new emit-controller for the thruster if thrusting.
+        if self.thrust_pressed and self.thrust_emitter.rate_factory.is_complete():
+            self.thrust_emitter.rate_factory = arcade.EmitterIntervalWithTime(CONFIG['THRUSTER_EMIT_RATE'], CONFIG['THRUSTER_EMIT_TIME'])
 
         self.thrust_emitter.update()
         self.thrust_emitter.angle = self.player_sprite.angle - 270 + random.randint(
