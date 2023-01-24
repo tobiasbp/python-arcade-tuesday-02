@@ -397,7 +397,7 @@ class IntroView(arcade.View):
         if arcade.get_distance(x, y, CONFIG['BUTTON_X'], CONFIG['BUTTON_Y']) < self.play_button.width // 2:
             self.start_game()
             
-        if arcade.get_distance(x, y, CONFIG['SETTINGS_BUTTON_X'], CONFIG['SETTINGS_BUTTON_Y']) < self.play_button.width // 2:
+        if arcade.get_distance(x, y, CONFIG['SETTINGS_BUTTON_X'], CONFIG['SETTINGS_BUTTON_Y']) < self.settings_button.width // 2:
             self.enter_settings()
 
     def start_game(self):
