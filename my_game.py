@@ -219,7 +219,7 @@ class PlayerShot(arcade.Sprite):
         wrap(self)
 
         # Checks when the distance of the shot is almost over
-        if self.distance_traveled > CONFIG['PLAYER_SHOT_FADE_START']:
+        if self.distance_traveled > CONFIG['PLAYER_SHOT_RANGE'] - CONFIG['PLAYER_SHOT_FADE_START']:
             # 5% of the alpha every frame.
             self.alpha *= CONFIG['PLAYER_SHOT_FADE_SPEED']
 
