@@ -775,6 +775,10 @@ class InGameView(arcade.View):
                     self.player_shot_list.append(new_shot)
                     self.player_shot_fire_rate_timer = 0
 
+        if key == CONFIG['RESTART_BUTTON']:
+            new_game = InGameView()
+            self.window.show_view(new_game)
+
     def on_key_release(self, key, modifiers):
         """
         Called whenever a key is released.
