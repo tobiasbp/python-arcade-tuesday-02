@@ -417,21 +417,25 @@ class SettingsView(arcade.View):
     def __init__(self):
         super().__init__()
         
+        self.change_settings_guide = True
         self.change_thrust_key = False
         self.change_fire_key = False
         self.change_turn_right_key = False
         self.change_turn_left_key = False
         self.reset_settings = False
         self.changed_settings = {}
-        
+        self.settings_guide_1 = arcade.gui.UITextArea(text="Select setting you wish to change", width=300, height=40, font_size=14,)
+        self.settings_guide_2 = arcade.gui.UITextArea(text="Press the key you wish to use", width=270, height=40, font_size=14,)
+        self.settings_guide = self.settings_guide_1
+
         # Initialize UI Manager
         self.manager = arcade.gui.UIManager()
         self.manager.enable()
         
-        # Create layout for buttons
+        # Create layout for UI widets
         self.v_box = arcade.gui.UIBoxLayout()
 
-        # Initialize the buttons
+        # Initialize the widgets
         reset_settings_button = arcade.gui.UIFlatButton(text="Reset Settings", width=200)
         self.v_box.add(reset_settings_button.with_space_around(bottom=20))
         
@@ -447,6 +451,8 @@ class SettingsView(arcade.View):
         change_player_turn_left_key_button = arcade.gui.UIFlatButton(text=str("Turn Left Key: " + str(CONFIG["PLAYER_TURN_LEFT_KEY"])), width=200)
         self.v_box.add(change_player_turn_left_key_button.with_space_around(bottom=20))
 
+        self.v_box.add(self.settings_guide.with_space_around(bottom=0))
+
         # Assign click functions to buttons
         reset_settings_button.on_click = self.on_click_reset
         
@@ -458,10 +464,6 @@ class SettingsView(arcade.View):
         
         change_player_turn_left_key_button.on_click = self.on_click_change_turn_left_key
         
-        # Buttons to be made
-            # Keybinds (Which keys do what)
-        
-
         # Background Color
         arcade.set_background_color(SCREEN_COLOR)
         
@@ -489,21 +491,40 @@ class SettingsView(arcade.View):
             
     def on_click_change_player_thrust_key(self, event):
         self.change_thrust_key = True
+        self.v_box.children.remove(self.v_box.children[-1])
+        self.settings_guide = self.settings_guide_2
+        self.v_box.add(self.settings_guide.with_space_around(bottom=0))
 
     def on_click_change_turn_right_key(self, event):
         self.change_turn_right_key = True
+        self.v_box.children.remove(self.v_box.children[-1])
+        self.settings_guide = self.settings_guide_2
+        self.v_box.add(self.settings_guide.with_space_around(bottom=0))
 
     def on_click_change_turn_left_key(self, event):
         self.change_turn_left_key = True
+        self.v_box.children.remove(self.v_box.children[-1])
+        self.settings_guide = self.settings_guide_2
+        self.v_box.add(self.settings_guide.with_space_around(bottom=0))
+
 
     def on_click_change_player_fire_key(self, event):
         self.change_fire_key = True
+        self.v_box.children.remove(self.v_box.children[-1])
+        self.settings_guide = self.settings_guide_2
+        self.v_box.add(self.settings_guide.with_space_around(bottom=0))
+
 
     def on_draw(self):
         arcade.start_render()
         self.manager.draw()
 
     def on_key_press(self, key, modifiers):
+        
+        self.v_box.children.remove(self.v_box.children[-1])
+        self.settings_guide = self.settings_guide_1
+        self.v_box.add(self.settings_guide.with_space_around(bottom=0))
+
         
         if self.change_thrust_key == True:
             self.changed_settings["PLAYER_THRUST_KEY"] = key
@@ -534,7 +555,6 @@ class SettingsView(arcade.View):
             # Update the CONFIG dict
             for k in self.changed_settings.keys():
                 CONFIG[k] = self.changed_settings[k]
-        
             
             intro_view = IntroView()
             self.window.show_view(intro_view)
