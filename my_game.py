@@ -436,19 +436,19 @@ class SettingsView(arcade.View):
         self.v_box = arcade.gui.UIBoxLayout()
 
         # Initialize the widgets
-        reset_settings_button = arcade.gui.UIFlatButton(text="Reset Settings", width=200)
+        reset_settings_button = arcade.gui.UIFlatButton(text="Reset Settings", width=300)
         self.v_box.add(reset_settings_button.with_space_around(bottom=20))
         
-        change_player_thrust_key_button = arcade.gui.UIFlatButton(text=str("Thrust Key: " + str(CONFIG["PLAYER_THRUST_KEY"])), width=200)
+        change_player_thrust_key_button = arcade.gui.UIFlatButton(text=str("Change Thrust Key"), width=300)
         self.v_box.add(change_player_thrust_key_button.with_space_around(bottom=20))
         
-        change_player_fire_key_button = arcade.gui.UIFlatButton(text=str("Fire Key: " + str(CONFIG["PLAYER_FIRE_KEY"])), width=200)
+        change_player_fire_key_button = arcade.gui.UIFlatButton(text=str("Change Fire Key"), width=300)
         self.v_box.add(change_player_fire_key_button.with_space_around(bottom=20))
         
-        change_player_turn_right_key_button = arcade.gui.UIFlatButton(text=str("Turn Right Key: " + str(CONFIG["PLAYER_TURN_RIGHT_KEY"])), width=200)
+        change_player_turn_right_key_button = arcade.gui.UIFlatButton(text=str("Change Turn Right Key"), width=300)
         self.v_box.add(change_player_turn_right_key_button.with_space_around(bottom=20))
         
-        change_player_turn_left_key_button = arcade.gui.UIFlatButton(text=str("Turn Left Key: " + str(CONFIG["PLAYER_TURN_LEFT_KEY"])), width=200)
+        change_player_turn_left_key_button = arcade.gui.UIFlatButton(text=str("Change Turn Left Key"), width=300)
         self.v_box.add(change_player_turn_left_key_button.with_space_around(bottom=20))
 
         self.v_box.add(self.settings_guide.with_space_around(bottom=0))
