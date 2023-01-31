@@ -24,7 +24,7 @@ PLAYER_FIRE_KEY = 32 # space key
 PLAYER_TURN_RIGHT_KEY = 65363 # arrowright key
 PLAYER_TURN_LEFT_KEY = 65361 # arrowleft key
 PLAYER_SHOT_FADE_SPEED = 0.95  # the procentage of fade in player shots fade (Has to be between 0.0 - 1.0)
-PLAYER_SHOT_FADE_START = 100  # the number of when the player shot starts to fade
+PLAYER_SHOT_FADE_START = 100  # Shot starts to fade this many pixels before it reaches it's range
 
 
 THRUSTER_EMIT_RATE = 0.025  # secs
