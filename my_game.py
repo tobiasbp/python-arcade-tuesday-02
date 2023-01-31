@@ -216,9 +216,9 @@ class PlayerShot(arcade.Sprite):
         self.center_y += self.change_y
 
         # Checks when the distance of the shot is almost over
-        if self.distance_traveled > CONFIG['PLAYER_SHOT_RANGE'] - CONFIG['PLAYER_SHOT_FADE_START']:
+        if self.distance_traveled > CONFIG['PLAYER_SHOT_RANGE'] - CONFIG['SHOT_FADE_START']:
             # The percentage speed of the alpha every frame.
-            self.alpha *= CONFIG['PLAYER_SHOT_FADE_SPEED']
+            self.alpha *= CONFIG['SHOT_FADE_SPEED']
 
         # wrap
         wrap(self)
@@ -250,6 +250,11 @@ class UFOShot(arcade.Sprite):
         # kill when traveled far enough
         if self.distance_traveled > CONFIG['UFO_SHOT_RANGE']:
             self.kill()
+
+        # Checks when the distance of the shot is almost over
+        if self.distance_traveled > CONFIG['UFO_SHOT_RANGE'] - CONFIG['SHOT_FADE_START']:
+            # The percentage speed of the alpha every frame.
+            self.alpha *= CONFIG['SHOT_FADE_SPEED']
 
         # wrap
         wrap(self)
