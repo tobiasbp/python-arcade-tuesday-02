@@ -45,6 +45,54 @@ def wrap(sprite: arcade.Sprite):
         sprite.center_y -= CONFIG['SCREEN_HEIGHT']
 
 
+class Shot(arcade.Sprite):
+    """
+    universal class for shot objects
+    """
+
+    def __init__(self, filename, center_x, center_y, angle, speed, range, sound=None):
+
+        super().__init__(
+            filename=filename,
+            scale=CONFIG['SPRITE_SCALING'],
+            center_x=center_x,
+            center_y=center_y,
+            angle=angle,
+            flipped_horizontally=True,
+            flipped_diagonally=True
+            )
+
+        self.speed = speed
+        self.range = range
+        self.distance_traveled = 0
+
+        self.forward(self.speed)
+
+        # play the shot sound if present
+        if sound:
+            sound.play()
+
+    def update(self):
+        """
+        move the sprite and fade
+        """
+
+        self.center_x += self.change_x
+        self.center_y += self.change_y
+
+        wrap(self)
+
+        # check if the shot traveled too far
+        self.distance_traveled += self.speed
+
+        # start fading when flown far enough
+        if self.distance_traveled > CONFIG['SHOT_FADE_START']:
+            self.alpha *= CONFIG['SHOT_FADE_SPEED']
+
+        if self.distance_traveled > self.range:
+            self.kill()
+
+
 class Player(arcade.Sprite):
     """
     The player
@@ -179,87 +227,6 @@ class Asteroid(arcade.Sprite):
         wrap(self)
 
 
-class PlayerShot(arcade.Sprite):
-    """
-    A shot fired by the Player
-    """
-
-    sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
-
-    def __init__(self, center_x=0, center_y=0, angle=0):
-        """
-        Setup new PlayerShot object
-        """
-
-        # Set the graphics to use for the sprite
-        super().__init__("images/Lasers/laserBlue01.png",
-                         CONFIG['SPRITE_SCALING'],
-                         flipped_horizontally=True ,
-                         flipped_diagonally=True)
-
-        self.center_x = center_x
-        self.center_y = center_y
-        self.angle = angle
-        self.forward(CONFIG['PLAYER_SHOT_SPEED'])
-        self.distance_traveled = 0
-        self.speed = CONFIG['PLAYER_SHOT_SPEED']
-
-        PlayerShot.sound_fire.play()
-
-    def update(self):
-        """
-        Move the sprite
-        """
-
-        # Update position
-        self.center_x += self.change_x
-        self.center_y += self.change_y
-
-        # Checks when the distance of the shot is almost over
-        if self.distance_traveled > CONFIG['PLAYER_SHOT_RANGE'] - CONFIG['SHOT_FADE_START']:
-            # The percentage speed of the alpha every frame.
-            self.alpha *= CONFIG['SHOT_FADE_SPEED']
-
-        # wrap
-        wrap(self)
-
-        # Has a range of how long the shot can last for
-        self.distance_traveled += self.speed
-
-        # When distance made kill it
-        if self.distance_traveled > CONFIG['PLAYER_SHOT_RANGE']:
-            self.kill()
-
-
-class UFOShot(arcade.Sprite):
-    """shot fired by the ufo"""
-
-    def __int__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def update(self):
-        """update position/kill if out of bounds"""
-
-        self.center_x += self.change_x
-        self.center_y += self.change_y
-
-        self.distance_traveled += CONFIG['UFO_SHOT_SPEED']
-
-        self.angle = ((self.change_x / self.change_y) * -90)  # set ange based on our direction
-
-        # kill when traveled far enough
-        if self.distance_traveled > CONFIG['UFO_SHOT_RANGE']:
-            self.kill()
-
-        # Checks when the distance of the shot is almost over
-        if self.distance_traveled > CONFIG['UFO_SHOT_RANGE'] - CONFIG['SHOT_FADE_START']:
-            # The percentage speed of the alpha every frame.
-            self.alpha *= CONFIG['SHOT_FADE_SPEED']
-
-        # wrap
-        wrap(self)
-
-
 class BonusUFO(arcade.Sprite):
     """occasionally moves across the screen. Grants the player points if shot"""
 
@@ -311,18 +278,16 @@ class BonusUFO(arcade.Sprite):
         """
         fire a new shot
         """
-        BonusUFO.sound_fire.play()
-        new_ufo_shot = UFOShot()  # sprites created with arcade.schedule don't __init__ it has to be manually called
-        new_ufo_shot.__init__(
-            filename="images/Lasers/laserGreen07.png",
-            scale=CONFIG['SPRITE_SCALING'],
-            center_x=self.center_x,
-            center_y=self.center_y
-        )
 
-        new_ufo_shot.change_x = random.randrange(-CONFIG['UFO_SHOT_SPEED'], CONFIG['UFO_SHOT_SPEED'])
-        new_ufo_shot.change_y = new_ufo_shot.change_x - CONFIG['UFO_SHOT_SPEED']
-        new_ufo_shot.distance_traveled = 0
+        new_ufo_shot = Shot(
+            filename="images/Lasers/laserGreen07.png",
+            center_x=self.center_x,
+            center_y=self.center_y,
+            angle=0,
+            speed=CONFIG['UFO_SHOT_SPEED'],
+            range=CONFIG['UFO_SHOT_RANGE'],
+            sound=BonusUFO.sound_fire)
+
         self.shot_list.append(new_ufo_shot)
 
     def update(self):
@@ -430,6 +395,7 @@ class InGameView(arcade.View):
         self.opposite_angle = 0
         self.thrust_emitter = None
         self.explosion_emitter = None
+        self.player_shoot_sound = None
 
         # set up ufo info
         self.ufo_list = None
@@ -537,6 +503,9 @@ class InGameView(arcade.View):
             lives=CONFIG['PLAYER_START_LIVES'],
             scale=CONFIG['SPRITE_SCALING']
         )
+
+        # load the player shot sound
+        self.player_shoot_sound = arcade.load_sound("sounds/laserRetro_001.ogg")
 
         # setup spawn_ufo to run regularly
         arcade.schedule(self.spawn_ufo, CONFIG['UFO_SPAWN_RATE'] + (self.level - 1) * CONFIG['UFO_SPAWN_RATE_MOD_PR_LEVEL'])
@@ -766,18 +735,18 @@ class InGameView(arcade.View):
         if key == CONFIG["PLAYER_FIRE_KEY"]:
             if not self.player_sprite.is_invincible:
                 if self.player_shot_fire_rate_timer >= CONFIG['PLAYER_FIRE_RATE']:
-                    new_shot = PlayerShot(
-                        self.player_sprite.center_x,
-                        self.player_sprite.center_y,
-                        self.player_sprite.angle
+                    new_shot = Shot(
+                        filename="images/Lasers/laserBlue01.png",
+                        center_x=self.player_sprite.center_x,
+                        center_y=self.player_sprite.center_y,
+                        angle=self.player_sprite.angle,
+                        speed=CONFIG['PLAYER_SHOT_SPEED'],
+                        range=CONFIG['PLAYER_SHOT_RANGE'],
+                        sound=self.player_shoot_sound
                     )
 
                     self.player_shot_list.append(new_shot)
                     self.player_shot_fire_rate_timer = 0
-
-        if key == CONFIG['RESTART_BUTTON']:
-            new_game = InGameView()
-            self.window.show_view(new_game)
 
     def on_key_release(self, key, modifiers):
         """
