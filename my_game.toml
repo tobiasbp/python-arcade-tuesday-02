@@ -63,4 +63,4 @@ TITLE_Y = 450  # px
 BUTTON_X = 400  # px
 BUTTON_Y = 300  # px
 
-RESTART_BUTTON = 114  # R key
+UI_RESTART_BUTTON = 114  # R key
