@@ -24,6 +24,7 @@ PLAYER_FIRE_KEY = 32 # space key
 PLAYER_TURN_RIGHT_KEY = 65363 # arrowright key
 PLAYER_TURN_LEFT_KEY = 65361 # arrowleft key
 
+
 THRUSTER_EMIT_RATE = 0.025  # secs
 THRUSTER_EMIT_TIME = 0.35  #secs
 
@@ -64,3 +65,7 @@ BUTTON_X = 400  # px
 BUTTON_Y = 300  # px
 
 UI_RESTART_KEY = 114  # R key
+
+# Shots
+SHOT_FADE_SPEED = 0.95  # the procentage of fade in shots fade (Has to be between 0.0 - 1.0)
+SHOT_FADE_START = 100  # Shot starts to fade this many pixels before it reaches it's range
