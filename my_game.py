@@ -765,7 +765,7 @@ class InGameView(arcade.View):
                     self.player_shot_list.append(new_shot)
                     self.player_shot_fire_rate_timer = 0
 
-        if key == CONFIG['RESTART_BUTTON']:
+        if key == CONFIG['UI_RESTART_KEY']:
             new_game = InGameView()
             self.window.show_view(new_game)
 
