@@ -64,6 +64,8 @@ TITLE_Y = 450  # px
 BUTTON_X = 400  # px
 BUTTON_Y = 300  # px
 
+UI_RESTART_KEY = 114  # R key
+
 # Shots
 SHOT_FADE_SPEED = 0.95  # the procentage of fade in shots fade (Has to be between 0.0 - 1.0)
 SHOT_FADE_START = 100  # Shot starts to fade this many pixels before it reaches it's range
