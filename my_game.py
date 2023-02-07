@@ -497,11 +497,6 @@ class SettingsView(arcade.View):
         )
 
     def on_click_reset(self, event):
-        self.change_player_thrust_key_button.text = "Change Thrust Key: " + SettingsView.id_to_key[CONFIG["PLAYER_THRUST_KEY"]]
-        self.change_player_fire_key_button.text = "Change Fire Key: " + SettingsView.id_to_key[CONFIG["PLAYER_FIRE_KEY"]]
-        self.change_player_turn_right_key_button.text = "Change Turn Right Key: " + SettingsView.id_to_key[CONFIG["PLAYER_TURN_RIGHT_KEY"]]
-        self.change_player_turn_left_key_button.text = "Change Turn Left Key: " + SettingsView.id_to_key[CONFIG["PLAYER_TURN_LEFT_KEY"]]
-
         # Delete edited config file
         try:
             os.remove("my_game_edit.toml")
@@ -514,7 +509,12 @@ class SettingsView(arcade.View):
         for k in CONFIG_reset:
                 CONFIG[k] = CONFIG_reset[k]
         self.changed_settings = {}
-            
+
+        self.change_player_thrust_key_button.text = "Change Thrust Key: " + SettingsView.id_to_key[CONFIG["PLAYER_THRUST_KEY"]]
+        self.change_player_fire_key_button.text = "Change Fire Key: " + SettingsView.id_to_key[CONFIG["PLAYER_FIRE_KEY"]]
+        self.change_player_turn_right_key_button.text = "Change Turn Right Key: " + SettingsView.id_to_key[CONFIG["PLAYER_TURN_RIGHT_KEY"]]
+        self.change_player_turn_left_key_button.text = "Change Turn Left Key: " + SettingsView.id_to_key[CONFIG["PLAYER_TURN_LEFT_KEY"]]
+
     def on_click_change_player_thrust_key(self, event):
         self.change_thrust_key = True
         self.change_player_thrust_key_button.text = self.settings_guide
