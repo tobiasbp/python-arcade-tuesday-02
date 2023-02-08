@@ -444,7 +444,8 @@ class SettingsView(arcade.View):
         self.change_turn_left_key = False
         self.reset_settings = False
         self.changed_settings = {}
-        self.settings_guide = "Press the key you wish to use"
+        self.settings_guide_1 = arcade.gui.UITextArea(text="Select setting you wish to change", width=300, font_size=10)
+        self.settings_guide_2 = "Press the key you wish to use"
 
         # Initialize UI Manager
         self.manager = arcade.gui.UIManager()
@@ -473,6 +474,8 @@ class SettingsView(arcade.View):
         self.change_player_turn_left_key_button = arcade.gui.UIFlatButton(
             text="Change Turn Left Key: " + SettingsView.id_to_key[CONFIG["PLAYER_TURN_LEFT_KEY"]], width=300)
         self.v_box.add(self.change_player_turn_left_key_button.with_space_around(bottom=20))
+
+        self.v_box.add(self.settings_guide_1.with_space_around(bottom=20))
 
         # Assign click functions to buttons
         self.reset_settings_button.on_click = self.on_click_reset
@@ -517,25 +520,31 @@ class SettingsView(arcade.View):
 
     def on_click_change_player_thrust_key(self, event):
         self.change_thrust_key = True
-        self.change_player_thrust_key_button.text = self.settings_guide
+        self.change_player_thrust_key_button.text = self.settings_guide_2
+        self.settings_guide_1.text = ""
 
     def on_click_change_turn_right_key(self, event):
         self.change_turn_right_key = True
-        self.change_player_turn_right_key_button.text = self.settings_guide
+        self.change_player_turn_right_key_button.text = self.settings_guide_2
+        self.settings_guide_1.text = ""
 
     def on_click_change_turn_left_key(self, event):
         self.change_turn_left_key = True
-        self.change_player_turn_left_key_button.text = self.settings_guide
+        self.change_player_turn_left_key_button.text = self.settings_guide_2
+        self.settings_guide_1.text = ""
 
     def on_click_change_player_fire_key(self, event):
         self.change_fire_key = True
-        self.change_player_fire_key_button.text = self.settings_guide
+        self.change_player_fire_key_button.text = self.settings_guide_2
+        self.settings_guide_1.text = ""
 
     def on_draw(self):
         arcade.start_render()
         self.manager.draw()
 
     def on_key_press(self, key, modifiers):
+
+        self.settings_guide_1.text = "Select setting you wish to change"
 
         if key == CONFIG["EXIT_SETTINGS_KEY"]:
             intro_view = IntroView()
