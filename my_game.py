@@ -20,7 +20,7 @@ with open('my_game.toml', 'rb') as fp:
 
 # Load the saved settings file into the CONFIG dict
 try:
-    with open("my_game_edit.toml", "rb") as f:
+    with open("saved_settings.toml", "rb") as f:
         CONFIG_edit = tomli.load(f)
     for k in CONFIG_edit.keys():
         CONFIG[k] = CONFIG_edit[k]
@@ -414,7 +414,7 @@ class SettingsView(arcade.View):
     Veiw for the Settings Screen
     """
 
-    # Making dict for keys and key IDs
+    # Making dicts that will help us translate the keys (str) and key IDs (int) from the arcade.key module
     keys = dir(arcade.key)
     key_to_id = {}
     id_to_key = {}
@@ -436,16 +436,11 @@ class SettingsView(arcade.View):
 
     def __init__(self):
         super().__init__()
-        
-        self.change_settings_guide = True
-        self.change_thrust_key = False
-        self.change_fire_key = False
-        self.change_turn_right_key = False
-        self.change_turn_left_key = False
-        self.reset_settings = False
+
+        self.key_to_change = None
         self.changed_settings = {}
-        self.settings_guide_1 = arcade.gui.UITextArea(text="Select setting you wish to change", width=300, font_size=10)
-        self.settings_guide_2 = "Press the key you wish to use"
+        self.settings_guide_1 = arcade.gui.UITextArea(text="Select setting you wish to change", width=215, font_size=10) # Settings guide that appears under the buttons
+        self.settings_guide_2 = "Press the key you wish to use" # Settings guide that appears on the buttons when they are clicked
 
         # Initialize UI Manager
         self.manager = arcade.gui.UIManager()
@@ -519,22 +514,23 @@ class SettingsView(arcade.View):
         self.change_player_turn_left_key_button.text = "Change Turn Left Key: " + SettingsView.id_to_key[CONFIG["PLAYER_TURN_LEFT_KEY"]]
 
     def on_click_change_player_thrust_key(self, event):
-        self.change_thrust_key = True
+        self.key_to_change = "PLAYER_THRUST_KEY"
         self.change_player_thrust_key_button.text = self.settings_guide_2
         self.settings_guide_1.text = ""
+        print(event)
 
     def on_click_change_turn_right_key(self, event):
-        self.change_turn_right_key = True
+        self.key_to_change = "PLAYER_TURN_RIGHT_KEY"
         self.change_player_turn_right_key_button.text = self.settings_guide_2
         self.settings_guide_1.text = ""
 
     def on_click_change_turn_left_key(self, event):
-        self.change_turn_left_key = True
+        self.key_to_change = "PLAYER_TURN_LEFT_KEY"
         self.change_player_turn_left_key_button.text = self.settings_guide_2
         self.settings_guide_1.text = ""
 
     def on_click_change_player_fire_key(self, event):
-        self.change_fire_key = True
+        self.key_to_change = "PLAYER_FIRE_KEY"
         self.change_player_fire_key_button.text = self.settings_guide_2
         self.settings_guide_1.text = ""
 
@@ -544,44 +540,25 @@ class SettingsView(arcade.View):
 
     def on_key_press(self, key, modifiers):
 
-        self.settings_guide_1.text = "Select setting you wish to change"
-
         if key == CONFIG["EXIT_SETTINGS_KEY"]:
             intro_view = IntroView()
             self.window.show_view(intro_view)
-
-        if self.change_thrust_key == True:
-            self.changed_settings["PLAYER_THRUST_KEY"] = key
-            CONFIG["PLAYER_THRUST_KEY"] = key
-            self.change_thrust_key = False
-            self.change_player_thrust_key_button.text = "Change Thrust Key: " + SettingsView.id_to_key[CONFIG["PLAYER_THRUST_KEY"]]
-            # Update the edited configuration file
-            with open("my_game_edit.toml", "wb") as f:
+        else:
+            self.changed_settings[self.key_to_change] = key
+            CONFIG[self.key_to_change] = key
+            self.settings_guide_1.text = "Select setting you wish to change"
+            self.change_player_thrust_key_button.text = "Change Thrust Key: " + SettingsView.id_to_key[
+                CONFIG["PLAYER_THRUST_KEY"]]
+            self.change_player_fire_key_button.text = "Change Fire Key: " + SettingsView.id_to_key[
+                CONFIG["PLAYER_FIRE_KEY"]]
+            self.change_player_turn_right_key_button.text = "Change Turn Right Key: " + SettingsView.id_to_key[
+                CONFIG["PLAYER_TURN_RIGHT_KEY"]]
+            self.change_player_turn_left_key_button.text = "Change Turn Left Key: " + SettingsView.id_to_key[
+                CONFIG["PLAYER_TURN_LEFT_KEY"]]
+            with open("saved_settings.toml", "wb") as f:
                 tomli_w.dump(self.changed_settings, f)
-
-        elif self.change_fire_key == True:
-            self.changed_settings["PLAYER_FIRE_KEY"] = key
-            CONFIG["PLAYER_FIRE_KEY"] = key
-            self.change_fire_key = False
-            self.change_player_fire_key_button.text = "Change Fire Key: " + SettingsView.id_to_key[CONFIG["PLAYER_FIRE_KEY"]]
-            with open("my_game_edit.toml", "wb") as f:
-                tomli_w.dump(self.changed_settings, f)
-        
-        elif self.change_turn_right_key == True:
-            self.changed_settings["PLAYER_TURN_RIGHT_KEY"] = key
-            CONFIG["PLAYER_TURN_RIGHT_KEY"] = key
-            self.change_turn_right_key = False
-            self.change_player_turn_right_key_button.text = "Change Turn Right Key: " + SettingsView.id_to_key[CONFIG["PLAYER_TURN_RIGHT_KEY"]]
-            with open("my_game_edit.toml", "wb") as f:
-                tomli_w.dump(self.changed_settings, f)
-
-        elif self.change_turn_left_key == True:
-            self.changed_settings["PLAYER_TURN_LEFT_KEY"] = key
-            CONFIG["PLAYER_TURN_LEFT_KEY"] = key
-            self.change_turn_left_key = False
-            self.change_player_turn_left_key_button.text = "Change Turn Left Key: " + SettingsView.id_to_key[CONFIG["PLAYER_TURN_LEFT_KEY"]]
-            with open("my_game_edit.toml", "wb") as f:
-                tomli_w.dump(self.changed_settings, f)
+            print(self.changed_settings)
+            self.changed_settings = {}
 
 class InGameView(arcade.View):
     """
