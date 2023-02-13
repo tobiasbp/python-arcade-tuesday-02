@@ -176,7 +176,7 @@ class Asteroid(arcade.Sprite):
 
         # Graphics
         super().__init__(
-            filename='images/Meteors/meteorGrey_med1.png',
+            filename='images/Meteors/meteorGrey_med1_alt.png',
             scale=size * CONFIG['SPRITE_SCALING']
         )
 
@@ -221,7 +221,7 @@ class Asteroid(arcade.Sprite):
         self.center_y += self.change_y
 
         # Rotate Asteroid
-        self.angle += self.rotation_speed
+        # self.angle += self.rotation_speed
 
         # wrap
         wrap(self)
@@ -481,6 +481,16 @@ class InGameView(arcade.View):
             particle_lifetime_max=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MAX'],
             particle_scale=CONFIG['EXPLOSION_PARTICLE_SIZE'])
 
+    def shockwave(self, center: tuple[float, float], strength: float, sprites: arcade.SpriteList):
+        """
+        create a shockwave at the center that pushes away all given sprites
+        """
+
+        for sprite in sprites:
+
+            sprite.angle = arcade.get_angle_degrees(sprite.center_x, sprite.center_y, center[0], center[1]) - 180
+            sprite.forward(strength)
+
     def on_show_view(self):
         """ Set up the game and initialize the variables. """
 
@@ -609,6 +619,8 @@ class InGameView(arcade.View):
                 self.player_sprite.reset()
                 self.get_explosion(self.player_sprite.position)
                 a.kill()
+
+                self.shockwave(self.player_sprite.position, 2, self.asteroid_list)
 
         # check for collision with bonus_ufo
         for ufo in self.player_sprite.collides_with_list(self.ufo_list):
