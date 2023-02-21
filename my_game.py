@@ -457,9 +457,9 @@ class InGameView(arcade.View):
             # Add star
             s = Star(
                 position=p,
+                base_size=CONFIG['STARS_BASE_SIZE'],
                 scale=CONFIG['STARS_SCALE'],
-                alpha_min=CONFIG['STARS_MIN_ALPHA'],
-                alpha_max=CONFIG['STARS_MAX_ALPHA'],
+                fade_speed=CONFIG['STARS_FADE_SPEED'],
                 )
             stars.append(s)
 
