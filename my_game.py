@@ -21,9 +21,9 @@ with open('my_game.toml', 'rb') as fp:
 # Load the saved settings file into the CONFIG dict
 try:
     with open("saved_settings.toml", "rb") as f:
-        CONFIG_edit = tomli.load(f)
-    for k in CONFIG_edit.keys():
-        CONFIG[k] = CONFIG_edit[k]
+        saved_settings = tomli.load(f)
+    for k in saved_settings.keys():
+        CONFIG[k] = saved_settings[k]
 except FileNotFoundError:
     pass
 
