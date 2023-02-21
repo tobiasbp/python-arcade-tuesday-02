@@ -73,5 +73,5 @@ SHOT_FADE_START = 100  # Shot starts to fade this many pixels before it reaches 
 # Background stars
 STARS_ON_SCREEN = 100
 STARS_SCALE = 0.5
-STARS_BASE_SIZE = 60
-STARS_FADE_SPEED = 10
+STARS_BASE_SIZE = 10
+STARS_FADE_SPEED = 30
