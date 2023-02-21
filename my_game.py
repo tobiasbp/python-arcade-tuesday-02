@@ -178,7 +178,7 @@ class Asteroid(arcade.Sprite):
 
         # Graphics
         super().__init__(
-            filename='images/Meteors/meteorGrey_med1_alt.png',
+            filename='images/Meteors/meteorGrey_med1.png',
             scale=size * CONFIG['SPRITE_SCALING']
         )
 
@@ -543,9 +543,17 @@ class InGameView(arcade.View):
         """
 
         for sprite in sprites:
+            dist = arcade.get_distance(sprite.center_x, sprite.center_y, center[0], center[1])
 
-            sprite.angle = arcade.get_angle_degrees(sprite.center_x, sprite.center_y, center[0], center[1]) - 180
-            sprite.forward(strength)
+            if dist <= strength * 100:
+
+                # point away from the center
+                sprite.angle = arcade.get_angle_degrees(sprite.center_x, sprite.center_y, center[0], center[1])
+
+                # the closer to the center, the faster it moves
+                impact = dist / (strength * 100) - 1 * strength
+                sprite.change_x = math.sin(sprite.radians) * impact
+                sprite.change_y = math.cos(sprite.radians) * impact
 
     def on_show_view(self):
         """ Set up the game and initialize the variables. """
