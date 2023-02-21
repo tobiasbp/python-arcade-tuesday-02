@@ -11,6 +11,8 @@ import math
 import random
 import tomli
 
+from game_sprites import Star
+
 # load the config file as a dict
 with open('my_game.toml', 'rb') as fp:
     CONFIG = tomli.load(fp)
@@ -437,6 +439,32 @@ class InGameView(arcade.View):
         # Set the background color
         arcade.set_background_color(SCREEN_COLOR)
 
+    def get_stars(self, no_of_stars: int) -> arcade.SpriteList:
+        """
+        Return a SpriteList of randomly positioned stars.
+        """
+
+        # A list to store the stars in
+        stars = arcade.SpriteList()
+
+        # Add stars
+        for i in range(no_of_stars):
+            # Calculate a random postion
+            p = (
+                random.randint(0, CONFIG['SCREEN_WIDTH']),
+                random.randint(0, CONFIG['SCREEN_HEIGHT']),
+            )
+            # Add star
+            s = Star(
+                position=p,
+                base_size=CONFIG['STARS_BASE_SIZE'],
+                scale=CONFIG['STARS_SCALE'],
+                fade_speed=CONFIG['STARS_FADE_SPEED'],
+                )
+            stars.append(s)
+
+        return stars
+
     def next_level(self, level=None):
         """
         Advance the game to the next level
@@ -450,6 +478,9 @@ class InGameView(arcade.View):
             self.level = level
 
         # FIXME: Player needs to know that level was cleared
+
+        # Background stars
+        self.stars_list = self.get_stars(CONFIG['STARS_ON_SCREEN'])
 
         # Spawn Asteroids
         for r in range(CONFIG['ASTEROIDS_PR_LEVEL'] + (self.level - 1) * CONFIG['ASTEROID_NUM_MOD_PR_LEVEL']):
@@ -496,6 +527,9 @@ class InGameView(arcade.View):
         self.ufo_list = arcade.SpriteList()
         self.ufo_shot_list = arcade.SpriteList()
 
+        # Small stars in background
+        self.stars_list = arcade.SpriteList()
+
         # Create a Player object
         self.player_sprite = Player(
             center_x=CONFIG['PLAYER_START_X'],
@@ -532,6 +566,9 @@ class InGameView(arcade.View):
 
         # This command has to happen before we start drawing
         arcade.start_render()
+
+        # Stars in the background drawn first
+        self.stars_list.draw()
 
         # draw particle emitter
         self.thrust_emitter.draw()
@@ -582,6 +619,17 @@ class InGameView(arcade.View):
         """
         Movement and game logic
         """
+
+        # Stars in background
+        for s in self.stars_list:
+            # Star's direction is opposite of the player
+            s.change_x = -1 * self.player_sprite.change_x
+            s.change_y = -1 * self.player_sprite.change_y
+            # Wrap star if off screen
+            wrap(s)
+
+        # Move all stars
+        self.stars_list.on_update(delta_time)
 
         # Calculate player speed based on the keys pressed
         # Move player with keyboard

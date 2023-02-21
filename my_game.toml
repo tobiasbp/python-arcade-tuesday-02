@@ -69,3 +69,9 @@ UI_RESTART_KEY = 114  # R key
 # Shots
 SHOT_FADE_SPEED = 0.95  # the procentage of fade in shots fade (Has to be between 0.0 - 1.0)
 SHOT_FADE_START = 100  # Shot starts to fade this many pixels before it reaches it's range
+
+# Background stars
+STARS_ON_SCREEN = 100
+STARS_SCALE = 0.5
+STARS_BASE_SIZE = 10
+STARS_FADE_SPEED = 30
