@@ -492,10 +492,10 @@ class InGameView(arcade.View):
             if dist <= strength * 100:
 
                 # point away from the center
-                sprite.angle = arcade.get_angle_degrees(sprite.center_x, sprite.center_y, center[0], center[1])
+                sprite.angle = arcade.get_angle_degrees(sprite.center_x, sprite.center_y, center[0], center[1]) - 180
 
                 # the closer to the center, the faster it moves
-                impact = dist / (strength * 100) - 1 * strength
+                impact = dist / (strength * 100) * strength
                 sprite.change_x = math.sin(sprite.radians) * impact
                 sprite.change_y = math.cos(sprite.radians) * impact
 
