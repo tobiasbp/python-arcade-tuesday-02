@@ -221,7 +221,7 @@ class Asteroid(arcade.Sprite):
         self.center_y += self.change_y
 
         # Rotate Asteroid
-        # self.angle += self.rotation_speed
+        self.angle += self.rotation_speed
 
         # wrap
         wrap(self)
