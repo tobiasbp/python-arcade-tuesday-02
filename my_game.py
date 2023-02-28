@@ -324,7 +324,7 @@ class IntroView(arcade.View):
 
         self.title_graphics = arcade.load_texture("images/UI/asteroidsTitle.png")
         self.play_button = arcade.load_texture("images/UI/asteroidsStartButton.png")
-        self.play_button_cover = arcade.load_texture("images/UI/asteroidsStartButtonCover.png")
+        self.play_button_cover = arcade.load_texture("images/UI/asteroidsStartButtonHover.png")
 
         # Makes the manager that contains the GUI button and enables it to the game.
         self.manager = arcade.gui.UIManager()
@@ -338,7 +338,7 @@ class IntroView(arcade.View):
             height=100,
             texture=self.play_button,
             texture_hovered=self.play_button_cover,
-            scale=1,
+            scale=CONFIG['BUTTON_SCALE'],
             style=None,
             )
         # Adds the button to the manager so the manager can draw it.
@@ -827,7 +827,7 @@ class GameOverView(arcade.View):
             height=100,
             texture=self.restart_button,
             texture_hovered=self.restart_button_cover,
-            scale=1,
+            scale=CONFIG['BUTTON_SCALE'],
             style=None
             )
         # Adds the button to the manager so the manager can draw it.

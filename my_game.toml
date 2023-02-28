@@ -63,6 +63,7 @@ TITLE_X = 400  # pCha
 TITLE_Y = 450  # px
 BUTTON_X = 350  # px
 BUTTON_Y = 200  # px
+BUTTON_SCALE = 1 # The scale of the play/restart button
 
 UI_RESTART_KEY = 114  # R key
 
