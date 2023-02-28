@@ -361,7 +361,7 @@ class IntroView(arcade.View):
             center_y=CONFIG['TITLE_Y']
         )
 
-        # Draws the manager that contains the button
+        # Draws the manager that contains the button.
         self.manager.draw()
 
     def on_key_press(self, symbol: int, modifiers: int):
