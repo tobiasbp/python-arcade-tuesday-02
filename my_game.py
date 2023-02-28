@@ -341,10 +341,10 @@ class IntroView(arcade.View):
             scale=CONFIG['BUTTON_SCALE'],
             style=None,
             )
-        # Adds the button to the manager so the manager can draw it.
-        self.manager.add(self.gui_play_button)
         # When the GUI button is now clicked it starts the event self.new_game
         self.gui_play_button.on_click = self.start_game
+        # Adds the button to the manager so the manager can draw it.
+        self.manager.add(self.gui_play_button)
 
         arcade.set_background_color(SCREEN_COLOR)
 
@@ -838,11 +838,10 @@ class GameOverView(arcade.View):
             scale=CONFIG['BUTTON_SCALE'],
             style=None
             )
-        # Adds the button to the manager so the manager can draw it.
-        self.manager.add(self.gui_restart_button)
-
         # When the GUI button is now clicked it starts the event self.new_game
         self.gui_restart_button.on_click = self.new_game
+        # Adds the button to the manager so the manager can draw it.
+        self.manager.add(self.gui_restart_button)
 
         # set background color
         arcade.set_background_color(SCREEN_COLOR)
