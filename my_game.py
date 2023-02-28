@@ -365,6 +365,11 @@ class IntroView(arcade.View):
         self.manager.draw()
 
     def on_key_press(self, symbol: int, modifiers: int):
+
+        self.gui_play_button.hovered = True
+
+    def on_key_release(self, _symbol: int, _modifiers: int):
+
         # If you press any key you start the game also. If you're lazy. :)
         self.start_game()
 
@@ -757,7 +762,7 @@ class InGameView(arcade.View):
                         angle=self.player_sprite.angle,
                         speed=CONFIG['PLAYER_SHOT_SPEED'],
                         range=CONFIG['PLAYER_SHOT_RANGE'],
-                        sound=self.player_shoot_sound
+                        sound=self.player_shoot_sound,
                     )
 
                     self.player_shot_list.append(new_shot)
@@ -866,7 +871,12 @@ class GameOverView(arcade.View):
         )
 
     def on_key_press(self, symbol: int, modifiers: int):
-        # If you press any key you start the game also. If you're lazy.
+
+        self.gui_restart_button.hovered = True
+
+    def on_key_release(self, _symbol: int, _modifiers: int):
+
+        # If you press any key you start the game also. If you're lazy. :)
         self.new_game()
 
     def new_game(self, event=None):
