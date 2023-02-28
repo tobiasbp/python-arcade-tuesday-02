@@ -481,7 +481,7 @@ class InGameView(arcade.View):
             particle_lifetime_max=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MAX'],
             particle_scale=CONFIG['EXPLOSION_PARTICLE_SIZE'])
 
-    def shockwave(self, center: tuple[float, float], strength: float, sprites: arcade.SpriteList):
+    def shockwave(self, center: tuple[float, float], range: float, strength: float, sprites: arcade.SpriteList):
         """
         create a shockwave at the center that pushes away all given sprites
         """
@@ -489,13 +489,13 @@ class InGameView(arcade.View):
         for sprite in sprites:
             dist = arcade.get_distance(sprite.center_x, sprite.center_y, center[0], center[1])
 
-            if dist <= strength * 100:
+            if dist <= range:
 
                 # point away from the center
                 sprite.angle = arcade.get_angle_degrees(sprite.center_x, sprite.center_y, center[0], center[1]) - 180
 
                 # the closer to the center, the faster it moves
-                impact = dist / (strength * 100) * strength
+                impact = abs(dist / range - 1) * strength
                 sprite.change_x = math.sin(sprite.radians) * impact
                 sprite.change_y = math.cos(sprite.radians) * impact
 
@@ -628,7 +628,7 @@ class InGameView(arcade.View):
                 self.get_explosion(self.player_sprite.position)
                 a.kill()
 
-                self.shockwave(self.player_sprite.position, 2, self.asteroid_list)
+                self.shockwave(self.player_sprite.position, CONFIG['PLAYER_SHOCKWAVE_RANGE'], CONFIG['PLAYER_SHOCKWAVE_STRENGTH'], self.asteroid_list)
 
         # check for collision with bonus_ufo
         for ufo in self.player_sprite.collides_with_list(self.ufo_list):
@@ -637,6 +637,7 @@ class InGameView(arcade.View):
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
                 self.get_explosion(self.player_sprite.position)
+                self.shockwave(ufo.position, CONFIG['UFO_SHOCKWAVE_RANGE'], CONFIG['UFO_SHOCKWAVE_STRENGTH'], self.asteroid_list)
                 ufo.destroy()
 
         # Player shot
@@ -645,6 +646,7 @@ class InGameView(arcade.View):
             for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
                 shot.kill()
                 self.sound_explosion.play()
+                self.shockwave(ufo_hit.position, CONFIG['UFO_SHOCKWAVE_RANGE'], CONFIG['UFO_SHOCKWAVE_STRENGTH'], self.asteroid_list)
                 ufo_hit.destroy()
                 self.player_score += CONFIG['UFO_POINTS_REWARD']
                 self.get_explosion(

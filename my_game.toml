@@ -23,10 +23,12 @@ PLAYER_THRUST_KEY = 65362 # arrowup key
 PLAYER_FIRE_KEY = 32 # space key
 PLAYER_TURN_RIGHT_KEY = 65363 # arrowright key
 PLAYER_TURN_LEFT_KEY = 65361 # arrowleft key
-
+PLAYER_SHOCKWAVE_STRENGTH = 2  # px/update at center point
+PLAYER_SHOCKWAVE_RANGE = 350  # px radius
 
 THRUSTER_EMIT_RATE = 0.025  # secs
 THRUSTER_EMIT_TIME = 0.35  #secs
+PLAYER_ENGINE_SHAKE = 20 # The maximum + minimum of the shaking of the particles
 
 # asteroid_constants
 ASTEROIDS_SPREAD = 30
@@ -51,7 +53,11 @@ UFO_FIRE_RATE = 1.5  # secs
 UFO_FIRE_RATE_MOD_PR_LEVEL = -0.15  # added to UFO_FIRE_RATE on level increase
 UFO_SIZE_SMALL = 0.9  # multiplier for original file
 UFO_SIZE_BIG = 1.5  # multiplier for original file
-PLAYER_ENGINE_SHAKE = 20 # The maximum + minimum of the shaking of the particles
+UFO_SHOCKWAVE_STRENGTH = 1  # px/update at center point
+UFO_SHOCKWAVE_RANGE = 300  # px radius
+
+
+# explosions
 EXPLOSION_PARTICLE_AMOUNT = 500
 EXPLOSION_PARTICLE_SPEED = 5
 EXPLOSION_PARTICLE_LIFETIME_MIN = 0.1
