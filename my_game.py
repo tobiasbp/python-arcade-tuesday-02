@@ -810,7 +810,7 @@ class GameOverView(arcade.View):
 
         self.game_over_sign = arcade.load_texture("images/UI/asteroidsGameOverSign.png")
         self.restart_button = arcade.load_texture("images/UI/asteroidsRestartButton.png")
-        self.restart_button_cover = arcade.load_texture("images/UI/asteroidsRestartButtonCover.png")
+        self.restart_button_cover = arcade.load_texture("images/UI/asteroidsRestartButtonHover.png")
 
         self.player_score = player_score
         self.level = level
