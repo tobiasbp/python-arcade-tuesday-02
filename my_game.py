@@ -283,7 +283,13 @@ class BonusUFO(arcade.Sprite):
             filename="images/Lasers/laserGreen07.png",
             center_x=self.center_x,
             center_y=self.center_y,
-            angle=-arcade.get_angle_degrees(self.center_x,self.center_y,self.target.center_x,self.target.center_y)+90,
+            # -1 and + 90 is to make the UFO shoot the right way
+            angle=-1 * arcade.get_angle_degrees(
+                self.center_x,
+                self.center_y,
+                self.target.center_x,
+                self.target.center_y
+            ) + 90,
             speed=CONFIG['UFO_SHOT_SPEED'],
             range=CONFIG['UFO_SHOT_RANGE'],
             sound=BonusUFO.sound_fire)
