@@ -364,6 +364,10 @@ class IntroView(arcade.View):
         # Draws the manager that contains the button
         self.manager.draw()
 
+    def on_key_press(self, symbol: int, modifiers: int):
+        # If you press any key you start the game also. If you're lazy. :)
+        self.start_game()
+
     def start_game(self, event=None):
         in_game_view = InGameView()
         self.window.show_view(in_game_view)
@@ -860,6 +864,10 @@ class GameOverView(arcade.View):
             CONFIG['SCREEN_HEIGHT'] * 0.6,
             arcade.color.WHITE
         )
+
+    def on_key_press(self, symbol: int, modifiers: int):
+        # If you press any key you start the game also. If you're lazy.
+        self.new_game()
 
     def new_game(self, event=None):
         in_game_view = InGameView()
