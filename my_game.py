@@ -496,8 +496,8 @@ class InGameView(arcade.View):
 
                 # the closer to the center, the faster it moves
                 impact = abs(dist / range - 1) * strength
-                sprite.change_x = math.sin(sprite.radians) * impact
-                sprite.change_y = math.cos(sprite.radians) * impact
+                sprite.change_x += math.sin(sprite.radians) * impact
+                sprite.change_y += math.cos(sprite.radians) * impact
 
     def on_show_view(self):
         """ Set up the game and initialize the variables. """
