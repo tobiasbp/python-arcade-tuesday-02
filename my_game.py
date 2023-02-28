@@ -69,7 +69,6 @@ class Shot(arcade.Sprite):
         self.distance_traveled = 0
 
         self.forward(self.speed)
-
         # play the shot sound if present
         if sound:
             sound.play()
@@ -235,7 +234,7 @@ class BonusUFO(arcade.Sprite):
     sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
     sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
 
-    def __int__(self, shot_list, level=1, **kwargs):
+    def __int__(self, shot_list, target , level=1, **kwargs):
 
         kwargs['filename'] = "images/ufoBlue.png"
 
@@ -251,6 +250,7 @@ class BonusUFO(arcade.Sprite):
 
         self.level = level
         self.shot_list = shot_list
+        self.target = target
 
         # set random direction. always point towards center, with noise
         self.change_x = random.randrange(1, CONFIG['UFO_SPEED']) + (self.level - 1) * CONFIG['UFO_SPEED_MOD_PR_LEVEL']
@@ -285,7 +285,13 @@ class BonusUFO(arcade.Sprite):
             filename="images/Lasers/laserGreen07.png",
             center_x=self.center_x,
             center_y=self.center_y,
-            angle=0,
+            # -1 and + 90 is to make the UFO shoot the right way
+            angle=-1 * arcade.get_angle_degrees(
+                self.center_x,
+                self.center_y,
+                self.target.center_x,
+                self.target.center_y
+            ) + 90,
             speed=CONFIG['UFO_SHOT_SPEED'],
             range=CONFIG['UFO_SHOT_RANGE'],
             sound=BonusUFO.sound_fire)
@@ -493,7 +499,7 @@ class InGameView(arcade.View):
         """
 
         new_ufo_obj = BonusUFO()
-        new_ufo_obj.__int__(self.ufo_shot_list, self.level)  # it needs the list so it can send shots to MyGame
+        new_ufo_obj.__int__(self.ufo_shot_list, self.player_sprite, self.level)  # it needs the list so it can send shots to MyGame
         self.ufo_list.append(new_ufo_obj)
 
     def get_explosion(self, position, textures=None):
