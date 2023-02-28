@@ -339,7 +339,7 @@ class IntroView(arcade.View):
             texture=self.play_button,
             texture_hovered=self.play_button_cover,
             scale=1,
-            style=None
+            style=None,
             )
         # Adds the button to the manager so the manager can draw it.
         self.manager.add(self.gui_play_button)
