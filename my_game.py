@@ -232,7 +232,7 @@ class BonusUFO(arcade.Sprite):
     sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
     sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
 
-    def __int__(self, shot_list, level=1,target=Player ,**kwargs):
+    def __int__(self, shot_list, target , level=1, **kwargs):
 
         kwargs['filename'] = "images/ufoBlue.png"
 
@@ -468,7 +468,7 @@ class InGameView(arcade.View):
         """
 
         new_ufo_obj = BonusUFO()
-        new_ufo_obj.__int__(self.ufo_shot_list, self.level, self.player_sprite)  # it needs the list so it can send shots to MyGame
+        new_ufo_obj.__int__(self.ufo_shot_list, self.player_sprite, self.level)  # it needs the list so it can send shots to MyGame
         self.ufo_list.append(new_ufo_obj)
 
     def get_explosion(self, position, textures=None):
