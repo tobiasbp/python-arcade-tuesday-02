@@ -17,11 +17,13 @@ import os
 # load the config file as a dict
 def load_my_game_to_CONFIG():
     with open('my_game.toml', 'rb') as fp:
+        # CONFIG has to be cast to global because else it cannot be used outside function
+        global CONFIG
         CONFIG = tomli.load(fp)
 
 load_my_game_to_CONFIG()
 
-# Load the user settings file, which is superior to the original config file into the CONFIG dict
+# Load the user settings file, which is superior to the original config file, into the CONFIG dict
 try:
     with open("user_settings.toml", "rb") as f:
         user_settings = tomli.load(f)
@@ -508,15 +510,13 @@ class SettingsView(arcade.View):
         self.settings_guide_select.text = ""
 
     def on_click_reset(self, event):
-        # Delete edited config file
+        # Reset CONFIG dict and delete user settings file if it exists
         try:
             os.remove("user_settings.toml")
+            load_my_game_to_CONFIG()
+            print("Deleted user_settings.toml")
         except FileNotFoundError:
             pass
-
-        # Reset CONFIG dict
-
-        load_my_game_to_CONFIG()
 
         self.change_player_thrust_key_button.text = "Change Thrust Key: " + SettingsView.id_to_key[CONFIG["PLAYER_THRUST_KEY"]]
         self.change_player_fire_key_button.text = "Change Fire Key: " + SettingsView.id_to_key[CONFIG["PLAYER_FIRE_KEY"]]
