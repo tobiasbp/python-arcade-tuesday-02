@@ -734,7 +734,7 @@ class InGameView(arcade.View):
 
         # check if the player is dead
         if self.player_sprite.lives <= 0:
-            arcade.stop_sound(self.sound_thrust_player)
+            self.sound_thrust.stop(self.sound_thrust_player)
             arcade.unschedule(self.spawn_ufo)
             game_over_view = GameOverView(player_score=self.player_score, level=self.level)
             self.window.show_view(game_over_view)
