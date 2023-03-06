@@ -410,9 +410,9 @@ class IntroView(arcade.View):
     def on_key_release(self, _symbol: int, _modifiers: int):
 
         # If you press P you start the game and if you press S you enter the settings
-        if symbol == arcade.key.P:
+        if _symbol == arcade.key.P:
             self.start_game()
-        elif symbol == arcade.key.S:
+        elif _symbol == arcade.key.S:
             self.enter_settings()
 
     def start_game(self, event=None):

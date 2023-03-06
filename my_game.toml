@@ -62,8 +62,8 @@ EXPLOSION_PARTICLE_SIZE = 5
 # UI
 TITLE_X = 400  # pCha
 TITLE_Y = 450  # px
-SETTINGS_BUTTON_X = 400  # px
-SETTINGS_BUTTON_Y = 200  # px
+SETTINGS_BUTTON_X = 415  # px
+SETTINGS_BUTTON_Y = 150  # px
 BUTTON_X = 350  # px
 BUTTON_Y = 200  # px
 BUTTON_SCALE = 1 # The scale of the play/restart button
