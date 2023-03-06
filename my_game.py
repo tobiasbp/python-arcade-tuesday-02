@@ -10,6 +10,7 @@ import arcade
 import math
 import random
 import tomli
+import arcade.gui
 
 from game_sprites import Star
 
@@ -331,6 +332,27 @@ class IntroView(arcade.View):
 
         self.title_graphics = arcade.load_texture("images/UI/asteroidsTitle.png")
         self.play_button = arcade.load_texture("images/UI/asteroidsStartButton.png")
+        self.play_button_cover = arcade.load_texture("images/UI/asteroidsStartButtonHover.png")
+
+        # Makes the manager that contains the GUI button and enables it to the game.
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+
+        # Make the restart button.
+        self.gui_play_button = arcade.gui.UITextureButton(
+            x=CONFIG['BUTTON_X'],
+            y=CONFIG['BUTTON_Y'],
+            width=100,
+            height=100,
+            texture=self.play_button,
+            texture_hovered=self.play_button_cover,
+            scale=CONFIG['BUTTON_SCALE'],
+            style=None,
+            )
+        # When the GUI button is now clicked it starts the event self.new_game
+        self.gui_play_button.on_click = self.start_game
+        # Adds the button to the manager so the manager can draw it.
+        self.manager.add(self.gui_play_button)
 
         arcade.set_background_color(SCREEN_COLOR)
 
@@ -346,22 +368,19 @@ class IntroView(arcade.View):
             center_y=CONFIG['TITLE_Y']
         )
 
-        self.play_button.draw_scaled(
-            center_x=CONFIG['BUTTON_X'],
-            center_y=CONFIG['BUTTON_Y'],
-        )
+        # Draws the manager that contains the button.
+        self.manager.draw()
 
     def on_key_press(self, symbol: int, modifiers: int):
+
+        self.gui_play_button.hovered = True
+
+    def on_key_release(self, _symbol: int, _modifiers: int):
+
+        # If you press any key you start the game also. If you're lazy. :)
         self.start_game()
 
-    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
-        """
-        called whenever the mouse is clicked on the screen
-        """
-        if arcade.get_distance(x, y, CONFIG['BUTTON_X'], CONFIG['BUTTON_Y']) < self.play_button.width // 2:
-            self.start_game()
-
-    def start_game(self):
+    def start_game(self, event=None):
         in_game_view = InGameView()
         self.window.show_view(in_game_view)
 
@@ -796,7 +815,7 @@ class InGameView(arcade.View):
                         angle=self.player_sprite.angle,
                         speed=CONFIG['PLAYER_SHOT_SPEED'],
                         range=CONFIG['PLAYER_SHOT_RANGE'],
-                        sound=self.player_shoot_sound
+                        sound=self.player_shoot_sound,
                     )
 
                     self.player_shot_list.append(new_shot)
@@ -853,9 +872,30 @@ class GameOverView(arcade.View):
 
         self.game_over_sign = arcade.load_texture("images/UI/asteroidsGameOverSign.png")
         self.restart_button = arcade.load_texture("images/UI/asteroidsRestartButton.png")
+        self.restart_button_cover = arcade.load_texture("images/UI/asteroidsRestartButtonHover.png")
 
         self.player_score = player_score
         self.level = level
+
+        # Makes the manager that contains the GUI button and enables it to the game.
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+
+        # Make the restart button.
+        self.gui_restart_button = arcade.gui.UITextureButton(
+            x=CONFIG['BUTTON_X'],
+            y=CONFIG['BUTTON_Y'],
+            width=100,
+            height=100,
+            texture=self.restart_button,
+            texture_hovered=self.restart_button_cover,
+            scale=CONFIG['BUTTON_SCALE'],
+            style=None
+            )
+        # When the GUI button is now clicked it starts the event self.new_game
+        self.gui_restart_button.on_click = self.new_game
+        # Adds the button to the manager so the manager can draw it.
+        self.manager.add(self.gui_restart_button)
 
         # set background color
         arcade.set_background_color(SCREEN_COLOR)
@@ -872,10 +912,8 @@ class GameOverView(arcade.View):
             center_y=CONFIG['TITLE_Y']
         )
 
-        self.restart_button.draw_scaled(
-            center_x=CONFIG['BUTTON_X'],
-            center_y=CONFIG['BUTTON_Y']
-        )
+        # Draws the manager that contains the button
+        self.manager.draw()
 
         arcade.draw_text(
             f"SCORE: {self.player_score}    LEVEL: {self.level}",
@@ -885,17 +923,15 @@ class GameOverView(arcade.View):
         )
 
     def on_key_press(self, symbol: int, modifiers: int):
+
+        self.gui_restart_button.hovered = True
+
+    def on_key_release(self, _symbol: int, _modifiers: int):
+
+        # If you press any key you start the game also. If you're lazy. :)
         self.new_game()
 
-    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
-        """
-        called whenever the mouse is clicked on the screen.
-        """
-
-        if arcade.get_distance(x, y, CONFIG['BUTTON_X'], CONFIG['BUTTON_Y']) < self.restart_button.height // 2:
-            self.new_game()
-
-    def new_game(self):
+    def new_game(self, event=None):
         in_game_view = InGameView()
         self.window.show_view(in_game_view)
 
