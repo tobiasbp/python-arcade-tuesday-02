@@ -14,6 +14,8 @@ import tomli
 import tomli_w
 import os
 
+from game_sprites import Star
+
 # load the config file as a dict
 def load_my_game_to_CONFIG():
     with open('my_game.toml', 'rb') as fp:
@@ -36,8 +38,6 @@ except FileNotFoundError:
 
 # has to be defined here since they use libraries
 SCREEN_COLOR = arcade.color.BLACK
-
-PLAYER_GRAPHICS_CORRECTION = math.pi / 2  # the player graphic is turned 45 degrees too much compared to actual angle
 
 # The thrust effects textures and scale
 PARTICLE_TEXTURES = [
@@ -66,6 +66,53 @@ def wrap(sprite: arcade.Sprite):
         sprite.center_y -= CONFIG['SCREEN_HEIGHT']
 
 
+class Shot(arcade.Sprite):
+    """
+    universal class for shot objects
+    """
+
+    def __init__(self, filename, center_x, center_y, angle, speed, range, sound=None):
+
+        super().__init__(
+            filename=filename,
+            scale=CONFIG['SPRITE_SCALING'],
+            center_x=center_x,
+            center_y=center_y,
+            angle=angle,
+            flipped_horizontally=True,
+            flipped_diagonally=True
+            )
+
+        self.speed = speed
+        self.range = range
+        self.distance_traveled = 0
+
+        self.forward(self.speed)
+        # play the shot sound if present
+        if sound:
+            sound.play()
+
+    def update(self):
+        """
+        move the sprite and fade
+        """
+
+        self.center_x += self.change_x
+        self.center_y += self.change_y
+
+        wrap(self)
+
+        # check if the shot traveled too far
+        self.distance_traveled += self.speed
+
+        # start fading when flown far enough
+        if self.distance_traveled > CONFIG['SHOT_FADE_START']:
+            self.alpha *= CONFIG['SHOT_FADE_SPEED']
+
+        if self.distance_traveled > self.range:
+            self.kill()
+
+
 class Player(arcade.Sprite):
     """
     The player
@@ -77,8 +124,7 @@ class Player(arcade.Sprite):
         """
 
         # Graphics to use for Player
-        super().__init__("images/playerShip1_red.png")
-
+        super().__init__("images/playerShip1_red.png", flipped_horizontally=True ,flipped_diagonally=True)
         self.invincibility_timer = 0
         self.angle = 0
         self.lives = lives
@@ -91,9 +137,7 @@ class Player(arcade.Sprite):
         increase speed in the direction pointing
         """
 
-        self.change_x += math.cos(self.radians + PLAYER_GRAPHICS_CORRECTION) * CONFIG['PLAYER_THRUST']
-        self.change_y += math.sin(self.radians + PLAYER_GRAPHICS_CORRECTION) * CONFIG['PLAYER_THRUST']
-
+        self.forward(CONFIG['PLAYER_THRUST'])
         # Keep track of Player Speed
         player_speed_vector_length = math.sqrt(self.change_x ** 2 + self.change_y ** 2)
 
@@ -157,12 +201,14 @@ class Asteroid(arcade.Sprite):
         )
 
         self.size = size
+        self.level = level
+
         if angle == None:
             self.angle = random.randrange(0, 360)
         else:
             self.angle = angle
 
-        # spawning astroits until the distance to the player is longer than ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER
+        # Spawning Astroids until the distance to the player is longer than ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER
         if not spawn_pos is None:
             self.position = spawn_pos
         else:
@@ -177,12 +223,13 @@ class Asteroid(arcade.Sprite):
                         CONFIG['PLAYER_START_Y']
                 ) > CONFIG['ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER']:
                     break
+        self.angle += random.randint(-CONFIG['ASTEROIDS_SPREAD'], CONFIG['ASTEROIDS_SPREAD'])
+        self.forward(CONFIG['ASTEROIDS_SPEED'])
 
+        self.angle += random.randint(-CONFIG['ASTEROIDS_SPREAD'], CONFIG['ASTEROIDS_SPREAD'])
+        self.forward(CONFIG['ASTEROIDS_SPEED'])
         self.level = level
 
-        # the speed increases linearly, with current level
-        self.change_x = math.sin(self.radians) * CONFIG['ASTEROIDS_SPEED'] + (self.level - 1) * CONFIG['ASTEROIDS_SPEED_MOD_PR_LEVEL']
-        self.change_y = math.cos(self.radians) * CONFIG['ASTEROIDS_SPEED'] + (self.level - 1) * CONFIG['ASTEROIDS_SPEED_MOD_PR_LEVEL']
         self.rotation_speed = random.randrange(0, 5)
 
         self.direction = self.angle  # placeholder for initial angle - angle changes during the game
@@ -200,82 +247,13 @@ class Asteroid(arcade.Sprite):
         wrap(self)
 
 
-class PlayerShot(arcade.Sprite):
-    """
-    A shot fired by the Player
-    """
-
-    sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
-
-    def __init__(self, center_x=0, center_y=0, angle=0):
-        """
-        Setup new PlayerShot object
-        """
-
-        # Set the graphics to use for the sprite
-        super().__init__("images/Lasers/laserBlue01.png", CONFIG['SPRITE_SCALING'])
-
-        self.center_x = center_x
-        self.center_y = center_y
-        self.angle = angle
-        self.change_x = math.cos(self.radians + math.pi / 2) * CONFIG['PLAYER_SHOT_SPEED']
-        self.change_y = math.sin(self.radians + math.pi / 2) * CONFIG['PLAYER_SHOT_SPEED']
-        self.distance_traveled = 0
-        self.speed = CONFIG['PLAYER_SHOT_SPEED']
-
-        PlayerShot.sound_fire.play()
-
-    def update(self):
-        """
-        Move the sprite
-        """
-
-        # Update position
-        self.center_x += self.change_x
-        self.center_y += self.change_y
-
-        # wrap
-        wrap(self)
-
-        # Has a range of how long the shot can last for
-        self.distance_traveled += self.speed
-
-        # When distance made kill it
-        if self.distance_traveled > CONFIG['PLAYER_SHOT_RANGE']:
-            self.kill()
-
-
-class UFOShot(arcade.Sprite):
-    """shot fired by the ufo"""
-
-    def __int__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def update(self):
-        """update position/kill if out of bounds"""
-
-        self.center_x += self.change_x
-        self.center_y += self.change_y
-
-        self.distance_traveled += CONFIG['UFO_SHOT_SPEED']
-
-        self.angle = ((self.change_x / self.change_y) * -90)  # set ange based on our direction
-
-        # kill when traveled far enough
-        if self.distance_traveled > CONFIG['UFO_SHOT_RANGE']:
-            self.kill()
-
-        # wrap
-        wrap(self)
-
-
 class BonusUFO(arcade.Sprite):
     """occasionally moves across the screen. Grants the player points if shot"""
 
     sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
     sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
 
-    def __int__(self, shot_list, level=1, **kwargs):
+    def __int__(self, shot_list, target , level=1, **kwargs):
 
         kwargs['filename'] = "images/ufoBlue.png"
 
@@ -291,6 +269,7 @@ class BonusUFO(arcade.Sprite):
 
         self.level = level
         self.shot_list = shot_list
+        self.target = target
 
         # set random direction. always point towards center, with noise
         self.change_x = random.randrange(1, CONFIG['UFO_SPEED']) + (self.level - 1) * CONFIG['UFO_SPEED_MOD_PR_LEVEL']
@@ -320,18 +299,22 @@ class BonusUFO(arcade.Sprite):
         """
         fire a new shot
         """
-        BonusUFO.sound_fire.play()
-        new_ufo_shot = UFOShot()  # sprites created with arcade.schedule don't __init__ it has to be manually called
-        new_ufo_shot.__init__(
-            filename="images/Lasers/laserGreen07.png",
-            scale=CONFIG['SPRITE_SCALING'],
-            center_x=self.center_x,
-            center_y=self.center_y
-        )
 
-        new_ufo_shot.change_x = random.randrange(-CONFIG['UFO_SHOT_SPEED'], CONFIG['UFO_SHOT_SPEED'])
-        new_ufo_shot.change_y = new_ufo_shot.change_x - CONFIG['UFO_SHOT_SPEED']
-        new_ufo_shot.distance_traveled = 0
+        new_ufo_shot = Shot(
+            filename="images/Lasers/laserGreen07.png",
+            center_x=self.center_x,
+            center_y=self.center_y,
+            # -1 and + 90 is to make the UFO shoot the right way
+            angle=-1 * arcade.get_angle_degrees(
+                self.center_x,
+                self.center_y,
+                self.target.center_x,
+                self.target.center_y
+            ) + 90,
+            speed=CONFIG['UFO_SHOT_SPEED'],
+            range=CONFIG['UFO_SHOT_RANGE'],
+            sound=BonusUFO.sound_fire)
+
         self.shot_list.append(new_ufo_shot)
 
     def update(self):
@@ -367,7 +350,28 @@ class IntroView(arcade.View):
 
         self.title_graphics = arcade.load_texture("images/UI/asteroidsTitle.png")
         self.play_button = arcade.load_texture("images/UI/asteroidsStartButton.png")
+        self.play_button_cover = arcade.load_texture("images/UI/asteroidsStartButtonHover.png")
         self.settings_button = arcade.load_texture("images/UI/asteroidsSettingsButton.png")
+
+        # Makes the manager that contains the GUI button and enables it to the game.
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+
+        # Make the restart button.
+        self.gui_play_button = arcade.gui.UITextureButton(
+            x=CONFIG['BUTTON_X'],
+            y=CONFIG['BUTTON_Y'],
+            width=100,
+            height=100,
+            texture=self.play_button,
+            texture_hovered=self.play_button_cover,
+            scale=CONFIG['BUTTON_SCALE'],
+            style=None,
+            )
+        # When the GUI button is now clicked it starts the event self.new_game
+        self.gui_play_button.on_click = self.start_game
+        # Adds the button to the manager so the manager can draw it.
+        self.manager.add(self.gui_play_button)
 
         arcade.set_background_color(SCREEN_COLOR)
 
@@ -383,21 +387,13 @@ class IntroView(arcade.View):
             center_y=CONFIG['TITLE_Y']
         )
 
-        self.play_button.draw_scaled(
-            center_x=CONFIG['BUTTON_X'],
-            center_y=CONFIG['BUTTON_Y'],
-        )
+        # Draws the manager that contains the button.
+        self.manager.draw()
 
         self.settings_button.draw_scaled(
             center_x=CONFIG['SETTINGS_BUTTON_X'],
             center_y=CONFIG['SETTINGS_BUTTON_Y'],
         )
-
-    def on_key_press(self, symbol: int, modifiers: int):
-        if symbol == arcade.key.P:
-            self.start_game()
-        elif symbol == arcade.key.S:
-            self.enter_settings()
 
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
         """
@@ -409,7 +405,17 @@ class IntroView(arcade.View):
         if arcade.get_distance(x, y, CONFIG['SETTINGS_BUTTON_X'], CONFIG['SETTINGS_BUTTON_Y']) < self.settings_button.width // 2:
             self.enter_settings()
 
-    def start_game(self):
+        self.gui_play_button.hovered = True
+
+    def on_key_release(self, _symbol: int, _modifiers: int):
+
+        # If you press P you start the game and if you press S you enter the settings
+        if _symbol == arcade.key.P:
+            self.start_game()
+        elif _symbol == arcade.key.S:
+            self.enter_settings()
+
+    def start_game(self, event=None):
         in_game_view = InGameView()
         self.window.show_view(in_game_view)
 
@@ -620,6 +626,7 @@ class InGameView(arcade.View):
         self.opposite_angle = 0
         self.thrust_emitter = None
         self.explosion_emitter = None
+        self.player_shoot_sound = None
 
         # set up ufo info
         self.ufo_list = None
@@ -661,6 +668,32 @@ class InGameView(arcade.View):
         # Set the background color
         arcade.set_background_color(SCREEN_COLOR)
 
+    def get_stars(self, no_of_stars: int) -> arcade.SpriteList:
+        """
+        Return a SpriteList of randomly positioned stars.
+        """
+
+        # A list to store the stars in
+        stars = arcade.SpriteList()
+
+        # Add stars
+        for i in range(no_of_stars):
+            # Calculate a random postion
+            p = (
+                random.randint(0, CONFIG['SCREEN_WIDTH']),
+                random.randint(0, CONFIG['SCREEN_HEIGHT']),
+            )
+            # Add star
+            s = Star(
+                position=p,
+                base_size=CONFIG['STARS_BASE_SIZE'],
+                scale=CONFIG['STARS_SCALE'],
+                fade_speed=CONFIG['STARS_FADE_SPEED'],
+                )
+            stars.append(s)
+
+        return stars
+
     def next_level(self, level=None):
         """
         Advance the game to the next level
@@ -675,6 +708,9 @@ class InGameView(arcade.View):
 
         # FIXME: Player needs to know that level was cleared
 
+        # Background stars
+        self.stars_list = self.get_stars(CONFIG['STARS_ON_SCREEN'])
+
         # Spawn Asteroids
         for r in range(CONFIG['ASTEROIDS_PR_LEVEL'] + (self.level - 1) * CONFIG['ASTEROID_NUM_MOD_PR_LEVEL']):
             self.asteroid_list.append(Asteroid(level=self.level))
@@ -686,7 +722,7 @@ class InGameView(arcade.View):
         """
 
         new_ufo_obj = BonusUFO()
-        new_ufo_obj.__int__(self.ufo_shot_list, self.level)  # it needs the list so it can send shots to MyGame
+        new_ufo_obj.__int__(self.ufo_shot_list, self.player_sprite, self.level)  # it needs the list so it can send shots to MyGame
         self.ufo_list.append(new_ufo_obj)
 
     def get_explosion(self, position, textures=None):
@@ -720,6 +756,9 @@ class InGameView(arcade.View):
         self.ufo_list = arcade.SpriteList()
         self.ufo_shot_list = arcade.SpriteList()
 
+        # Small stars in background
+        self.stars_list = arcade.SpriteList()
+
         # Create a Player object
         self.player_sprite = Player(
             center_x=CONFIG['PLAYER_START_X'],
@@ -728,13 +767,16 @@ class InGameView(arcade.View):
             scale=CONFIG['SPRITE_SCALING']
         )
 
+        # load the player shot sound
+        self.player_shoot_sound = arcade.load_sound("sounds/laserRetro_001.ogg")
+
         # setup spawn_ufo to run regularly
         arcade.schedule(self.spawn_ufo, CONFIG['UFO_SPAWN_RATE'] + (self.level - 1) * CONFIG['UFO_SPAWN_RATE_MOD_PR_LEVEL'])
 
         # Add an emitter that makes the thrusting particles
         self.thrust_emitter = arcade.Emitter(
             center_xy=(self.player_sprite.center_x, self.player_sprite.center_y),
-            emit_controller=arcade.EmitterIntervalWithTime(0.025, 100.0),
+            emit_controller=arcade.EmitterIntervalWithTime(0, 0),  # setting a blank controller when not thrusting.
             particle_factory=lambda emitter: arcade.FadeParticle(
                 filename_or_texture=random.choice(PARTICLE_TEXTURES),
                 change_xy=(0, 12.0),
@@ -754,9 +796,11 @@ class InGameView(arcade.View):
         # This command has to happen before we start drawing
         arcade.start_render()
 
+        # Stars in the background drawn first
+        self.stars_list.draw()
+
         # draw particle emitter
-        if not self.player_sprite.is_invincible and self.thrust_pressed:
-            self.thrust_emitter.draw()
+        self.thrust_emitter.draw()
 
         # Draw the player shot
         self.player_shot_list.draw()
@@ -805,6 +849,17 @@ class InGameView(arcade.View):
         Movement and game logic
         """
 
+        # Stars in background
+        for s in self.stars_list:
+            # Star's direction is opposite of the player
+            s.change_x = -1 * self.player_sprite.change_x
+            s.change_y = -1 * self.player_sprite.change_y
+            # Wrap star if off screen
+            wrap(s)
+
+        # Move all stars
+        self.stars_list.on_update(delta_time)
+
         # Calculate player speed based on the keys pressed
         # Move player with keyboard
         if self.turn_left_pressed and not self.turn_right_pressed:
@@ -819,6 +874,7 @@ class InGameView(arcade.View):
         # checks if ufo shot collides with player
         for ufo_shot_hit in self.player_sprite.collides_with_list(self.ufo_shot_list):
             self.player_sprite.lives -= 1
+            self.player_sprite.reset()
             self.get_explosion(self.player_sprite.position)
             ufo_shot_hit.kill()
 
@@ -866,10 +922,10 @@ class InGameView(arcade.View):
             for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
                 for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
                     if a.size > 1:
-                        a_angle = random.randrange(a.direction - 30, a.direction + 30)
-                        self.asteroid_list.append(
-                            Asteroid(a.size-1, self.level, a.position, a_angle)
-                        )
+                        a_angle = random.randrange(s.angle - CONFIG["ASTEROIDS_SPREAD"], s.angle + CONFIG["ASTEROIDS_SPREAD"])
+                        new_a = Asteroid(a.size-1, self.level, a.position, a_angle)
+                        self.asteroid_list.append(new_a)
+
                     else:
                         pass
                 s.kill()
@@ -906,8 +962,12 @@ class InGameView(arcade.View):
             game_over_view = GameOverView(player_score=self.player_score, level=self.level)
             self.window.show_view(game_over_view)
 
+        # create a new emit-controller for the thruster if thrusting.
+        if self.thrust_pressed and self.thrust_emitter.rate_factory.is_complete():
+            self.thrust_emitter.rate_factory = arcade.EmitterIntervalWithTime(CONFIG['THRUSTER_EMIT_RATE'], CONFIG['THRUSTER_EMIT_TIME'])
+
         self.thrust_emitter.update()
-        self.thrust_emitter.angle = self.player_sprite.angle - 180 + random.randint(
+        self.thrust_emitter.angle = self.player_sprite.angle - 270 + random.randint(
             -CONFIG['PLAYER_ENGINE_SHAKE'],
             CONFIG['PLAYER_ENGINE_SHAKE']
         )
@@ -952,14 +1012,22 @@ class InGameView(arcade.View):
         if key == CONFIG["PLAYER_FIRE_KEY"]:
             if not self.player_sprite.is_invincible:
                 if self.player_shot_fire_rate_timer >= CONFIG['PLAYER_FIRE_RATE']:
-                    new_shot = PlayerShot(
-                        self.player_sprite.center_x,
-                        self.player_sprite.center_y,
-                        self.player_sprite.angle
+                    new_shot = Shot(
+                        filename="images/Lasers/laserBlue01.png",
+                        center_x=self.player_sprite.center_x,
+                        center_y=self.player_sprite.center_y,
+                        angle=self.player_sprite.angle,
+                        speed=CONFIG['PLAYER_SHOT_SPEED'],
+                        range=CONFIG['PLAYER_SHOT_RANGE'],
+                        sound=self.player_shoot_sound,
                     )
 
                     self.player_shot_list.append(new_shot)
                     self.player_shot_fire_rate_timer = 0
+
+        if key == CONFIG['UI_RESTART_KEY']:
+            new_game = InGameView()
+            self.window.show_view(new_game)
 
     def on_key_release(self, key, modifiers):
         """
@@ -1008,9 +1076,30 @@ class GameOverView(arcade.View):
 
         self.game_over_sign = arcade.load_texture("images/UI/asteroidsGameOverSign.png")
         self.restart_button = arcade.load_texture("images/UI/asteroidsRestartButton.png")
+        self.restart_button_cover = arcade.load_texture("images/UI/asteroidsRestartButtonHover.png")
 
         self.player_score = player_score
         self.level = level
+
+        # Makes the manager that contains the GUI button and enables it to the game.
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+
+        # Make the restart button.
+        self.gui_restart_button = arcade.gui.UITextureButton(
+            x=CONFIG['BUTTON_X'],
+            y=CONFIG['BUTTON_Y'],
+            width=100,
+            height=100,
+            texture=self.restart_button,
+            texture_hovered=self.restart_button_cover,
+            scale=CONFIG['BUTTON_SCALE'],
+            style=None
+            )
+        # When the GUI button is now clicked it starts the event self.new_game
+        self.gui_restart_button.on_click = self.new_game
+        # Adds the button to the manager so the manager can draw it.
+        self.manager.add(self.gui_restart_button)
 
         # set background color
         arcade.set_background_color(SCREEN_COLOR)
@@ -1027,10 +1116,8 @@ class GameOverView(arcade.View):
             center_y=CONFIG['TITLE_Y']
         )
 
-        self.restart_button.draw_scaled(
-            center_x=CONFIG['BUTTON_X'],
-            center_y=CONFIG['BUTTON_Y']
-        )
+        # Draws the manager that contains the button
+        self.manager.draw()
 
         arcade.draw_text(
             f"SCORE: {self.player_score}    LEVEL: {self.level}",
@@ -1040,17 +1127,15 @@ class GameOverView(arcade.View):
         )
 
     def on_key_press(self, symbol: int, modifiers: int):
+
+        self.gui_restart_button.hovered = True
+
+    def on_key_release(self, _symbol: int, _modifiers: int):
+
+        # If you press any key you start the game also. If you're lazy. :)
         self.new_game()
 
-    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
-        """
-        called whenever the mouse is clicked on the screen.
-        """
-
-        if arcade.get_distance(x, y, CONFIG['BUTTON_X'], CONFIG['BUTTON_Y']) < self.restart_button.height // 2:
-            self.new_game()
-
-    def new_game(self):
+    def new_game(self, event=None):
         in_game_view = InGameView()
         self.window.show_view(in_game_view)
 
