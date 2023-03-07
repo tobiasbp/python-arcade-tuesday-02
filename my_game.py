@@ -27,14 +27,13 @@ load_my_game_to_CONFIG()
 
 # Load the user settings file, which is superior to the original config file, into the CONFIG dict
 try:
-    with open("user_settings.toml", "rb") as f:
-        user_settings = tomli.load(f)
+    with open("user_settings.toml", "rb") as fp:
+        user_settings = tomli.load(fp)
     for k in user_settings.keys():
         CONFIG[k] = user_settings[k]
 except FileNotFoundError:
     # If the file does not exist it will not be loaded in
     pass
-
 
 # has to be defined here since they use libraries
 SCREEN_COLOR = arcade.color.BLACK
@@ -432,6 +431,11 @@ class SettingsView(arcade.View):
     def __init__(self):
         super().__init__()
 
+        # Variable for controlling the amount of times the settings have been reset
+        with open("times_settings_reset.toml", "rb") as t:
+            dict = tomli.load(t)
+            self.times_reset = dict["times_reset"]
+
         # Making dicts that will help us translate the keys (str) and key IDs (int) from the arcade.key module
         keys = dir(arcade.key)
         self.key_to_id = {}
@@ -546,10 +550,13 @@ class SettingsView(arcade.View):
 
     def on_click_reset(self, event):
         # Reset CONFIG dict and delete user settings file if it exists
+        print(self.times_reset)
         try:
-            os.remove("user_settings.toml")
+            os.rename("user_settings.toml", "user_settings_" + str(self.times_reset) + ".toml.bak")
+            self.times_reset += 1
+            with open("times_settings_reset.toml", "wb") as t:
+                tomli_w.dump({"times_reset": self.times_reset}, t)
             load_my_game_to_CONFIG()
-            print("Deleted user_settings.toml")
         except FileNotFoundError:
             pass
 
