@@ -12,7 +12,7 @@ import math
 import random
 import tomli
 import tomli_w
-import os
+import pathlib
 
 from game_sprites import Star
 
@@ -431,11 +431,6 @@ class SettingsView(arcade.View):
     def __init__(self):
         super().__init__()
 
-        # Variable for controlling the amount of times the settings have been reset
-        with open("times_settings_reset.toml", "rb") as t:
-            dict = tomli.load(t)
-            self.times_reset = dict["times_reset"]
-
         # Making dicts that will help us translate the keys (str) and key IDs (int) from the arcade.key module
         keys = dir(arcade.key)
         self.key_to_id = {}
@@ -550,15 +545,16 @@ class SettingsView(arcade.View):
 
     def on_click_reset(self, event):
         # Reset CONFIG dict and delete user settings file if it exists
-        print(self.times_reset)
-        try:
-            os.rename("user_settings.toml", "user_settings_" + str(self.times_reset) + ".toml.bak")
-            self.times_reset += 1
-            with open("times_settings_reset.toml", "wb") as t:
-                tomli_w.dump({"times_reset": self.times_reset}, t)
-            load_my_game_to_CONFIG()
-        except FileNotFoundError:
-            pass
+        user_config_file = pathlib.Path("user_settings.toml")
+        if user_config_file.is_file():
+            times_reset = 0
+            while True:
+                new_user_config_file = pathlib.Path("user_settings.toml.bak" + str(times_reset))
+                times_reset += 1
+                if not new_file_path.is_file():
+                    file_path.rename(new_file_path)
+                    load_my_game_to_CONFIG()
+                    break
 
         self.change_player_thrust_key_button.text = "Change Thrust Key: " + self.id_to_key[CONFIG["PLAYER_THRUST_KEY"]]
         self.change_player_fire_key_button.text = "Change Fire Key: " + self.id_to_key[CONFIG["PLAYER_FIRE_KEY"]]
