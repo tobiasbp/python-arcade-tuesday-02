@@ -544,15 +544,15 @@ class SettingsView(arcade.View):
         self.settings_guide_select.text = ""
 
     def on_click_reset(self, event):
-        # Reset CONFIG dict and delete user settings file if it exists
+        # Reset CONFIG dict and log user settings file if it exists
         user_config_file = pathlib.Path("user_settings.toml")
         if user_config_file.is_file():
             times_reset = 0
             while True:
-                new_user_config_file = pathlib.Path("user_settings.toml.bak" + str(times_reset))
+                new_user_config_file = pathlib.Path(user_config_file + ".bak" + str(times_reset))
                 times_reset += 1
-                if not new_file_path.is_file():
-                    file_path.rename(new_file_path)
+                if not new_user_config_file.is_file():
+                    user_config_file.rename(new_user_config_file)
                     load_my_game_to_CONFIG()
                     break
 
