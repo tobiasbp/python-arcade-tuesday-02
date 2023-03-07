@@ -549,7 +549,7 @@ class SettingsView(arcade.View):
         if user_config_file.is_file():
             times_reset = 0
             while True:
-                new_user_config_file = pathlib.Path(user_config_file + ".bak" + str(times_reset))
+                new_user_config_file = pathlib.Path(user_config_file.name + ".bak" + str(times_reset))
                 times_reset += 1
                 if not new_user_config_file.is_file():
                     user_config_file.rename(new_user_config_file)
