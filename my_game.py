@@ -330,6 +330,7 @@ class IntroView(arcade.View):
     def __init__(self):
         super().__init__()
 
+
         self.title_graphics = arcade.load_texture("images/UI/asteroidsTitle.png")
         self.play_button = arcade.load_texture("images/UI/asteroidsStartButton.png")
         self.play_button_cover = arcade.load_texture("images/UI/asteroidsStartButtonHover.png")
@@ -356,6 +357,27 @@ class IntroView(arcade.View):
 
         arcade.set_background_color(SCREEN_COLOR)
 
+        # Get list of joysticks
+        joysticks = arcade.get_joysticks()
+
+        if joysticks:
+            print("Found {} joystick(s)".format(len(joysticks)))
+
+            # Use 1st joystick found
+            self.joystick = joysticks[0]
+
+            self.check_if_started = False
+
+            # Communicate with joystick
+            self.joystick.open()
+
+            # Map joysticks functions to local functions
+            self.joystick.on_joybutton_press = self.on_joybutton_pressed
+            self.joystick.on_joybutton_release = self.on_joybutton_release
+
+        else:
+            self.joystick = None
+
     def on_draw(self):
         """
         draw everything on the screen
@@ -379,6 +401,14 @@ class IntroView(arcade.View):
 
         # If you press any key you start the game also. If you're lazy. :)
         self.start_game()
+
+    def on_joybutton_pressed(self, joystick, button_no):
+        self.gui_play_button.hovered = True
+
+    def on_joybutton_release(self, joystick, button_no):
+        if not self.check_if_started:
+            self.start_game()
+            self.check_if_started = True
 
     def start_game(self, event=None):
         in_game_view = InGameView()
@@ -753,6 +783,7 @@ class InGameView(arcade.View):
 
         # check if the player is dead
         if self.player_sprite.lives <= 0:
+            assert self.sound_thrust is not None
             self.sound_thrust.stop(self.sound_thrust_player)
             arcade.unschedule(self.spawn_ufo)
             game_over_view = GameOverView(player_score=self.player_score, level=self.level)
@@ -849,11 +880,17 @@ class InGameView(arcade.View):
 
     def on_joybutton_press(self, joystick, button_no):
         print("Button pressed:", button_no)
-        # Press the fire key
-        self.on_key_press(CONFIG["PLAYER_FIRE_KEY"], [])
+        # Press the fire key on the joystick
+        if button_no == CONFIG["PLAYER_FIRE_JOYBUTTON"]:
+            self.on_key_press(CONFIG["PLAYER_FIRE_KEY"], [])
+        elif button_no == CONFIG["PLAYER_THRUST_JOYBUTTON"]:
+            self.thrust_pressed = True
 
     def on_joybutton_release(self, joystick, button_no):
         print("Button released:", button_no)
+
+        if button_no == 0:
+            self.thrust_pressed = False
 
     def on_joyaxis_motion(self, joystick, axis, value):
         print("Joystick axis {}, value {}".format(axis, value))
@@ -870,6 +907,7 @@ class GameOverView(arcade.View):
     def __init__(self, player_score, level):
         super().__init__()
 
+        self.check_if_started = False
         self.game_over_sign = arcade.load_texture("images/UI/asteroidsGameOverSign.png")
         self.restart_button = arcade.load_texture("images/UI/asteroidsRestartButton.png")
         self.restart_button_cover = arcade.load_texture("images/UI/asteroidsRestartButtonHover.png")
@@ -930,6 +968,14 @@ class GameOverView(arcade.View):
 
         # If you press any key you start the game also. If you're lazy. :)
         self.new_game()
+
+    def on_joybutton_pressed(self, joystick, button_no):
+        self.gui_restart_button.hovered = True
+
+    def on_joybutton_release(self, joystick, button_no):
+        if not self.check_if_started:
+            self.new_game()
+            self.check_if_started = True
 
     def new_game(self, event=None):
         in_game_view = InGameView()
