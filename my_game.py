@@ -99,7 +99,15 @@ class Player(arcade.Sprite):
     The player
     """
 
-    def __init__(self, center_x, center_y, lives, scale):
+    def __init__(self,
+                 center_x,
+                 center_y,
+                 lives,
+                 scale,
+                 start_speed_min,
+                 start_speed_max,
+                 start_angle_min,
+                 start_angle_max):
         """
         Setup new Player object
         """
@@ -107,11 +115,12 @@ class Player(arcade.Sprite):
         # Graphics to use for Player
         super().__init__("images/playerShip1_red.png", flipped_horizontally=True ,flipped_diagonally=True)
         self.invincibility_timer = 0
-        self.angle = 0
         self.lives = lives
         self.scale = scale
         self.center_x = center_x
         self.center_y = center_y
+        self.angle = random.randint(start_angle_min, start_angle_max)
+        self.forward(random.randrange(start_speed_min, start_speed_max))
 
     def thrust(self):
         """
@@ -163,6 +172,9 @@ class Player(arcade.Sprite):
                     self.center_y = CONFIG['PLAYER_START_Y']
                     self.change_y = 0
                     self.change_x = 0
+                    self.angle = random.randint(CONFIG['PLAYER_START_ANGLE_MIN'], CONFIG['PLAYER_START_ANGLE_MAX'])
+                    self.forward(random.randrange(CONFIG['PLAYER_START_SPEED_MIN'], CONFIG['PLAYER_START_SPEED_MAX']))
+
         else:
             self.alpha = 255
 
@@ -541,7 +553,11 @@ class InGameView(arcade.View):
             center_x=CONFIG['PLAYER_START_X'],
             center_y=CONFIG['PLAYER_START_Y'],
             lives=CONFIG['PLAYER_START_LIVES'],
-            scale=CONFIG['SPRITE_SCALING']
+            scale=CONFIG['SPRITE_SCALING'],
+            start_speed_min=CONFIG['PLAYER_START_SPEED_MIN'],
+            start_speed_max=CONFIG['PLAYER_START_SPEED_MAX'],
+            start_angle_min=CONFIG['PLAYER_START_ANGLE_MIN'],
+            start_angle_max=CONFIG['PLAYER_START_ANGLE_MAX']
         )
 
         # load the player shot sound
