@@ -330,7 +330,6 @@ class IntroView(arcade.View):
     def __init__(self):
         super().__init__()
 
-
         self.title_graphics = arcade.load_texture("images/UI/asteroidsTitle.png")
         self.play_button = arcade.load_texture("images/UI/asteroidsStartButton.png")
         self.play_button_cover = arcade.load_texture("images/UI/asteroidsStartButtonHover.png")
@@ -879,7 +878,6 @@ class InGameView(arcade.View):
             self.turn_left_pressed = False
 
     def on_joybutton_press(self, joystick, button_no):
-        print("Button pressed:", button_no)
         # Press the fire key on the joystick
         if button_no == CONFIG["PLAYER_FIRE_JOYBUTTON"]:
             self.on_key_press(CONFIG["PLAYER_FIRE_KEY"], [])
@@ -887,17 +885,17 @@ class InGameView(arcade.View):
             self.thrust_pressed = True
 
     def on_joybutton_release(self, joystick, button_no):
-        print("Button released:", button_no)
-
-        if button_no == 0:
+        if button_no == CONFIG["PLAYER_THRUST_JOYBUTTON"]:
             self.thrust_pressed = False
+        elif button_no == CONFIG["PLAYER_SELECT_JOYSTICK"]:
+            new_game = InGameView()
+            self.window.show_view(new_game)
 
     def on_joyaxis_motion(self, joystick, axis, value):
-        print("Joystick axis {}, value {}".format(axis, value))
+        pass
 
     def on_joyhat_motion(self, joystick, hat_x, hat_y):
-        print("Joystick hat ({}, {})".format(hat_x, hat_y))
-
+        pass
 
 class GameOverView(arcade.View):
     """
