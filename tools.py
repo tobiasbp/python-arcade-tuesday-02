@@ -28,9 +28,11 @@ def get_joystick(func_press, func_release=None, func_axis=None, func_jhat=None):
 
         # Map joysticks functions to local functions
         js.on_joybutton_press = func_press
-        if func_press:
+        if func_release is not None:
             js.on_joybutton_release = func_release
+        if func_axis is not None:
             js.on_joyaxis_motion = func_axis
+        if func_jhat is not None:
             js.on_joyhat_motion = func_jhat
 
         return js
