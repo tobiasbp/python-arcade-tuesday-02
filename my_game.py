@@ -12,7 +12,6 @@ import random
 import tomli
 import arcade.gui
 
-import tools
 from game_sprites import Star
 from tools import get_joystick
 
@@ -358,8 +357,6 @@ class IntroView(arcade.View):
 
         arcade.set_background_color(SCREEN_COLOR)
 
-        self.check_if_started = False
-
         self.joystick = get_joystick(
             self.on_joybutton_pressed,
             self.on_joybutton_released,
@@ -393,9 +390,7 @@ class IntroView(arcade.View):
         self.gui_play_button.hovered = True
 
     def on_joybutton_released(self, joystick, button_no):
-        # if not self.check_if_started:
         self.start_game()
-        #     self.check_if_started = True
 
     def start_game(self, event=None):
 
@@ -522,8 +517,7 @@ class InGameView(arcade.View):
         """
 
         new_ufo_obj = BonusUFO()
-        new_ufo_obj.__int__(self.ufo_shot_list, self.player_sprite,
-                            self.level)  # it needs the list so it can send shots to MyGame
+        new_ufo_obj.__int__(self.ufo_shot_list, self.player_sprite, self.level)  # it needs the list so it can send shots to MyGame
         self.ufo_list.append(new_ufo_obj)
 
     def get_explosion(self, position, textures=None):
