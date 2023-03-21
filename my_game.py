@@ -395,7 +395,11 @@ class IntroView(arcade.View):
     def start_game(self, event=None):
 
         in_game_view = InGameView()
-        self.joystick.close()
+
+        # Stop using  this joystick
+        if self.joystick is not None:
+          self.joystick.close()
+
         self.window.show_view(in_game_view)
 
 
