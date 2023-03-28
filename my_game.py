@@ -635,9 +635,6 @@ class InGameView(arcade.View):
         # and their shots
         self.ufo_shot_list.draw()
 
-        # and their shots
-        self.ufo_shot_list.draw()
-
         # draw explosion
         if self.explosion_emitter is not None:
             self.explosion_emitter.draw()
