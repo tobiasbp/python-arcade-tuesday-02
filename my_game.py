@@ -173,7 +173,7 @@ class Player(arcade.Sprite):
                     self.change_y = 0
                     self.change_x = 0
                     self.angle = random.randint(CONFIG['PLAYER_START_ANGLE_MIN'], CONFIG['PLAYER_START_ANGLE_MAX'])
-                    self.forward(random.randrange(CONFIG['PLAYER_START_SPEED_MIN'], CONFIG['PLAYER_START_SPEED_MAX']))
+                    self.forward(random.uniform(CONFIG['PLAYER_START_SPEED_MIN'], CONFIG['PLAYER_START_SPEED_MAX']))
 
         else:
             self.alpha = 255
