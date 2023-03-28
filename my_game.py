@@ -13,7 +13,7 @@ import tomli
 import arcade.gui
 
 from game_sprites import Star
-from tools import get_joystick
+from tools import get_joystick, StoppableEmitter
 
 # load the config file as a dict
 with open('my_game.toml', 'rb') as fp:
@@ -450,9 +450,9 @@ class InGameView(arcade.View):
         self.player_lives = None
         self.player_speed = 0
         self.opposite_angle = 0
-        self.thrust_emitter = None
         self.explosion_emitter = None
         self.player_shoot_sound = None
+        self.stoppable_emitter = None
 
         # set up ufo info
         self.ufo_list = None
@@ -607,20 +607,10 @@ class InGameView(arcade.View):
         arcade.schedule(self.spawn_ufo,
                         CONFIG['UFO_SPAWN_RATE'] + (self.level - 1) * CONFIG['UFO_SPAWN_RATE_MOD_PR_LEVEL'])
 
-        # Add an emitter that makes the thrusting particles
-        self.thrust_emitter = arcade.Emitter(
-            center_xy=(self.player_sprite.center_x, self.player_sprite.center_y),
-            emit_controller=arcade.EmitterIntervalWithTime(0, 0),  # setting a blank controller when not thrusting.
-            particle_factory=lambda emitter: arcade.FadeParticle(
-                filename_or_texture=random.choice(PARTICLE_TEXTURES),
-                change_xy=(0, 12.0),
-                lifetime=0.2,
-            )
-        )
-        self.thrust_emitter.angle = self.player_sprite.angle
-
         # Start level 1
         self.next_level(1)
+
+        self.stoppable_emitter = StoppableEmitter(self.player_sprite)
 
     def on_draw(self):
         """
@@ -634,7 +624,8 @@ class InGameView(arcade.View):
         self.stars_list.draw()
 
         # draw particle emitter
-        self.thrust_emitter.draw()
+        # self.thrust_emitter.draw()
+        self.stoppable_emitter.emitter.draw()
 
         # Draw the player shot
         self.player_shot_list.draw()
@@ -767,9 +758,11 @@ class InGameView(arcade.View):
                 self.sound_explosion.play()
                 self.player_score += a.value
 
+        self.stoppable_emitter.update()
         # check for thrust
         if self.thrust_pressed:
             self.player_sprite.thrust()
+            self.stoppable_emitter.start()
 
         if self.player_shot_fire_rate_timer < CONFIG['PLAYER_FIRE_RATE']:
             self.player_shot_fire_rate_timer += delta_time
@@ -796,19 +789,6 @@ class InGameView(arcade.View):
             arcade.unschedule(self.spawn_ufo)
             game_over_view = GameOverView(player_score=self.player_score, level=self.level)
             self.window.show_view(game_over_view)
-
-        # create a new emit-controller for the thruster if thrusting.
-        if self.thrust_pressed and self.thrust_emitter.rate_factory.is_complete():
-            self.thrust_emitter.rate_factory = arcade.EmitterIntervalWithTime(CONFIG['THRUSTER_EMIT_RATE'],
-                                                                              CONFIG['THRUSTER_EMIT_TIME'])
-
-        self.thrust_emitter.update()
-        self.thrust_emitter.angle = self.player_sprite.angle - 270 + random.randint(
-            -CONFIG['PLAYER_ENGINE_SHAKE'],
-            CONFIG['PLAYER_ENGINE_SHAKE']
-        )
-        self.thrust_emitter.center_x = self.player_sprite.center_x
-        self.thrust_emitter.center_y = self.player_sprite.center_y
 
         if len(self.asteroid_list) == 0:
             self.next_level()
