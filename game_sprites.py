@@ -8,6 +8,25 @@ from math import cos, pi
 
 import arcade
 
+from tools import wrap
+
+
+class ObjInSpace(arcade.Sprite):
+    """
+    base obj for all other sprites
+    """
+
+    def __init__(self, **kwargs):
+
+        super().__init__(**kwargs)
+
+    def update(self):
+
+        self.center_x += self.change_x
+        self.center_y += self.change_y
+
+        wrap(self)
+
 class Star(arcade.Sprite):
     """
     A flashing star.
@@ -16,7 +35,7 @@ class Star(arcade.Sprite):
     def __init__(self, position: Tuple[int, int], base_size:int = 10, scale:float=0.5, fade_speed:int=30):
         """
         base_size: The size of the circle texture used for stars.
-        scale: Will be multiplied with a random float between 0.0 & 1.0 to calculate the scaling of the star. 
+        scale: Will be multiplied with a random float between 0.0 & 1.0 to calculate the scaling of the star.
         fade_speed: Higher int, slower fade.
         """
         super().__init__(
@@ -41,7 +60,7 @@ class Star(arcade.Sprite):
         # cos() returns floats between -1.0 and 1.0.
         # We want make that a number between 0.0 and 256
         self.alpha = int(128 + (128 * cos(self.fade_pos)))
-        
+
         self.fade_pos += self.fade_speed
 
         # Bigger stars move faster than small stars
