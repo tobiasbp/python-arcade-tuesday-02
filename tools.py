@@ -7,6 +7,20 @@ import arcade
 from typing import Tuple
 import random
 
+def wrap(sprite: arcade.Sprite, max_x: int, max_y: int):
+    """
+    if sprite is off-screen move it to the other side of the screen
+    """
+
+    if sprite.right < 0:
+        sprite.center_x += max_x
+    elif sprite.left > max_x:
+        sprite.center_x -= max_x
+
+    if sprite.top < 0:
+        sprite.center_y += max_y
+    elif sprite.bottom > max_y:
+        sprite.center_y -= max_y
 
 def get_joystick(func_press, func_release=None, func_axis=None, func_jhat=None):
     """
