@@ -10,6 +10,10 @@ import arcade
 import math
 import random
 import tomli
+import arcade.gui
+
+from game_sprites import Star
+from tools import get_joystick
 
 # load the config file as a dict
 with open('my_game.toml', 'rb') as fp:
@@ -60,7 +64,7 @@ class Shot(arcade.Sprite):
             angle=angle,
             flipped_horizontally=True,
             flipped_diagonally=True
-            )
+        )
 
         self.speed = speed
         self.range = range
@@ -104,7 +108,7 @@ class Player(arcade.Sprite):
         """
 
         # Graphics to use for Player
-        super().__init__("images/playerShip1_red.png", flipped_horizontally=True ,flipped_diagonally=True)
+        super().__init__("images/playerShip1_red.png", flipped_horizontally=True, flipped_diagonally=True)
         self.invincibility_timer = 0
         self.angle = 0
         self.lives = lives
@@ -233,7 +237,7 @@ class BonusUFO(arcade.Sprite):
     sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
     sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
 
-    def __int__(self, shot_list, level=1, **kwargs):
+    def __int__(self, shot_list, target, level=1, **kwargs):
 
         kwargs['filename'] = "images/ufoBlue.png"
 
@@ -249,6 +253,7 @@ class BonusUFO(arcade.Sprite):
 
         self.level = level
         self.shot_list = shot_list
+        self.target = target
 
         # set random direction. always point towards center, with noise
         self.change_x = random.randrange(1, CONFIG['UFO_SPEED']) + (self.level - 1) * CONFIG['UFO_SPEED_MOD_PR_LEVEL']
@@ -283,7 +288,13 @@ class BonusUFO(arcade.Sprite):
             filename="images/Lasers/laserGreen07.png",
             center_x=self.center_x,
             center_y=self.center_y,
-            angle=0,
+            # -1 and + 90 is to make the UFO shoot the right way
+            angle=-1 * arcade.get_angle_degrees(
+                self.center_x,
+                self.center_y,
+                self.target.center_x,
+                self.target.center_y
+            ) + 90,
             speed=CONFIG['UFO_SHOT_SPEED'],
             range=CONFIG['UFO_SHOT_RANGE'],
             sound=BonusUFO.sound_fire)
@@ -323,8 +334,36 @@ class IntroView(arcade.View):
 
         self.title_graphics = arcade.load_texture("images/UI/asteroidsTitle.png")
         self.play_button = arcade.load_texture("images/UI/asteroidsStartButton.png")
+        self.play_button_cover = arcade.load_texture("images/UI/asteroidsStartButtonHover.png")
+
+        # Makes the manager that contains the GUI button and enables it to the game.
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+
+        # Make the restart button.
+        self.gui_play_button = arcade.gui.UITextureButton(
+            x=CONFIG['BUTTON_X'],
+            y=CONFIG['BUTTON_Y'],
+            width=100,
+            height=100,
+            texture=self.play_button,
+            texture_hovered=self.play_button_cover,
+            scale=CONFIG['BUTTON_SCALE'],
+            style=None,
+        )
+        # When the GUI button is now clicked it starts the event self.new_game
+        self.gui_play_button.on_click = self.start_game
+        # Adds the button to the manager so the manager can draw it.
+        self.manager.add(self.gui_play_button)
 
         arcade.set_background_color(SCREEN_COLOR)
+
+        self.joystick = get_joystick(
+            self.on_joybutton_pressed,
+            self.on_joybutton_released,
+            print,
+            print
+            )
 
     def on_draw(self):
         """
@@ -338,23 +377,30 @@ class IntroView(arcade.View):
             center_y=CONFIG['TITLE_Y']
         )
 
-        self.play_button.draw_scaled(
-            center_x=CONFIG['BUTTON_X'],
-            center_y=CONFIG['BUTTON_Y'],
-        )
+        # Draws the manager that contains the button.
+        self.manager.draw()
 
     def on_key_press(self, symbol: int, modifiers: int):
+        self.gui_play_button.hovered = True
+
+    def on_key_release(self, _symbol: int, _modifiers: int):
+        # If you press any key you start the game also. If you're lazy. :)
         self.start_game()
 
-    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
-        """
-        called whenever the mouse is clicked on the screen
-        """
-        if arcade.get_distance(x, y, CONFIG['BUTTON_X'], CONFIG['BUTTON_Y']) < self.play_button.width // 2:
-            self.start_game()
+    def on_joybutton_pressed(self, joystick, button_no):
+        self.gui_play_button.hovered = True
 
-    def start_game(self):
+    def on_joybutton_released(self, joystick, button_no):
+        self.start_game()
+
+    def start_game(self, event=None):
+
         in_game_view = InGameView()
+
+        # Stop using  this joystick
+        if self.joystick is not None:
+          self.joystick.close()
+
         self.window.show_view(in_game_view)
 
 
@@ -412,30 +458,41 @@ class InGameView(arcade.View):
         self.turn_left_pressed = False
 
         # Get list of joysticks
-        joysticks = arcade.get_joysticks()
+        self.joystick = get_joystick(
+            self.on_joybutton_press,
+            self.on_joybutton_release,
+            self.on_joyaxis_motion,
+            self.on_joyhat_motion
+        )
 
-        if joysticks:
-            print("Found {} joystick(s)".format(len(joysticks)))
-
-            # Use 1st joystick found
-            self.joystick = joysticks[0]
-
-            # Communicate with joystick
-            self.joystick.open()
-
-            # Map joysticks functions to local functions
-            self.joystick.on_joybutton_press = self.on_joybutton_press
-            self.joystick.on_joybutton_release = self.on_joybutton_release
-            self.joystick.on_joyaxis_motion = self.on_joyaxis_motion
-            self.joystick.on_joyhat_motion = self.on_joyhat_motion
-
-        else:
-            print("No joysticks found")
-            self.joystick = None
-
-            # self.joystick.
         # Set the background color
         arcade.set_background_color(SCREEN_COLOR)
+
+    def get_stars(self, no_of_stars: int) -> arcade.SpriteList:
+        """
+        Return a SpriteList of randomly positioned stars.
+        """
+
+        # A list to store the stars in
+        stars = arcade.SpriteList()
+
+        # Add stars
+        for i in range(no_of_stars):
+            # Calculate a random postion
+            p = (
+                random.randint(0, CONFIG['SCREEN_WIDTH']),
+                random.randint(0, CONFIG['SCREEN_HEIGHT']),
+            )
+            # Add star
+            s = Star(
+                position=p,
+                base_size=CONFIG['STARS_BASE_SIZE'],
+                scale=CONFIG['STARS_SCALE'],
+                fade_speed=CONFIG['STARS_FADE_SPEED'],
+            )
+            stars.append(s)
+
+        return stars
 
     def next_level(self, level=None):
         """
@@ -451,6 +508,9 @@ class InGameView(arcade.View):
 
         # FIXME: Player needs to know that level was cleared
 
+        # Background stars
+        self.stars_list = self.get_stars(CONFIG['STARS_ON_SCREEN'])
+
         # Spawn Asteroids
         for r in range(CONFIG['ASTEROIDS_PR_LEVEL'] + (self.level - 1) * CONFIG['ASTEROID_NUM_MOD_PR_LEVEL']):
             self.asteroid_list.append(Asteroid(level=self.level))
@@ -462,7 +522,7 @@ class InGameView(arcade.View):
         """
 
         new_ufo_obj = BonusUFO()
-        new_ufo_obj.__int__(self.ufo_shot_list, self.level)  # it needs the list so it can send shots to MyGame
+        new_ufo_obj.__int__(self.ufo_shot_list, self.player_sprite, self.level)  # it needs the list so it can send shots to MyGame
         self.ufo_list.append(new_ufo_obj)
 
     def get_explosion(self, position, textures=None):
@@ -517,6 +577,9 @@ class InGameView(arcade.View):
         self.ufo_list = arcade.SpriteList()
         self.ufo_shot_list = arcade.SpriteList()
 
+        # Small stars in background
+        self.stars_list = arcade.SpriteList()
+
         # Create a Player object
         self.player_sprite = Player(
             center_x=CONFIG['PLAYER_START_X'],
@@ -553,6 +616,9 @@ class InGameView(arcade.View):
 
         # This command has to happen before we start drawing
         arcade.start_render()
+
+        # Stars in the background drawn first
+        self.stars_list.draw()
 
         # draw particle emitter
         self.thrust_emitter.draw()
@@ -604,6 +670,17 @@ class InGameView(arcade.View):
         Movement and game logic
         """
 
+        # Stars in background
+        for s in self.stars_list:
+            # Star's direction is opposite of the player
+            s.change_x = -1 * self.player_sprite.change_x
+            s.change_y = -1 * self.player_sprite.change_y
+            # Wrap star if off screen
+            wrap(s)
+
+        # Move all stars
+        self.stars_list.on_update(delta_time)
+
         # Calculate player speed based on the keys pressed
         # Move player with keyboard
         if self.turn_left_pressed and not self.turn_right_pressed:
@@ -631,8 +708,6 @@ class InGameView(arcade.View):
                 self.get_explosion(self.player_sprite.position)
                 a.kill()
 
-                self.shockwave(self.player_sprite.position, CONFIG['PLAYER_SHOCKWAVE_RANGE'], CONFIG['PLAYER_SHOCKWAVE_STRENGTH'], self.asteroid_list)
-
         # check for collision with bonus_ufo
         for ufo in self.player_sprite.collides_with_list(self.ufo_list):
             if not self.player_sprite.is_invincible:
@@ -640,7 +715,6 @@ class InGameView(arcade.View):
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
                 self.get_explosion(self.player_sprite.position)
-                self.shockwave(ufo.position, CONFIG['UFO_SHOCKWAVE_RANGE'], CONFIG['UFO_SHOCKWAVE_STRENGTH'], self.asteroid_list)
                 ufo.destroy()
 
         # Player shot
@@ -649,7 +723,6 @@ class InGameView(arcade.View):
             for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
                 shot.kill()
                 self.sound_explosion.play()
-                self.shockwave(ufo_hit.position, CONFIG['UFO_SHOCKWAVE_RANGE'], CONFIG['UFO_SHOCKWAVE_STRENGTH'], self.asteroid_list)
                 ufo_hit.destroy()
                 self.player_score += CONFIG['UFO_POINTS_REWARD']
                 self.get_explosion(
@@ -671,7 +744,7 @@ class InGameView(arcade.View):
                 for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
                     if a.size > 1:
                         a_angle = random.randrange(s.angle - CONFIG["ASTEROIDS_SPREAD"], s.angle + CONFIG["ASTEROIDS_SPREAD"])
-                        new_a = Asteroid(a.size-1, self.level, a.position, a_angle)
+                        new_a = Asteroid(a.size - 1, self.level, a.position, a_angle)
                         self.asteroid_list.append(new_a)
 
                     else:
@@ -705,7 +778,8 @@ class InGameView(arcade.View):
 
         # check if the player is dead
         if self.player_sprite.lives <= 0:
-            arcade.stop_sound(self.sound_thrust_player)
+            assert self.sound_thrust is not None
+            self.sound_thrust.stop(self.sound_thrust_player)
             arcade.unschedule(self.spawn_ufo)
             game_over_view = GameOverView(player_score=self.player_score, level=self.level)
             self.window.show_view(game_over_view)
@@ -800,18 +874,24 @@ class InGameView(arcade.View):
             self.turn_left_pressed = False
 
     def on_joybutton_press(self, joystick, button_no):
-        print("Button pressed:", button_no)
-        # Press the fire key
-        self.on_key_press(CONFIG["PLAYER_FIRE_KEY"], [])
+        # Press the fire key on the joystick
+        if button_no == CONFIG["PLAYER_FIRE_JOYBUTTON"]:
+            self.on_key_press(CONFIG["PLAYER_FIRE_KEY"], [])
+        elif button_no == CONFIG["PLAYER_THRUST_JOYBUTTON"]:
+            self.thrust_pressed = True
 
     def on_joybutton_release(self, joystick, button_no):
-        print("Button released:", button_no)
+        if button_no == CONFIG["PLAYER_THRUST_JOYBUTTON"]:
+            self.thrust_pressed = False
+        elif button_no == CONFIG["PLAYER_SELECT_JOYSTICK"]:
+            new_game = InGameView()
+            self.window.show_view(new_game)
 
     def on_joyaxis_motion(self, joystick, axis, value):
-        print("Joystick axis {}, value {}".format(axis, value))
+        pass
 
     def on_joyhat_motion(self, joystick, hat_x, hat_y):
-        print("Joystick hat ({}, {})".format(hat_x, hat_y))
+        pass
 
 
 class GameOverView(arcade.View):
@@ -822,14 +902,43 @@ class GameOverView(arcade.View):
     def __init__(self, player_score, level):
         super().__init__()
 
+        self.check_if_started = False
         self.game_over_sign = arcade.load_texture("images/UI/asteroidsGameOverSign.png")
         self.restart_button = arcade.load_texture("images/UI/asteroidsRestartButton.png")
+        self.restart_button_cover = arcade.load_texture("images/UI/asteroidsRestartButtonHover.png")
 
         self.player_score = player_score
         self.level = level
 
+        # Makes the manager that contains the GUI button and enables it to the game.
+        self.manager = arcade.gui.UIManager()
+        self.manager.enable()
+
+        # Make the restart button.
+        self.gui_restart_button = arcade.gui.UITextureButton(
+            x=CONFIG['BUTTON_X'],
+            y=CONFIG['BUTTON_Y'],
+            width=100,
+            height=100,
+            texture=self.restart_button,
+            texture_hovered=self.restart_button_cover,
+            scale=CONFIG['BUTTON_SCALE'],
+            style=None
+        )
+        # When the GUI button is now clicked it starts the event self.new_game
+        self.gui_restart_button.on_click = self.new_game
+        # Adds the button to the manager so the manager can draw it.
+        self.manager.add(self.gui_restart_button)
+
         # set background color
         arcade.set_background_color(SCREEN_COLOR)
+
+        self.joystick = get_joystick(
+            self.on_joybutton_pressed,
+            self.on_joybutton_release,
+            print,
+            print
+            )
 
     def on_draw(self):
         """
@@ -843,10 +952,8 @@ class GameOverView(arcade.View):
             center_y=CONFIG['TITLE_Y']
         )
 
-        self.restart_button.draw_scaled(
-            center_x=CONFIG['BUTTON_X'],
-            center_y=CONFIG['BUTTON_Y']
-        )
+        # Draws the manager that contains the button
+        self.manager.draw()
 
         arcade.draw_text(
             f"SCORE: {self.player_score}    LEVEL: {self.level}",
@@ -856,17 +963,21 @@ class GameOverView(arcade.View):
         )
 
     def on_key_press(self, symbol: int, modifiers: int):
+        self.gui_restart_button.hovered = True
+
+    def on_key_release(self, _symbol: int, _modifiers: int):
+        # If you press any key you start the game also. If you're lazy. :)
         self.new_game()
 
-    def on_mouse_press(self, x: int, y: int, button: int, modifiers: int):
-        """
-        called whenever the mouse is clicked on the screen.
-        """
+    def on_joybutton_pressed(self, joystick, button_no):
+        self.gui_restart_button.hovered = True
 
-        if arcade.get_distance(x, y, CONFIG['BUTTON_X'], CONFIG['BUTTON_Y']) < self.restart_button.height // 2:
+    def on_joybutton_release(self, joystick, button_no):
+        if not self.check_if_started:
             self.new_game()
+            self.check_if_started = True
 
-    def new_game(self):
+    def new_game(self, event=None):
         in_game_view = InGameView()
         self.window.show_view(in_game_view)
 
