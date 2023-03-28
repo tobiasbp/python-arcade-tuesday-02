@@ -17,24 +17,22 @@ import os
 from game_sprites import Star
 
 # load the config file as a dict
-def load_my_game_to_CONFIG():
-    with open('my_game.toml', 'rb') as fp:
+def load_toml(filename):
+    try:
+        with open(filename, 'rb') as fp:
         # CONFIG has to be cast to global because else it cannot be used outside function
-        global CONFIG
-        CONFIG = tomli.load(fp)
+        return tomli.load(fp)
+    except FileNotFoundError:
+        # If the file does not exist it will not be loaded
+        print("File Not Found")
+        return {}
 
-load_my_game_to_CONFIG()
+CONFIG = load_toml('my_game.toml')
 
 # Load the user settings file, which is superior to the original config file, into the CONFIG dict
-try:
-    with open("user_settings.toml", "rb") as f:
-        user_settings = tomli.load(f)
-    for k in user_settings.keys():
-        CONFIG[k] = user_settings[k]
-except FileNotFoundError:
-    # If the file does not exist it will not be loaded in
-    pass
-
+user_settings = load_toml("user_settings.toml")
+for k in user_settings.keys():
+    CONFIG[k] = user_settings[k]
 
 # has to be defined here since they use libraries
 SCREEN_COLOR = arcade.color.BLACK
@@ -548,7 +546,7 @@ class SettingsView(arcade.View):
         # Reset CONFIG dict and delete user settings file if it exists
         try:
             os.remove("user_settings.toml")
-            load_my_game_to_CONFIG()
+            CONFIG = load_toml("my_game.toml")
             print("Deleted user_settings.toml")
         except FileNotFoundError:
             pass
