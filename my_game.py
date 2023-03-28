@@ -120,7 +120,7 @@ class Player(arcade.Sprite):
         self.center_x = center_x
         self.center_y = center_y
         self.angle = random.randint(start_angle_min, start_angle_max)
-        self.forward(random.randrange(start_speed_min, start_speed_max))
+        self.forward(random.uniform(start_speed_min, start_speed_max))
 
     def thrust(self):
         """
