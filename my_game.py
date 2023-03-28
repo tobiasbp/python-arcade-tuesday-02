@@ -21,7 +21,7 @@ def load_toml(filename):
     try:
         with open(filename, 'rb') as fp:
         # CONFIG has to be cast to global because else it cannot be used outside function
-        return tomli.load(fp)
+            return tomli.load(fp)
     except FileNotFoundError:
         # If the file does not exist it will not be loaded
         print("File Not Found")
@@ -531,8 +531,8 @@ class SettingsView(arcade.View):
                 child=self.v_box)
         )
 
-       # This dict is used in the function below
-       button_to_key_name = {self.change_player_thrust_key_button: "PLAYER_THRUST_KEY",
+        # This dict is used in the function below
+        button_to_key_name = {self.change_player_thrust_key_button: "PLAYER_THRUST_KEY",
             self.change_player_fire_key_button: "PLAYER_FIRE_KEY",
             self.change_player_turn_left_key_button: "PLAYER_TURN_LEFT_KEY",
             self.change_player_turn_right_key_button: "PLAYER_TURN_RIGHT_KEY"
