@@ -64,15 +64,20 @@ class Shot(arcade.Sprite):
             flipped_horizontally=True,
             flipped_diagonally=True
             )
-
+        self.sound = sound
         self.speed = speed
         self.range = range
         self.distance_traveled = 0
 
         self.forward(self.speed)
         # play the shot sound if present
-        if sound:
-            sound.play()
+        if self.sound:
+            pass
+            #self.sound_player = self.sound.play()
+
+    def destroy(self):
+        #self.sound.stop(self.sound_player)
+        self.kill()
 
     def update(self):
         """
@@ -92,7 +97,7 @@ class Shot(arcade.Sprite):
             self.alpha *= CONFIG['SHOT_FADE_SPEED']
 
         if self.distance_traveled > self.range:
-            self.kill()
+            self.destroy()
 
 
 class Player(arcade.Sprite):
@@ -233,9 +238,8 @@ class BonusUFO(arcade.Sprite):
     """occasionally moves across the screen. Grants the player points if shot"""
 
     sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
-    sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
 
-    def __int__(self, shot_list, target , level=1, **kwargs):
+    def __int__(self, shot_list, target, level=1, **kwargs):
 
         kwargs['filename'] = "images/ufoBlue.png"
 
@@ -402,7 +406,6 @@ class InGameView(arcade.View):
 
         self.sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
         self.sound_thrust = arcade.load_sound("sounds/spaceEngine_003.ogg")
-        self.sound_thrust_player = None
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = None
@@ -672,7 +675,7 @@ class InGameView(arcade.View):
             self.player_sprite.lives -= 1
             self.player_sprite.reset()
             self.get_explosion(self.player_sprite.position)
-            ufo_shot_hit.kill()
+            ufo_shot_hit.destroy()
 
         # Check if collision with Asteroids and dies and kills the Asteroid
         for a in self.player_sprite.collides_with_list(self.asteroid_list):
@@ -696,22 +699,22 @@ class InGameView(arcade.View):
         for shot in self.player_shot_list:
 
             for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
-                shot.kill()
-                self.sound_explosion.play()
+                shot.destroy()
+                #self.sound_explosion.play()
                 ufo_hit.destroy()
                 self.player_score += CONFIG['UFO_POINTS_REWARD']
                 self.get_explosion(
                     ufo_hit.position,
                     textures=UFO_EXPLOSIONS_PARTICLE_TEXTURES
                 )
-
+        """
         if self.sound_thrust_player is not None and self.thrust_pressed is False and self.sound_thrust.is_playing(
                 self.sound_thrust_player):
             v = self.sound_thrust.get_volume(self.sound_thrust_player) * 0.95
             self.sound_thrust.set_volume(v, self.sound_thrust_player)
             if v == 0:
                 self.sound_thrust.stop(self.sound_thrust_player)
-
+        """
         # Check for PlayerShot - Asteroid collisions
         for s in self.player_shot_list:
 
@@ -724,9 +727,9 @@ class InGameView(arcade.View):
 
                     else:
                         pass
-                s.kill()
+                s.destroy()
                 a.kill()
-                self.sound_explosion.play()
+                #self.sound_explosion.play()
                 self.player_score += a.value
 
         # check for thrust
@@ -753,7 +756,6 @@ class InGameView(arcade.View):
 
         # check if the player is dead
         if self.player_sprite.lives <= 0:
-            self.sound_thrust.stop(self.sound_thrust_player)
             arcade.unschedule(self.spawn_ufo)
             game_over_view = GameOverView(player_score=self.player_score, level=self.level)
             self.window.show_view(game_over_view)
@@ -800,9 +802,12 @@ class InGameView(arcade.View):
         if key == CONFIG["PLAYER_THRUST_KEY"]:
             # if thrust just got pressed start sound loop
             if self.thrust_pressed is False:
+                """
                 if self.sound_thrust_player is not None:
                     self.sound_thrust.stop(self.sound_thrust_player)
+                
                 self.sound_thrust_player = self.sound_thrust.play(loop=True)
+                """
             self.thrust_pressed = True
 
         if key == CONFIG["PLAYER_FIRE_KEY"]:
