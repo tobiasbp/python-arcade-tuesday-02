@@ -1,3 +1,7 @@
+"""
+file that contains all game-sprite classes in the project. They are imported into main when used in-game
+"""
+
 from random import randint, random
 from typing import Tuple
 from math import cos, pi
