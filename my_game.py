@@ -531,12 +531,12 @@ class SettingsView(arcade.View):
                 child=self.v_box)
         )
 
-        # This dict is used in the function below
-        button_to_key_name = {self.change_player_thrust_key_button: "PLAYER_THRUST_KEY",
-            self.change_player_fire_key_button: "PLAYER_FIRE_KEY",
-            self.change_player_turn_left_key_button: "PLAYER_TURN_LEFT_KEY",
-            self.change_player_turn_right_key_button: "PLAYER_TURN_RIGHT_KEY"
-        }
+    # This dict is used in the function below
+    button_to_key_name = {self.change_player_thrust_key_button: "PLAYER_THRUST_KEY",
+        self.change_player_fire_key_button: "PLAYER_FIRE_KEY",
+        self.change_player_turn_left_key_button: "PLAYER_TURN_LEFT_KEY",
+        self.change_player_turn_right_key_button: "PLAYER_TURN_RIGHT_KEY"
+    }
 
     def on_click_change_keybind(self, event):
         self.name_of_key_to_change = button_to_key_name[event.source]
