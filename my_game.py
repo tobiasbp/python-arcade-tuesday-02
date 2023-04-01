@@ -10,7 +10,6 @@ import arcade
 import arcade.gui
 import math
 import random
-import tomli
 import tomli_w
 import os
 
