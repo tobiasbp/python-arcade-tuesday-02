@@ -15,19 +15,9 @@ import tomli_w
 import os
 
 from game_sprites import Star
-from tools import get_joystick, wrap
+from tools import get_joystick, wrap, load_toml
 
 # load the config file as a dict
-def load_toml(filename):
-    try:
-        with open(filename, 'rb') as fp:
-        # CONFIG has to be cast to global because else it cannot be used outside function
-            return tomli.load(fp)
-    except FileNotFoundError:
-        # If the file does not exist it will not be loaded
-        print("File Not Found")
-        return {}
-
 CONFIG = load_toml('my_game.toml')
 
 # Load the user settings file, which is superior to the original config file, into the CONFIG dict

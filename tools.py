@@ -53,3 +53,13 @@ def get_joystick(func_press, func_release=None, func_axis=None, func_jhat=None):
 
     else:
         return None
+
+def load_toml(filename):
+    try:
+        with open(filename, 'rb') as fp:
+        # CONFIG has to be cast to global because else it cannot be used outside function
+            return tomli.load(fp)
+    except FileNotFoundError:
+        # If the file does not exist it will not be loaded
+        print("File Not Found")
+        return {}
