@@ -4,6 +4,7 @@ Like the Joysticks.
 """
 
 import arcade
+import tomli
 
 def wrap(sprite: arcade.Sprite, max_x: int, max_y: int):
     """
