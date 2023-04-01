@@ -10,6 +10,7 @@ import arcade
 import arcade.gui
 import math
 import random
+import tomli
 import tomli_w
 import os
 
@@ -336,6 +337,7 @@ class IntroView(arcade.View):
         self.play_button = arcade.load_texture("images/UI/asteroidsStartButton.png")
         self.play_button_cover = arcade.load_texture("images/UI/asteroidsStartButtonHover.png")
         self.settings_button = arcade.load_texture("images/UI/asteroidsSettingsButton.png")
+        self.settings_button_cover = arcade.load_texture("images/UI/asteroidsSettingsButtonHover.png")
 
         # Makes the manager that contains the GUI button and enables it to the game.
         self.manager = arcade.gui.UIManager()
@@ -352,10 +354,25 @@ class IntroView(arcade.View):
             scale=CONFIG['BUTTON_SCALE'],
             style=None,
         )
-        # When the GUI button is now clicked it starts the event self.new_game
+
+        # Make the settings button
+        self.gui_settings_button = arcade.gui.UITextureButton(
+            x=CONFIG['SETTINGS_BUTTON_X'],
+            y=CONFIG['SETTINGS_BUTTON_Y'],
+            width=100,
+            height=100,
+            texture=self.settings_button,
+            texture_hovered=self.settings_button_cover,
+            scale=CONFIG['BUTTON_SCALE'],
+            style=None,
+        )
+
+        # Now when the GUI buttons are clicked they run the functions we assign to them
         self.gui_play_button.on_click = self.start_game
+        self.gui_settings_button.on_click = self.enter_settings
         # Adds the button to the manager so the manager can draw it.
         self.manager.add(self.gui_play_button)
+        self.manager.add(self.gui_settings_button)
 
         arcade.set_background_color(SCREEN_COLOR)
 
@@ -382,11 +399,17 @@ class IntroView(arcade.View):
         self.manager.draw()
 
     def on_key_press(self, symbol: int, modifiers: int):
-        self.gui_play_button.hovered = True
+        # You can start the game and the settings with the keyboard
+        if symbol == CONFIG["UI_PLAY_KEY"]:
+            self.gui_play_button.hovered = True
+        elif symbol == CONFIG["UI_SETTINGS_KEY"]:
+            self.gui_settings_button.hovered = True
 
     def on_key_release(self, _symbol: int, _modifiers: int):
-        # If you press any key you start the game also. If you're lazy. :)
-        self.start_game()
+        if _symbol == CONFIG["UI_PLAY_KEY"]:
+            self.start_game()
+        elif _symbol == CONFIG["UI_SETTINGS_KEY"]:
+            self.enter_settings()
 
     def on_joybutton_pressed(self, joystick, button_no):
         self.gui_play_button.hovered = True

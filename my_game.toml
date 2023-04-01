@@ -70,13 +70,16 @@ EXPLOSION_PARTICLE_SIZE = 5
 # UI
 TITLE_X = 400  # pCha
 TITLE_Y = 450  # px
-SETTINGS_BUTTON_X = 415  # px
-SETTINGS_BUTTON_Y = 150  # px
+SETTINGS_BUTTON_X = 350  # px
+SETTINGS_BUTTON_Y = 100  # px
 BUTTON_X = 350  # px
 BUTTON_Y = 200  # px
 BUTTON_SCALE = 1 # The scale of the play/restart button
 
+UI_PLAY_KEY = 112 # P key
 UI_RESTART_KEY = 114  # R key
+UI_SETTINGS_KEY = 115 # S key
+
 
 # Shots
 SHOT_FADE_SPEED = 0.95  # the procentage of fade in shots fade (Has to be between 0.0 - 1.0)
