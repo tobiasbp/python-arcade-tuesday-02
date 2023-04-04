@@ -390,14 +390,13 @@ class IntroView(arcade.View):
         """
 
         arcade.start_render()
+        # DRAWS STARS
+        self.stars_list.draw()
 
         self.title_graphics.draw_scaled(
             center_x=CONFIG['TITLE_X'],
             center_y=CONFIG['TITLE_Y']
         )
-
-        # DRAWS STARS
-        self.stars_list.draw()
 
         # Draws the manager that contains the button.
         self.manager.draw()
