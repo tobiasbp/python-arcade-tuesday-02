@@ -11,6 +11,7 @@ import math
 import random
 import tomli
 import arcade.gui
+from tools import get_stars
 
 from game_sprites import Star
 from tools import get_joystick, wrap
@@ -358,7 +359,20 @@ class IntroView(arcade.View):
             self.on_joybutton_released,
             print,
             print
-            )
+        )
+        self.stars_list = get_stars(no_of_stars=CONFIG['STARS_ON_SCREEN_INTRO'],
+                                    max_x=CONFIG['SCREEN_WIDTH'],
+                                    max_y=CONFIG['SCREEN_HEIGHT'],
+                                    base_size=CONFIG['STARS_BASE_SIZE'],
+                                    scale=CONFIG['STARS_SCALE'],
+                                    fadespeed=CONFIG['STARS_FADE_SPEED']
+                                    )
+
+        stars_angle = random.uniform(0, 360)
+
+        for s in self.stars_list:
+            s.change_x = math.sin(stars_angle)
+            s.change_y = math.cos(stars_angle)
 
     def on_draw(self):
         """
@@ -366,6 +380,8 @@ class IntroView(arcade.View):
         """
 
         arcade.start_render()
+        # DRAWS STARS
+        self.stars_list.draw()
 
         self.title_graphics.draw_scaled(
             center_x=CONFIG['TITLE_X'],
@@ -374,6 +390,16 @@ class IntroView(arcade.View):
 
         # Draws the manager that contains the button.
         self.manager.draw()
+
+    def on_update(self, delta_time):
+
+        # stars
+        for s in self.stars_list:
+            # Wrap star if off screen
+            wrap(s, CONFIG['SCREEN_WIDTH'], CONFIG['SCREEN_HEIGHT'])
+        # Move all stars
+        self.stars_list.on_update(delta_time)
+
 
     def on_key_press(self, symbol: int, modifiers: int):
         self.gui_play_button.hovered = True
@@ -394,7 +420,7 @@ class IntroView(arcade.View):
 
         # Stop using  this joystick
         if self.joystick is not None:
-          self.joystick.close()
+            self.joystick.close()
 
         self.window.show_view(in_game_view)
 
@@ -463,32 +489,6 @@ class InGameView(arcade.View):
         # Set the background color
         arcade.set_background_color(SCREEN_COLOR)
 
-    def get_stars(self, no_of_stars: int) -> arcade.SpriteList:
-        """
-        Return a SpriteList of randomly positioned stars.
-        """
-
-        # A list to store the stars in
-        stars = arcade.SpriteList()
-
-        # Add stars
-        for i in range(no_of_stars):
-            # Calculate a random postion
-            p = (
-                random.randint(0, CONFIG['SCREEN_WIDTH']),
-                random.randint(0, CONFIG['SCREEN_HEIGHT']),
-            )
-            # Add star
-            s = Star(
-                position=p,
-                base_size=CONFIG['STARS_BASE_SIZE'],
-                scale=CONFIG['STARS_SCALE'],
-                fade_speed=CONFIG['STARS_FADE_SPEED'],
-            )
-            stars.append(s)
-
-        return stars
-
     def next_level(self, level=None):
         """
         Advance the game to the next level
@@ -504,7 +504,13 @@ class InGameView(arcade.View):
         # FIXME: Player needs to know that level was cleared
 
         # Background stars
-        self.stars_list = self.get_stars(CONFIG['STARS_ON_SCREEN'])
+        self.stars_list = get_stars(no_of_stars=CONFIG['STARS_ON_SCREEN_GAME'],
+                                    max_x=CONFIG['SCREEN_WIDTH'],
+                                    max_y=CONFIG['SCREEN_HEIGHT'],
+                                    base_size=CONFIG['STARS_BASE_SIZE'],
+                                    scale=CONFIG['STARS_SCALE'],
+                                    fadespeed=CONFIG['STARS_FADE_SPEED']
+                                    )
 
         # Spawn Asteroids
         for r in range(CONFIG['ASTEROIDS_PR_LEVEL'] + (self.level - 1) * CONFIG['ASTEROID_NUM_MOD_PR_LEVEL']):
@@ -671,7 +677,7 @@ class InGameView(arcade.View):
             s.change_y = -1 * self.player_sprite.change_y
             # Wrap star if off screen
             wrap(s, CONFIG['SCREEN_WIDTH'], CONFIG['SCREEN_HEIGHT'])
-
+            
         # Move all stars
         self.stars_list.on_update(delta_time)
 
