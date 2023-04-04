@@ -14,7 +14,7 @@ import arcade.gui
 from tools import get_stars
 
 from game_sprites import Star
-from tools import get_joystick
+from tools import get_joystick, wrap
 
 # load the config file as a dict
 with open('my_game.toml', 'rb') as fp:
@@ -32,22 +32,6 @@ UFO_EXPLOSIONS_PARTICLE_TEXTURES = [
     arcade.make_soft_circle_texture(25, arcade.color.BLUE),
     arcade.make_soft_circle_texture(25, arcade.color.GREEN),
 ]
-
-
-def wrap(sprite: arcade.Sprite):
-    """
-    if sprite is off-screen move it to the other side of the screen
-    """
-
-    if sprite.right < 0:
-        sprite.center_x += CONFIG['SCREEN_WIDTH']
-    elif sprite.left > CONFIG['SCREEN_WIDTH']:
-        sprite.center_x -= CONFIG['SCREEN_WIDTH']
-
-    if sprite.top < 0:
-        sprite.center_y += CONFIG['SCREEN_HEIGHT']
-    elif sprite.bottom > CONFIG['SCREEN_HEIGHT']:
-        sprite.center_y -= CONFIG['SCREEN_HEIGHT']
 
 
 class Shot(arcade.Sprite):
@@ -84,7 +68,7 @@ class Shot(arcade.Sprite):
         self.center_x += self.change_x
         self.center_y += self.change_y
 
-        wrap(self)
+        wrap(self, CONFIG['SCREEN_WIDTH'], CONFIG['SCREEN_HEIGHT'])
 
         # check if the shot traveled too far
         self.distance_traveled += self.speed
@@ -182,7 +166,7 @@ class Player(arcade.Sprite):
             self.alpha = 255
 
         # wrap
-        wrap(self)
+        wrap(self, CONFIG['SCREEN_WIDTH'], CONFIG['SCREEN_HEIGHT'])
 
 
 class Asteroid(arcade.Sprite):
@@ -240,7 +224,7 @@ class Asteroid(arcade.Sprite):
         # self.angle += self.rotation_speed
 
         # wrap
-        wrap(self)
+        wrap(self, CONFIG['SCREEN_WIDTH'], CONFIG['SCREEN_HEIGHT'])
 
 
 class BonusUFO(arcade.Sprite):
@@ -664,9 +648,6 @@ class InGameView(arcade.View):
         # and their shots
         self.ufo_shot_list.draw()
 
-        # and their shots
-        self.ufo_shot_list.draw()
-
         # draw explosion
         if self.explosion_emitter is not None:
             self.explosion_emitter.draw()
@@ -702,7 +683,8 @@ class InGameView(arcade.View):
             s.change_x = -1 * self.player_sprite.change_x
             s.change_y = -1 * self.player_sprite.change_y
             # Wrap star if off screen
-            wrap(s)
+            wrap(s, CONFIG['SCREEN_WIDTH'], CONFIG['SCREEN_HEIGHT'])
+            
         # Move all stars
         self.stars_list.on_update(delta_time)
 
