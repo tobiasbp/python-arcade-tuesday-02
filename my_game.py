@@ -11,6 +11,7 @@ import math
 import random
 import tomli
 import arcade.gui
+from tools import get_stars
 
 from game_sprites import Star
 from tools import get_joystick
@@ -374,7 +375,14 @@ class IntroView(arcade.View):
             self.on_joybutton_released,
             print,
             print
-            )
+        )
+        self.stars_list = get_stars(no_of_stars=30,
+                                    max_x=CONFIG['SCREEN_WIDTH'],
+                                    max_y=CONFIG['SCREEN_HEIGHT'],
+                                    base_size=CONFIG['STARS_BASE_SIZE'],
+                                    scale=CONFIG['STARS_SCALE'],
+                                    fadespeed=CONFIG['STARS_FADE_SPEED']
+                                    )
 
     def on_draw(self):
         """
@@ -388,8 +396,24 @@ class IntroView(arcade.View):
             center_y=CONFIG['TITLE_Y']
         )
 
+        # DRAWS STARS
+        self.stars_list.draw()
+
         # Draws the manager that contains the button.
         self.manager.draw()
+
+    def on_update(self, delta_time):
+
+        # stars
+        for s in self.stars_list:
+            # Star's direction is opposite of the player
+            s.change_x = 1
+            s.change_y = 1
+            # Wrap star if off screen
+            wrap(s)
+        # Move all stars
+        self.stars_list.on_update(delta_time)
+
 
     def on_key_press(self, symbol: int, modifiers: int):
         self.gui_play_button.hovered = True
@@ -410,7 +434,7 @@ class IntroView(arcade.View):
 
         # Stop using  this joystick
         if self.joystick is not None:
-          self.joystick.close()
+            self.joystick.close()
 
         self.window.show_view(in_game_view)
 
@@ -478,32 +502,13 @@ class InGameView(arcade.View):
 
         # Set the background color
         arcade.set_background_color(SCREEN_COLOR)
-
-    def get_stars(self, no_of_stars: int) -> arcade.SpriteList:
-        """
-        Return a SpriteList of randomly positioned stars.
-        """
-
-        # A list to store the stars in
-        stars = arcade.SpriteList()
-
-        # Add stars
-        for i in range(no_of_stars):
-            # Calculate a random postion
-            p = (
-                random.randint(0, CONFIG['SCREEN_WIDTH']),
-                random.randint(0, CONFIG['SCREEN_HEIGHT']),
-            )
-            # Add star
-            s = Star(
-                position=p,
-                base_size=CONFIG['STARS_BASE_SIZE'],
-                scale=CONFIG['STARS_SCALE'],
-                fade_speed=CONFIG['STARS_FADE_SPEED'],
-            )
-            stars.append(s)
-
-        return stars
+        self.stars_list = get_stars(no_of_stars=30,
+                                    max_x=CONFIG['SCREEN_WIDTH'],
+                                    max_y=CONFIG['SCREEN_HEIGHT'],
+                                    base_size=CONFIG['STARS_BASE_SIZE'],
+                                    scale=CONFIG['STARS_SCALE'],
+                                    fadespeed=CONFIG['STARS_FADE_SPEED']
+                                    )
 
     def next_level(self, level=None):
         """
@@ -520,7 +525,7 @@ class InGameView(arcade.View):
         # FIXME: Player needs to know that level was cleared
 
         # Background stars
-        self.stars_list = self.get_stars(CONFIG['STARS_ON_SCREEN'])
+        #self.stars_list = get_stars(CONFIG['STARS_ON_SCREEN'])
 
         # Spawn Asteroids
         for r in range(CONFIG['ASTEROIDS_PR_LEVEL'] + (self.level - 1) * CONFIG['ASTEROID_NUM_MOD_PR_LEVEL']):
@@ -586,7 +591,13 @@ class InGameView(arcade.View):
         self.ufo_shot_list = arcade.SpriteList()
 
         # Small stars in background
-        self.stars_list = arcade.SpriteList()
+        self.stars_list = get_stars(no_of_stars=30,
+                                    max_x=CONFIG['SCREEN_WIDTH'],
+                                    max_y=CONFIG['SCREEN_HEIGHT'],
+                                    base_size=CONFIG['STARS_BASE_SIZE'],
+                                    scale=CONFIG['STARS_SCALE'],
+                                    fadespeed=CONFIG['STARS_FADE_SPEED']
+                                    )
 
         # Create a Player object
         self.player_sprite = Player(
@@ -690,7 +701,6 @@ class InGameView(arcade.View):
             s.change_y = -1 * self.player_sprite.change_y
             # Wrap star if off screen
             wrap(s)
-
         # Move all stars
         self.stars_list.on_update(delta_time)
 
