@@ -489,7 +489,7 @@ class InGameView(arcade.View):
         # Set the background color
         arcade.set_background_color(SCREEN_COLOR)
         # Background stars
-        self.stars_list = arcade.SpriteList()
+        self.stars_list = None
 
     def next_level(self, level=None):
         """
@@ -578,13 +578,7 @@ class InGameView(arcade.View):
         self.ufo_shot_list = arcade.SpriteList()
 
         # Small stars in background
-        self.stars_list = get_stars(no_of_stars=CONFIG['STARS_ON_SCREEN_GAME'],
-                                    max_x=CONFIG['SCREEN_WIDTH'],
-                                    max_y=CONFIG['SCREEN_HEIGHT'],
-                                    base_size=CONFIG['STARS_BASE_SIZE'],
-                                    scale=CONFIG['STARS_SCALE'],
-                                    fadespeed=CONFIG['STARS_FADE_SPEED']
-                                    )
+        self.stars_list = arcade.SpriteList()
 
         # Create a Player object
         self.player_sprite = Player(
