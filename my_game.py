@@ -488,13 +488,8 @@ class InGameView(arcade.View):
 
         # Set the background color
         arcade.set_background_color(SCREEN_COLOR)
-        self.stars_list = get_stars(no_of_stars=CONFIG['STARS_ON_SCREEN_GAME'],
-                                    max_x=CONFIG['SCREEN_WIDTH'],
-                                    max_y=CONFIG['SCREEN_HEIGHT'],
-                                    base_size=CONFIG['STARS_BASE_SIZE'],
-                                    scale=CONFIG['STARS_SCALE'],
-                                    fadespeed=CONFIG['STARS_FADE_SPEED']
-                                    )
+        # Background stars
+        self.stars_list = arcade.SpriteList()
 
     def next_level(self, level=None):
         """
@@ -511,7 +506,13 @@ class InGameView(arcade.View):
         # FIXME: Player needs to know that level was cleared
 
         # Background stars
-        #self.stars_list = get_stars(CONFIG['STARS_ON_SCREEN'])
+        self.stars_list = get_stars(no_of_stars=CONFIG['STARS_ON_SCREEN_GAME'],
+                                    max_x=CONFIG['SCREEN_WIDTH'],
+                                    max_y=CONFIG['SCREEN_HEIGHT'],
+                                    base_size=CONFIG['STARS_BASE_SIZE'],
+                                    scale=CONFIG['STARS_SCALE'],
+                                    fadespeed=CONFIG['STARS_FADE_SPEED']
+                                    )
 
         # Spawn Asteroids
         for r in range(CONFIG['ASTEROIDS_PR_LEVEL'] + (self.level - 1) * CONFIG['ASTEROID_NUM_MOD_PR_LEVEL']):
