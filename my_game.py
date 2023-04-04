@@ -396,7 +396,7 @@ class IntroView(arcade.View):
         # stars
         for s in self.stars_list:
             # Wrap star if off screen
-            wrap(s)
+            wrap(s, CONFIG['SCREEN_WIDTH'], CONFIG['SCREEN_HEIGHT'])
         # Move all stars
         self.stars_list.on_update(delta_time)
 
