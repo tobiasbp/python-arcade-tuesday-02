@@ -8,24 +8,35 @@ from math import cos, pi
 
 import arcade
 
-from tools import wrap
-
 
 class ObjInSpace(arcade.Sprite):
     """
     base obj for all other sprites
+    this obj only wraps, and moves
     """
 
-    def __init__(self, **kwargs):
-
+    def __init__(self, wrap_max_x, wrap_max_y, **kwargs):
         super().__init__(**kwargs)
+
+        self.wrap_max_x = wrap_max_x
+        self.wrap_max_y = wrap_max_y
 
     def update(self):
 
         self.center_x += self.change_x
         self.center_y += self.change_y
 
-        wrap(self)
+        # wrap
+        if self.right < 0:
+            self.center_x += self.wrap_max_x
+        elif self.left > self.wrap_max_x:
+            self.center_x -= self.wrap_max_x
+
+        if self.top < 0:
+            self.center_y += self.wrap_max_y
+        elif self.bottom > self.wrap_max_y:
+            self.center_y -= self.wrap_max_y
+
 
 class Star(arcade.Sprite):
     """
