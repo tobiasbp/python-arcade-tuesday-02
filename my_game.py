@@ -12,8 +12,8 @@ import random
 import tomli
 import arcade.gui
 
-from game_sprites import Star
-from tools import get_joystick, wrap
+from game_sprites import Star, Shot
+from tools import get_joystick
 
 # load the config file as a dict
 with open('my_game.toml', 'rb') as fp:
@@ -31,53 +31,6 @@ UFO_EXPLOSIONS_PARTICLE_TEXTURES = [
     arcade.make_soft_circle_texture(25, arcade.color.BLUE),
     arcade.make_soft_circle_texture(25, arcade.color.GREEN),
 ]
-
-
-class Shot(arcade.Sprite):
-    """
-    universal class for shot objects
-    """
-
-    def __init__(self, filename, center_x, center_y, angle, speed, range, sound=None):
-
-        super().__init__(
-            filename=filename,
-            scale=CONFIG['SPRITE_SCALING'],
-            center_x=center_x,
-            center_y=center_y,
-            angle=angle,
-            flipped_horizontally=True,
-            flipped_diagonally=True
-        )
-
-        self.speed = speed
-        self.range = range
-        self.distance_traveled = 0
-
-        self.forward(self.speed)
-        # play the shot sound if present
-        if sound:
-            sound.play()
-
-    def update(self):
-        """
-        move the sprite and fade
-        """
-
-        self.center_x += self.change_x
-        self.center_y += self.change_y
-
-        wrap(self, CONFIG['SCREEN_WIDTH'], CONFIG['SCREEN_HEIGHT'])
-
-        # check if the shot traveled too far
-        self.distance_traveled += self.speed
-
-        # start fading when flown far enough
-        if self.distance_traveled > CONFIG['SHOT_FADE_START']:
-            self.alpha *= CONFIG['SHOT_FADE_SPEED']
-
-        if self.distance_traveled > self.range:
-            self.kill()
 
 
 class Player(arcade.Sprite):
@@ -281,6 +234,7 @@ class BonusUFO(arcade.Sprite):
 
         new_ufo_shot = Shot(
             filename="images/Lasers/laserGreen07.png",
+            scale=CONFIG['SPRITE_SCALING'],
             center_x=self.center_x,
             center_y=self.center_y,
             # -1 and + 90 is to make the UFO shoot the right way
@@ -292,6 +246,10 @@ class BonusUFO(arcade.Sprite):
             ) + 90,
             speed=CONFIG['UFO_SHOT_SPEED'],
             range=CONFIG['UFO_SHOT_RANGE'],
+            fade_start=CONFIG['SHOT_FADE_START'],
+            fade_speed=CONFIG['SHOT_FADE_SPEED'],
+            wrap_max_x=CONFIG['SCREEN_WIDTH'],
+            wrap_max_y=CONFIG['SCREEN_HEIGHT'],
             sound=BonusUFO.sound_fire)
 
         self.shot_list.append(new_ufo_shot)
@@ -834,11 +792,16 @@ class InGameView(arcade.View):
                 if self.player_shot_fire_rate_timer >= CONFIG['PLAYER_FIRE_RATE']:
                     new_shot = Shot(
                         filename="images/Lasers/laserBlue01.png",
+                        scale=CONFIG['SPRITE_SCALING'],
                         center_x=self.player_sprite.center_x,
                         center_y=self.player_sprite.center_y,
                         angle=self.player_sprite.angle,
                         speed=CONFIG['PLAYER_SHOT_SPEED'],
                         range=CONFIG['PLAYER_SHOT_RANGE'],
+                        fade_start=CONFIG['SHOT_FADE_START'],
+                        fade_speed=CONFIG['SHOT_FADE_SPEED'],
+                        wrap_max_x=CONFIG['SCREEN_WIDTH'],
+                        wrap_max_y=CONFIG['SCREEN_HEIGHT'],
                         sound=self.player_shoot_sound,
                     )
 

@@ -37,6 +37,58 @@ class ObjInSpace(arcade.Sprite):
         elif self.bottom > self.wrap_max_y:
             self.center_y -= self.wrap_max_y
 
+class Shot(ObjInSpace):
+    """
+    universal class for shot objects
+    """
+
+    def __init__(self, filename, scale, center_x, center_y, angle, speed, range, fade_start, fade_speed, wrap_max_x, wrap_max_y, sound=None):
+
+        super().__init__(
+            filename=filename,
+            scale=scale,
+            center_x=center_x,
+            center_y=center_y,
+            angle=angle,
+            flipped_horizontally=True,
+            flipped_diagonally=True,
+            wrap_max_x=wrap_max_x,
+            wrap_max_y=wrap_max_y
+        )
+
+        self.speed = speed
+        self.range = range
+        self.fade_start = fade_start
+        self.fade_speed = fade_speed
+        self.wrap_max_x = wrap_max_x
+        self.wrap_max_y = wrap_max_y
+
+        self.distance_traveled = 0
+
+        self.forward(self.speed)
+
+        # play the shot sound if present
+        if sound:
+            sound.play()
+
+    def update(self):
+        """
+        move the sprite and fade
+        """
+
+        super().update()
+
+        # check if the shot traveled too far
+        self.distance_traveled += self.speed
+
+        # start fading when flown far enough
+        if self.distance_traveled > self.fade_start:
+            self.alpha *= self.fade_speed
+
+        if self.distance_traveled > self.range:
+            self.kill()
+
+
 
 class Star(arcade.Sprite):
     """
