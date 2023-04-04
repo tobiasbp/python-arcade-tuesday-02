@@ -376,13 +376,19 @@ class IntroView(arcade.View):
             print,
             print
         )
-        self.stars_list = get_stars(no_of_stars=30,
+        self.stars_list = get_stars(no_of_stars=CONFIG['STARS_ON_SCREEN_INTRO'],
                                     max_x=CONFIG['SCREEN_WIDTH'],
                                     max_y=CONFIG['SCREEN_HEIGHT'],
                                     base_size=CONFIG['STARS_BASE_SIZE'],
                                     scale=CONFIG['STARS_SCALE'],
                                     fadespeed=CONFIG['STARS_FADE_SPEED']
                                     )
+
+        stars_angle = random.uniform(0, 360)
+
+        for s in self.stars_list:
+            s.change_x = math.sin(stars_angle)
+            s.change_y = math.cos(stars_angle)
 
     def on_draw(self):
         """
@@ -405,9 +411,6 @@ class IntroView(arcade.View):
 
         # stars
         for s in self.stars_list:
-            # Star's direction is opposite of the player
-            s.change_x = 1
-            s.change_y = 1
             # Wrap star if off screen
             wrap(s)
         # Move all stars
@@ -501,7 +504,7 @@ class InGameView(arcade.View):
 
         # Set the background color
         arcade.set_background_color(SCREEN_COLOR)
-        self.stars_list = get_stars(no_of_stars=30,
+        self.stars_list = get_stars(no_of_stars=CONFIG['STARS_ON_SCREEN_GAME'],
                                     max_x=CONFIG['SCREEN_WIDTH'],
                                     max_y=CONFIG['SCREEN_HEIGHT'],
                                     base_size=CONFIG['STARS_BASE_SIZE'],
@@ -590,7 +593,7 @@ class InGameView(arcade.View):
         self.ufo_shot_list = arcade.SpriteList()
 
         # Small stars in background
-        self.stars_list = get_stars(no_of_stars=30,
+        self.stars_list = get_stars(no_of_stars=CONFIG['STARS_ON_SCREEN_GAME'],
                                     max_x=CONFIG['SCREEN_WIDTH'],
                                     max_y=CONFIG['SCREEN_HEIGHT'],
                                     base_size=CONFIG['STARS_BASE_SIZE'],
