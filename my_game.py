@@ -488,8 +488,6 @@ class InGameView(arcade.View):
 
         # Set the background color
         arcade.set_background_color(SCREEN_COLOR)
-        # Background stars
-        self.stars_list = None
 
     def next_level(self, level=None):
         """
