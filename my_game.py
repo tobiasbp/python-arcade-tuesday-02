@@ -17,7 +17,7 @@ import arcade.gui
 from tools import get_star
 
 from game_sprites import Star
-from tools import get_joystick, wrap, load_toml
+from tools import get_joystick, wrap, load_toml, get_stars
 
 # load the config file as a dict
 CONFIG = load_toml('my_game.toml')
