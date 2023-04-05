@@ -14,7 +14,6 @@ import tomli
 import tomli_w
 import os
 import arcade.gui
-from tools import get_star
 
 from game_sprites import Star
 from tools import get_joystick, wrap, load_toml, get_stars
