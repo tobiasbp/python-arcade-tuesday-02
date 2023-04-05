@@ -86,7 +86,8 @@ SHOT_FADE_SPEED = 0.95  # the procentage of fade in shots fade (Has to be betwee
 SHOT_FADE_START = 100  # Shot starts to fade this many pixels before it reaches it's range
 
 # Background stars
-STARS_ON_SCREEN = 100
+STARS_ON_SCREEN_GAME = 100
+STARS_ON_SCREEN_INTRO = 300
 STARS_SCALE = 0.5
 STARS_BASE_SIZE = 10
 STARS_FADE_SPEED = 30
