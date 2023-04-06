@@ -2,7 +2,7 @@
 file that contains all game-sprite classes in the project. They are imported into main when used in-game
 """
 
-from random import randint, random
+from random import randrange, random, randint
 from typing import Tuple
 from math import cos, pi
 
@@ -36,6 +36,7 @@ class ObjInSpace(arcade.Sprite):
             self.center_y += self.wrap_max_y
         elif self.bottom > self.wrap_max_y:
             self.center_y -= self.wrap_max_y
+
 
 class Shot(ObjInSpace):
     """
@@ -129,3 +130,64 @@ class Star(arcade.Sprite):
         # Bigger stars move faster than small stars
         self.center_x += self.scale * self.change_x
         self.center_y += self.scale * self.change_y
+
+
+class Asteroid(ObjInSpace):
+
+    def __init__(self, scale, screen_width, screen_height, min_spawn_dist_from_player, player_start_pos, score_values, spread, speed, size=3, level=1, spawn_pos=None, angle=None):
+        # Initialize the asteroid
+
+        # Graphics
+        super().__init__(
+            filename='images/Meteors/meteorGrey_med1.png',
+            scale=size * scale,
+            wrap_max_x=screen_width,
+            wrap_max_y=screen_height
+        )
+
+        self.size = size
+        self.level = level
+        self.screen_width = screen_width
+        self.screen_height = screen_height
+        self.min_spawn_dist_from_player = min_spawn_dist_from_player
+        self.player_start_pos = player_start_pos
+        self.score_values = score_values
+        self.spread = spread
+        self.speed = speed
+
+        if angle == None:
+            self.angle = randrange(0, 360)
+        else:
+            self.angle = angle
+
+        # Spawning Astroids until the distance to the player is longer than ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER
+        if not spawn_pos is None:
+            self.position = spawn_pos
+        else:
+            while True:
+                self.center_x = randint(0, self.screen_width)
+                self.center_y = randint(0, self.screen_height)
+
+                if arcade.get_distance(
+                        self.center_x,
+                        self.center_y,
+                        self.player_start_pos[0],
+                        self.player_start_pos[1]
+                ) > min_spawn_dist_from_player:
+                    break
+        self.angle += randint(-self.spread, self.spread)
+        self.forward(self.speed)
+
+        self.level = level
+
+        self.rotation_speed = randrange(0, 5)
+
+        self.direction = self.angle  # placeholder for initial angle - angle changes during the game
+        self.value = score_values[self.size - 1]
+
+    def update(self):
+
+        super().update()
+
+        # Rotate Asteroid
+        self.angle += self.rotation_speed

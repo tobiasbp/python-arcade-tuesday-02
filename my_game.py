@@ -12,7 +12,7 @@ import random
 import tomli
 import arcade.gui
 
-from game_sprites import Star, Shot
+from game_sprites import Star, Shot, Asteroid
 from tools import get_joystick
 
 # load the config file as a dict
@@ -116,64 +116,6 @@ class Player(arcade.Sprite):
 
         else:
             self.alpha = 255
-
-        # wrap
-        wrap(self, CONFIG['SCREEN_WIDTH'], CONFIG['SCREEN_HEIGHT'])
-
-
-class Asteroid(arcade.Sprite):
-
-    def __init__(self, size=3, level=1, spawn_pos=None, angle=None):
-        # Initialize the asteroid
-
-        # Graphics
-        super().__init__(
-            filename='images/Meteors/meteorGrey_med1.png',
-            scale=size * CONFIG['SPRITE_SCALING']
-        )
-
-        self.size = size
-        self.level = level
-
-        if angle == None:
-            self.angle = random.randrange(0, 360)
-        else:
-            self.angle = angle
-
-        # Spawning Astroids until the distance to the player is longer than ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER
-        if not spawn_pos is None:
-            self.position = spawn_pos
-        else:
-            while True:
-                self.center_x = random.randint(0, CONFIG['SCREEN_WIDTH'])
-                self.center_y = random.randint(0, CONFIG['SCREEN_HEIGHT'])
-
-                if arcade.get_distance(
-                        self.center_x,
-                        self.center_y,
-                        CONFIG['PLAYER_START_X'],
-                        CONFIG['PLAYER_START_Y']
-                ) > CONFIG['ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER']:
-                    break
-        self.angle += random.randint(-CONFIG['ASTEROIDS_SPREAD'], CONFIG['ASTEROIDS_SPREAD'])
-        self.forward(CONFIG['ASTEROIDS_SPEED'])
-
-        self.angle += random.randint(-CONFIG['ASTEROIDS_SPREAD'], CONFIG['ASTEROIDS_SPREAD'])
-        self.forward(CONFIG['ASTEROIDS_SPEED'])
-        self.level = level
-
-        self.rotation_speed = random.randrange(0, 5)
-
-        self.direction = self.angle  # placeholder for initial angle - angle changes during the game
-        self.value = CONFIG['ASTEROID_SCORE_VALUES'][self.size - 1]
-
-    def update(self):
-        # Update position
-        self.center_x += self.change_x
-        self.center_y += self.change_y
-
-        # Rotate Asteroid
-        # self.angle += self.rotation_speed
 
         # wrap
         wrap(self, CONFIG['SCREEN_WIDTH'], CONFIG['SCREEN_HEIGHT'])
@@ -466,7 +408,15 @@ class InGameView(arcade.View):
 
         # Spawn Asteroids
         for r in range(CONFIG['ASTEROIDS_PR_LEVEL'] + (self.level - 1) * CONFIG['ASTEROID_NUM_MOD_PR_LEVEL']):
-            self.asteroid_list.append(Asteroid(level=self.level))
+            self.asteroid_list.append(Asteroid(scale=CONFIG['SPRITE_SCALING'],
+                                               screen_width=CONFIG['SCREEN_WIDTH'],
+                                               screen_height=CONFIG['SCREEN_HEIGHT'],
+                                               min_spawn_dist_from_player=CONFIG['ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER'],
+                                               player_start_pos=(CONFIG['PLAYER_START_X'], CONFIG['PLAYER_START_Y']),
+                                               score_values=CONFIG['ASTEROID_SCORE_VALUES'],
+                                               spread=CONFIG['ASTEROIDS_SPREAD'],
+                                               speed=CONFIG['ASTEROIDS_SPEED'],
+                                               level=self.level))
 
     def spawn_ufo(self, delta_time):
         """
@@ -699,7 +649,20 @@ class InGameView(arcade.View):
                     if a.size > 1:
                         a_angle = random.randrange(s.angle - CONFIG["ASTEROIDS_SPREAD"],
                                                    s.angle + CONFIG["ASTEROIDS_SPREAD"])
-                        new_a = Asteroid(a.size - 1, self.level, a.position, a_angle)
+                        new_a = Asteroid(
+                            scale=CONFIG['SPRITE_SCALING'],
+                            angle=a.angle,
+                            screen_width=CONFIG['SCREEN_WIDTH'],
+                            screen_height=CONFIG['SCREEN_HEIGHT'],
+                            min_spawn_dist_from_player=CONFIG['ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER'],
+                            player_start_pos=(CONFIG['PLAYER_START_X'], CONFIG['PLAYER_START_Y']),
+                            score_values=CONFIG['ASTEROID_SCORE_VALUES'],
+                            spread=CONFIG['ASTEROIDS_SPREAD'],
+                            speed=CONFIG['ASTEROIDS_SPEED'],
+                            size=a.size - 1,
+                            level=self.level,
+                            spawn_pos=a.position
+                        )
                         self.asteroid_list.append(new_a)
 
                     else:
