@@ -9,7 +9,7 @@ import random
 
 PARTICLE_COLORS = [
     arcade.color.ORANGE,
-    arcade.color.FIRE_ENGINE_RED,
+    arcade.color.BURNT_ORANGE,
     arcade.color.RED_ORANGE
 ]
 
