@@ -453,7 +453,7 @@ class IntroView(arcade.View):
 
         self.window.show_view(in_game_view)
 
-    def enter_settings(self):
+    def enter_settings(self, event):
         settings_view = SettingsView()
         self.window.show_view(settings_view)
 
