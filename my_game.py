@@ -56,6 +56,7 @@ class Shot(arcade.Sprite):
         self.distance_traveled = 0
 
         self.forward(self.speed)
+
         # play the shot sound if present
         if sound:
             sound.play()
@@ -221,7 +222,7 @@ class Asteroid(arcade.Sprite):
         self.center_y += self.change_y
 
         # Rotate Asteroid
-        # self.angle += self.rotation_speed
+        self.angle += self.rotation_speed
 
         # wrap
         wrap(self, CONFIG['SCREEN_WIDTH'], CONFIG['SCREEN_HEIGHT'])
@@ -542,7 +543,7 @@ class InGameView(arcade.View):
             particle_lifetime_max=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MAX'],
             particle_scale=CONFIG['EXPLOSION_PARTICLE_SIZE'])
 
-    def shockwave(self, center: tuple[float, float], strength: float, sprites: arcade.SpriteList):
+    def shockwave(self, center: tuple[float, float], range: float, strength: float, sprites: arcade.SpriteList):
         """
         create a shockwave at the center that pushes away all given sprites
         """
@@ -550,15 +551,18 @@ class InGameView(arcade.View):
         for sprite in sprites:
             dist = arcade.get_distance(sprite.center_x, sprite.center_y, center[0], center[1])
 
-            if dist <= strength * 100:
+            if dist <= range:
 
                 # point away from the center
-                sprite.angle = arcade.get_angle_degrees(sprite.center_x, sprite.center_y, center[0], center[1])
+                angle_to_center = arcade.get_angle_degrees(sprite.center_x, sprite.center_y, center[0], center[1])
+                sprite.angle = sprite.angle - (sprite.angle - angle_to_center) - 180
+
+                #FIXME: why does sprite.forward not work here?
 
                 # the closer to the center, the faster it moves
-                impact = dist / (strength * 100) - 1 * strength
-                sprite.change_x = math.sin(sprite.radians) * impact
-                sprite.change_y = math.cos(sprite.radians) * impact
+                impact = abs(dist / range - 1) * strength
+                sprite.change_x += math.sin(sprite.radians) * impact
+                sprite.change_y += math.cos(sprite.radians) * impact
 
     def on_show_view(self):
         """ Set up the game and initialize the variables. """
@@ -594,8 +598,7 @@ class InGameView(arcade.View):
         self.player_shoot_sound = arcade.load_sound("sounds/laserRetro_001.ogg")
 
         # setup spawn_ufo to run regularly
-        arcade.schedule(self.spawn_ufo,
-                        CONFIG['UFO_SPAWN_RATE'] + (self.level - 1) * CONFIG['UFO_SPAWN_RATE_MOD_PR_LEVEL'])
+        arcade.schedule(self.spawn_ufo, CONFIG['UFO_SPAWN_RATE'] + (self.level - 1) * CONFIG['UFO_SPAWN_RATE_MOD_PR_LEVEL'])
 
         # Add an emitter that makes the thrusting particles
         self.thrust_emitter = arcade.Emitter(
@@ -708,8 +711,6 @@ class InGameView(arcade.View):
                 self.get_explosion(self.player_sprite.position)
                 a.kill()
 
-                self.shockwave(self.player_sprite.position, 2, self.asteroid_list)
-
         # check for collision with bonus_ufo
         for ufo in self.player_sprite.collides_with_list(self.ufo_list):
             if not self.player_sprite.is_invincible:
@@ -745,8 +746,7 @@ class InGameView(arcade.View):
             for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
                 for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
                     if a.size > 1:
-                        a_angle = random.randrange(s.angle - CONFIG["ASTEROIDS_SPREAD"],
-                                                   s.angle + CONFIG["ASTEROIDS_SPREAD"])
+                        a_angle = random.randrange(s.angle - CONFIG["ASTEROIDS_SPREAD"], s.angle + CONFIG["ASTEROIDS_SPREAD"])
                         new_a = Asteroid(a.size - 1, self.level, a.position, a_angle)
                         self.asteroid_list.append(new_a)
 
@@ -789,8 +789,7 @@ class InGameView(arcade.View):
 
         # create a new emit-controller for the thruster if thrusting.
         if self.thrust_pressed and self.thrust_emitter.rate_factory.is_complete():
-            self.thrust_emitter.rate_factory = arcade.EmitterIntervalWithTime(CONFIG['THRUSTER_EMIT_RATE'],
-                                                                              CONFIG['THRUSTER_EMIT_TIME'])
+            self.thrust_emitter.rate_factory = arcade.EmitterIntervalWithTime(CONFIG['THRUSTER_EMIT_RATE'], CONFIG['THRUSTER_EMIT_TIME'])
 
         self.thrust_emitter.update()
         self.thrust_emitter.angle = self.player_sprite.angle - 270 + random.randint(
@@ -845,7 +844,7 @@ class InGameView(arcade.View):
                         angle=self.player_sprite.angle,
                         speed=CONFIG['PLAYER_SHOT_SPEED'],
                         range=CONFIG['PLAYER_SHOT_RANGE'],
-                        sound=self.player_shoot_sound,
+                        sound=self.player_shoot_sound
                     )
 
                     self.player_shot_list.append(new_shot)
