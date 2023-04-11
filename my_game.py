@@ -11,6 +11,7 @@ import math
 import random
 import tomli
 import arcade.gui
+from tools import get_stars
 
 from game_sprites import Star
 from tools import get_joystick, StoppableEmitter, wrap
@@ -55,6 +56,7 @@ class Shot(arcade.Sprite):
         self.distance_traveled = 0
 
         self.forward(self.speed)
+
         # play the shot sound if present
         if sound:
             sound.play()
@@ -220,7 +222,7 @@ class Asteroid(arcade.Sprite):
         self.center_y += self.change_y
 
         # Rotate Asteroid
-        # self.angle += self.rotation_speed
+        self.angle += self.rotation_speed
 
         # wrap
         wrap(self, CONFIG['SCREEN_WIDTH'], CONFIG['SCREEN_HEIGHT'])
@@ -358,7 +360,20 @@ class IntroView(arcade.View):
             self.on_joybutton_released,
             print,
             print
-            )
+        )
+        self.stars_list = get_stars(no_of_stars=CONFIG['STARS_ON_SCREEN_INTRO'],
+                                    max_x=CONFIG['SCREEN_WIDTH'],
+                                    max_y=CONFIG['SCREEN_HEIGHT'],
+                                    base_size=CONFIG['STARS_BASE_SIZE'],
+                                    scale=CONFIG['STARS_SCALE'],
+                                    fadespeed=CONFIG['STARS_FADE_SPEED']
+                                    )
+
+        stars_angle = random.uniform(0, 360)
+
+        for s in self.stars_list:
+            s.change_x = math.sin(stars_angle)
+            s.change_y = math.cos(stars_angle)
 
     def on_draw(self):
         """
@@ -366,6 +381,8 @@ class IntroView(arcade.View):
         """
 
         arcade.start_render()
+        # DRAWS STARS
+        self.stars_list.draw()
 
         self.title_graphics.draw_scaled(
             center_x=CONFIG['TITLE_X'],
@@ -374,6 +391,16 @@ class IntroView(arcade.View):
 
         # Draws the manager that contains the button.
         self.manager.draw()
+
+    def on_update(self, delta_time):
+
+        # stars
+        for s in self.stars_list:
+            # Wrap star if off screen
+            wrap(s, CONFIG['SCREEN_WIDTH'], CONFIG['SCREEN_HEIGHT'])
+        # Move all stars
+        self.stars_list.on_update(delta_time)
+
 
     def on_key_press(self, symbol: int, modifiers: int):
         self.gui_play_button.hovered = True
@@ -394,7 +421,7 @@ class IntroView(arcade.View):
 
         # Stop using  this joystick
         if self.joystick is not None:
-          self.joystick.close()
+            self.joystick.close()
 
         self.window.show_view(in_game_view)
 
@@ -463,32 +490,6 @@ class InGameView(arcade.View):
         # Set the background color
         arcade.set_background_color(SCREEN_COLOR)
 
-    def get_stars(self, no_of_stars: int) -> arcade.SpriteList:
-        """
-        Return a SpriteList of randomly positioned stars.
-        """
-
-        # A list to store the stars in
-        stars = arcade.SpriteList()
-
-        # Add stars
-        for i in range(no_of_stars):
-            # Calculate a random postion
-            p = (
-                random.randint(0, CONFIG['SCREEN_WIDTH']),
-                random.randint(0, CONFIG['SCREEN_HEIGHT']),
-            )
-            # Add star
-            s = Star(
-                position=p,
-                base_size=CONFIG['STARS_BASE_SIZE'],
-                scale=CONFIG['STARS_SCALE'],
-                fade_speed=CONFIG['STARS_FADE_SPEED'],
-            )
-            stars.append(s)
-
-        return stars
-
     def next_level(self, level=None):
         """
         Advance the game to the next level
@@ -504,7 +505,13 @@ class InGameView(arcade.View):
         # FIXME: Player needs to know that level was cleared
 
         # Background stars
-        self.stars_list = self.get_stars(CONFIG['STARS_ON_SCREEN'])
+        self.stars_list = get_stars(no_of_stars=CONFIG['STARS_ON_SCREEN_GAME'],
+                                    max_x=CONFIG['SCREEN_WIDTH'],
+                                    max_y=CONFIG['SCREEN_HEIGHT'],
+                                    base_size=CONFIG['STARS_BASE_SIZE'],
+                                    scale=CONFIG['STARS_SCALE'],
+                                    fadespeed=CONFIG['STARS_FADE_SPEED']
+                                    )
 
         # Spawn Asteroids
         for r in range(CONFIG['ASTEROIDS_PR_LEVEL'] + (self.level - 1) * CONFIG['ASTEROID_NUM_MOD_PR_LEVEL']):
@@ -536,7 +543,7 @@ class InGameView(arcade.View):
             particle_lifetime_max=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MAX'],
             particle_scale=CONFIG['EXPLOSION_PARTICLE_SIZE'])
 
-    def shockwave(self, center: tuple[float, float], strength: float, sprites: arcade.SpriteList):
+    def shockwave(self, center: tuple[float, float], range: float, strength: float, sprites: arcade.SpriteList):
         """
         create a shockwave at the center that pushes away all given sprites
         """
@@ -544,15 +551,18 @@ class InGameView(arcade.View):
         for sprite in sprites:
             dist = arcade.get_distance(sprite.center_x, sprite.center_y, center[0], center[1])
 
-            if dist <= strength * 100:
+            if dist <= range:
 
                 # point away from the center
-                sprite.angle = arcade.get_angle_degrees(sprite.center_x, sprite.center_y, center[0], center[1])
+                angle_to_center = arcade.get_angle_degrees(sprite.center_x, sprite.center_y, center[0], center[1])
+                sprite.angle = sprite.angle - (sprite.angle - angle_to_center) - 180
+
+                #FIXME: why does sprite.forward not work here?
 
                 # the closer to the center, the faster it moves
-                impact = dist / (strength * 100) - 1 * strength
-                sprite.change_x = math.sin(sprite.radians) * impact
-                sprite.change_y = math.cos(sprite.radians) * impact
+                impact = abs(dist / range - 1) * strength
+                sprite.change_x += math.sin(sprite.radians) * impact
+                sprite.change_y += math.cos(sprite.radians) * impact
 
     def on_show_view(self):
         """ Set up the game and initialize the variables. """
@@ -588,8 +598,7 @@ class InGameView(arcade.View):
         self.player_shoot_sound = arcade.load_sound("sounds/laserRetro_001.ogg")
 
         # setup spawn_ufo to run regularly
-        arcade.schedule(self.spawn_ufo,
-                        CONFIG['UFO_SPAWN_RATE'] + (self.level - 1) * CONFIG['UFO_SPAWN_RATE_MOD_PR_LEVEL'])
+        arcade.schedule(self.spawn_ufo, CONFIG['UFO_SPAWN_RATE'] + (self.level - 1) * CONFIG['UFO_SPAWN_RATE_MOD_PR_LEVEL'])
 
         # Start level 1
         self.next_level(1)
@@ -662,7 +671,7 @@ class InGameView(arcade.View):
             s.change_y = -1 * self.player_sprite.change_y
             # Wrap star if off screen
             wrap(s, CONFIG['SCREEN_WIDTH'], CONFIG['SCREEN_HEIGHT'])
-
+            
         # Move all stars
         self.stars_list.on_update(delta_time)
 
@@ -692,8 +701,6 @@ class InGameView(arcade.View):
                 self.player_sprite.reset()
                 self.get_explosion(self.player_sprite.position)
                 a.kill()
-
-                self.shockwave(self.player_sprite.position, 2, self.asteroid_list)
 
         # check for collision with bonus_ufo
         for ufo in self.player_sprite.collides_with_list(self.ufo_list):
@@ -730,8 +737,7 @@ class InGameView(arcade.View):
             for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
                 for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
                     if a.size > 1:
-                        a_angle = random.randrange(s.angle - CONFIG["ASTEROIDS_SPREAD"],
-                                                   s.angle + CONFIG["ASTEROIDS_SPREAD"])
+                        a_angle = random.randrange(s.angle - CONFIG["ASTEROIDS_SPREAD"], s.angle + CONFIG["ASTEROIDS_SPREAD"])
                         new_a = Asteroid(a.size - 1, self.level, a.position, a_angle)
                         self.asteroid_list.append(new_a)
 
@@ -819,7 +825,7 @@ class InGameView(arcade.View):
                         angle=self.player_sprite.angle,
                         speed=CONFIG['PLAYER_SHOT_SPEED'],
                         range=CONFIG['PLAYER_SHOT_RANGE'],
-                        sound=self.player_shoot_sound,
+                        sound=self.player_shoot_sound
                     )
 
                     self.player_shot_list.append(new_shot)

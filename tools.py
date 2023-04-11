@@ -7,11 +7,8 @@ import arcade
 from typing import Tuple
 import random
 
-PARTICLE_COLORS = [
-    arcade.color.ORANGE,
-    arcade.color.BURNT_ORANGE,
-    arcade.color.RED_ORANGE
-]
+from game_sprites import Star
+
 
 
 def wrap(sprite: arcade.Sprite, max_x: int, max_y: int):
@@ -69,6 +66,12 @@ class StoppableEmitter:
     It is possible to start and stop this emitter
     """
 
+    particle_colors = [
+        arcade.color.ORANGE,
+        arcade.color.BURNT_ORANGE,
+        arcade.color.RED_ORANGE
+    ]
+
     def __init__(self,
                  target: arcade.Sprite,
                  particle_lifetime: float = 0.5,
@@ -81,7 +84,7 @@ class StoppableEmitter:
         self.noise = noise
         self.emit_interval = emit_interval
         self.particle_count = particle_count
-        self.particle_color = PARTICLE_COLORS[random.randint(0, 2)]
+        self.particle_color = StoppableEmitter.particle_colors[0]
 
         # Emit controller enters endless loop with an interval of 0
         assert self.emit_interval > 0, "Emit interval must be greater than 0"
@@ -114,4 +117,32 @@ class StoppableEmitter:
         self.emitter.center_x, self.emitter.center_y = self.target.position
         self.emitter.angle = (self.target.angle + 90) + random.randint(-1 * self.noise, self.noise)
         self.emitter.update()
-        self.particle_color = PARTICLE_COLORS[random.randint(0, 2)]
+        # Particles have random colors
+        self.particle_color = StoppableEmitter.particle_colors[random.randint(0, 2)]
+
+
+def get_stars(no_of_stars: int, max_x: int, max_y: int, base_size: int, scale: int, fadespeed: int) -> arcade.SpriteList:
+    """
+    Return a SpriteList of randomly positioned stars.
+    """
+
+    # A list to store the stars in
+    stars = arcade.SpriteList()
+
+    # Add stars
+    for i in range(no_of_stars):
+        # Calculate a random postion
+        p = (
+            random.randint(0, max_x),
+            random.randint(0, max_y),
+        )
+        # Add star
+        s = Star(
+            position=p,
+            base_size=base_size,
+            scale=scale,
+            fade_speed=fadespeed,
+        )
+        stars.append(s)
+
+    return stars
