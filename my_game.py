@@ -16,7 +16,7 @@ import os
 import arcade.gui
 
 from game_sprites import Star
-from tools import get_joystick, wrap, load_toml, get_stars
+from tools import get_joystick, wrap, load_toml, get_stars, StoppableEmitter
 
 # load the config file as a dict
 CONFIG = load_toml('my_game.toml')
@@ -62,6 +62,7 @@ class Shot(arcade.Sprite):
         self.distance_traveled = 0
 
         self.forward(self.speed)
+
         # play the shot sound if present
         if sound:
             sound.play()
@@ -227,7 +228,7 @@ class Asteroid(arcade.Sprite):
         self.center_y += self.change_y
 
         # Rotate Asteroid
-        # self.angle += self.rotation_speed
+        self.angle += self.rotation_speed
 
         # wrap
         wrap(self, CONFIG['SCREEN_WIDTH'], CONFIG['SCREEN_HEIGHT'])
@@ -660,9 +661,9 @@ class InGameView(arcade.View):
         self.player_lives = None
         self.player_speed = 0
         self.opposite_angle = 0
-        self.thrust_emitter = None
         self.explosion_emitter = None
         self.player_shoot_sound = None
+        self.stoppable_emitter = None
 
         # set up ufo info
         self.ufo_list = None
@@ -742,7 +743,7 @@ class InGameView(arcade.View):
             particle_lifetime_max=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MAX'],
             particle_scale=CONFIG['EXPLOSION_PARTICLE_SIZE'])
 
-    def shockwave(self, center: tuple[float, float], strength: float, sprites: arcade.SpriteList):
+    def shockwave(self, center: tuple[float, float], range: float, strength: float, sprites: arcade.SpriteList):
         """
         create a shockwave at the center that pushes away all given sprites
         """
@@ -750,15 +751,18 @@ class InGameView(arcade.View):
         for sprite in sprites:
             dist = arcade.get_distance(sprite.center_x, sprite.center_y, center[0], center[1])
 
-            if dist <= strength * 100:
+            if dist <= range:
 
                 # point away from the center
-                sprite.angle = arcade.get_angle_degrees(sprite.center_x, sprite.center_y, center[0], center[1])
+                angle_to_center = arcade.get_angle_degrees(sprite.center_x, sprite.center_y, center[0], center[1])
+                sprite.angle = sprite.angle - (sprite.angle - angle_to_center) - 180
+
+                #FIXME: why does sprite.forward not work here?
 
                 # the closer to the center, the faster it moves
-                impact = dist / (strength * 100) - 1 * strength
-                sprite.change_x = math.sin(sprite.radians) * impact
-                sprite.change_y = math.cos(sprite.radians) * impact
+                impact = abs(dist / range - 1) * strength
+                sprite.change_x += math.sin(sprite.radians) * impact
+                sprite.change_y += math.cos(sprite.radians) * impact
 
     def on_show_view(self):
         """ Set up the game and initialize the variables. """
@@ -794,23 +798,12 @@ class InGameView(arcade.View):
         self.player_shoot_sound = arcade.load_sound("sounds/laserRetro_001.ogg")
 
         # setup spawn_ufo to run regularly
-        arcade.schedule(self.spawn_ufo,
-                        CONFIG['UFO_SPAWN_RATE'] + (self.level - 1) * CONFIG['UFO_SPAWN_RATE_MOD_PR_LEVEL'])
-
-        # Add an emitter that makes the thrusting particles
-        self.thrust_emitter = arcade.Emitter(
-            center_xy=(self.player_sprite.center_x, self.player_sprite.center_y),
-            emit_controller=arcade.EmitterIntervalWithTime(0, 0),  # setting a blank controller when not thrusting.
-            particle_factory=lambda emitter: arcade.FadeParticle(
-                filename_or_texture=random.choice(PARTICLE_TEXTURES),
-                change_xy=(0, 12.0),
-                lifetime=0.2,
-            )
-        )
-        self.thrust_emitter.angle = self.player_sprite.angle
+        arcade.schedule(self.spawn_ufo, CONFIG['UFO_SPAWN_RATE'] + (self.level - 1) * CONFIG['UFO_SPAWN_RATE_MOD_PR_LEVEL'])
 
         # Start level 1
         self.next_level(1)
+
+        self.stoppable_emitter = StoppableEmitter(self.player_sprite)
 
     def on_draw(self):
         """
@@ -824,7 +817,8 @@ class InGameView(arcade.View):
         self.stars_list.draw()
 
         # draw particle emitter
-        self.thrust_emitter.draw()
+        # self.thrust_emitter.draw()
+        self.stoppable_emitter.emitter.draw()
 
         # Draw the player shot
         self.player_shot_list.draw()
@@ -908,8 +902,6 @@ class InGameView(arcade.View):
                 self.get_explosion(self.player_sprite.position)
                 a.kill()
 
-                self.shockwave(self.player_sprite.position, 2, self.asteroid_list)
-
         # check for collision with bonus_ufo
         for ufo in self.player_sprite.collides_with_list(self.ufo_list):
             if not self.player_sprite.is_invincible:
@@ -945,8 +937,7 @@ class InGameView(arcade.View):
             for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
                 for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
                     if a.size > 1:
-                        a_angle = random.randrange(s.angle - CONFIG["ASTEROIDS_SPREAD"],
-                                                   s.angle + CONFIG["ASTEROIDS_SPREAD"])
+                        a_angle = random.randrange(s.angle - CONFIG["ASTEROIDS_SPREAD"], s.angle + CONFIG["ASTEROIDS_SPREAD"])
                         new_a = Asteroid(a.size - 1, self.level, a.position, a_angle)
                         self.asteroid_list.append(new_a)
 
@@ -957,9 +948,11 @@ class InGameView(arcade.View):
                 self.sound_explosion.play()
                 self.player_score += a.value
 
+        self.stoppable_emitter.update()
         # check for thrust
         if self.thrust_pressed:
             self.player_sprite.thrust()
+            self.stoppable_emitter.start()
 
         if self.player_shot_fire_rate_timer < CONFIG['PLAYER_FIRE_RATE']:
             self.player_shot_fire_rate_timer += delta_time
@@ -986,19 +979,6 @@ class InGameView(arcade.View):
             arcade.unschedule(self.spawn_ufo)
             game_over_view = GameOverView(player_score=self.player_score, level=self.level)
             self.window.show_view(game_over_view)
-
-        # create a new emit-controller for the thruster if thrusting.
-        if self.thrust_pressed and self.thrust_emitter.rate_factory.is_complete():
-            self.thrust_emitter.rate_factory = arcade.EmitterIntervalWithTime(CONFIG['THRUSTER_EMIT_RATE'],
-                                                                              CONFIG['THRUSTER_EMIT_TIME'])
-
-        self.thrust_emitter.update()
-        self.thrust_emitter.angle = self.player_sprite.angle - 270 + random.randint(
-            -CONFIG['PLAYER_ENGINE_SHAKE'],
-            CONFIG['PLAYER_ENGINE_SHAKE']
-        )
-        self.thrust_emitter.center_x = self.player_sprite.center_x
-        self.thrust_emitter.center_y = self.player_sprite.center_y
 
         if len(self.asteroid_list) == 0:
             self.next_level()
@@ -1045,7 +1025,7 @@ class InGameView(arcade.View):
                         angle=self.player_sprite.angle,
                         speed=CONFIG['PLAYER_SHOT_SPEED'],
                         range=CONFIG['PLAYER_SHOT_RANGE'],
-                        sound=self.player_shoot_sound,
+                        sound=self.player_shoot_sound
                     )
 
                     self.player_shot_list.append(new_shot)

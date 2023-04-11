@@ -33,9 +33,12 @@ PLAYER_THRUST_JOYBUTTON = 1
 PLAYER_SELECT_JOYSTICK = 8
 PLAYER_START_JOYSTICK = 9
 
+PLAYER_SHOCKWAVE_STRENGTH = 8  # px/update at center point
+PLAYER_SHOCKWAVE_RANGE = 250  # px radius
 
 THRUSTER_EMIT_RATE = 0.025  # secs
 THRUSTER_EMIT_TIME = 0.35  #secs
+PLAYER_ENGINE_SHAKE = 20 # The maximum + minimum of the shaking of the particles
 
 # asteroid_constants
 ASTEROIDS_SPREAD = 30
@@ -60,12 +63,16 @@ UFO_FIRE_RATE = 1.5  # secs
 UFO_FIRE_RATE_MOD_PR_LEVEL = -0.15  # added to UFO_FIRE_RATE on level increase
 UFO_SIZE_SMALL = 0.9  # multiplier for original file
 UFO_SIZE_BIG = 1.5  # multiplier for original file
-PLAYER_ENGINE_SHAKE = 20 # The maximum + minimum of the shaking of the particles
-EXPLOSION_PARTICLE_AMOUNT = 500
-EXPLOSION_PARTICLE_SPEED = 5
+UFO_SHOCKWAVE_STRENGTH = 7  # px/update at center point
+UFO_SHOCKWAVE_RANGE = 200  # px radius
+
+
+# explosions
+EXPLOSION_PARTICLE_AMOUNT = 220
+EXPLOSION_PARTICLE_SPEED = 4
 EXPLOSION_PARTICLE_LIFETIME_MIN = 0.1
-EXPLOSION_PARTICLE_LIFETIME_MAX = 2
-EXPLOSION_PARTICLE_SIZE = 5
+EXPLOSION_PARTICLE_LIFETIME_MAX = 0.9
+EXPLOSION_PARTICLE_SIZE = 4
 
 # UI
 TITLE_X = 400  # pCha
