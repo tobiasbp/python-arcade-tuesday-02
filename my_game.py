@@ -10,9 +10,8 @@ import arcade
 import arcade.gui
 import math
 import random
-import tomli
 import tomli_w
-import os
+import pathlib
 import arcade.gui
 
 from game_sprites import Star
@@ -582,18 +581,30 @@ class SettingsView(arcade.View):
         self.settings_guide_select.text = ""
 
     def on_click_reset(self, event):
-        # Reset CONFIG dict and delete user settings file if it exists
-        try:
-            os.remove("user_settings.toml")
-            CONFIG = load_toml("my_game.toml")
-            print("Deleted user_settings.toml")
-        except FileNotFoundError:
-            pass
+        # Reset CONFIG dict and log user settings file if it exists
+        global CONFIG
+        user_config_file = pathlib.Path("user_settings.toml")
+        if user_config_file.is_file():
+            times_reset = 0
+            while True:
+                new_user_config_file = pathlib.Path(
+                    user_config_file.parent / user_config_file.name.replace(".toml", f"_{times_reset}.toml")
+                )
+                times_reset += 1
+                if not new_user_config_file.is_file():
+                    user_config_file.rename(new_user_config_file)
+                    CONFIG = load_toml("my_game.toml")
+                    print("Logged user_settings.toml")
+                    break
 
-        self.change_player_thrust_key_button.text = "Change Thrust Key: " + self.id_to_key[CONFIG["PLAYER_THRUST_KEY"]]
-        self.change_player_fire_key_button.text = "Change Fire Key: " + self.id_to_key[CONFIG["PLAYER_FIRE_KEY"]]
-        self.change_player_turn_left_key_button.text = "Change Turn Left Key: " + self.id_to_key[CONFIG["PLAYER_TURN_LEFT_KEY"]]
-        self.change_player_turn_right_key_button.text = "Change Turn Right Key: " + self.id_to_key[CONFIG["PLAYER_TURN_RIGHT_KEY"]]
+        self.change_player_thrust_key_button.text =\
+            "Change Thrust Key: " + self.id_to_key[CONFIG["PLAYER_THRUST_KEY"]]
+        self.change_player_fire_key_button.text =\
+            "Change Fire Key: " + self.id_to_key[CONFIG["PLAYER_FIRE_KEY"]]
+        self.change_player_turn_left_key_button.text =\
+            "Change Turn Left Key: " + self.id_to_key[CONFIG["PLAYER_TURN_LEFT_KEY"]]
+        self.change_player_turn_right_key_button.text =\
+            "Change Turn Right Key: " + self.id_to_key[CONFIG["PLAYER_TURN_RIGHT_KEY"]]
 
     def on_draw(self):
         arcade.start_render()
