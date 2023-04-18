@@ -4,6 +4,7 @@ Like the Joysticks.
 """
 
 import arcade
+import tomli
 from typing import Tuple
 import random
 
@@ -60,6 +61,14 @@ def get_joystick(func_press, func_release=None, func_axis=None, func_jhat=None):
     else:
         return None
 
+def load_toml(filename):
+    try:
+        with open(filename, 'rb') as fp:
+            return tomli.load(fp)
+    except FileNotFoundError:
+        # If the file does not exist it will not be loaded
+        print("File " + filename + " Not Found")
+        return {}
 
 class StoppableEmitter:
     """
@@ -146,3 +155,4 @@ def get_stars(no_of_stars: int, max_x: int, max_y: int, base_size: int, scale: i
         stars.append(s)
 
     return stars
+

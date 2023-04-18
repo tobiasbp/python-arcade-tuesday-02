@@ -25,6 +25,7 @@ PLAYER_FIRE_RATE = 0.2  # secs
 PLAYER_SHOT_RANGE = 400  # px
 PLAYER_THRUST_KEY = 65362 # arrowup key
 PLAYER_FIRE_KEY = 32 # space key
+EXIT_SETTINGS_KEY = 65307 # escape key
 PLAYER_TURN_RIGHT_KEY = 65363 # arrowright key
 PLAYER_TURN_LEFT_KEY = 65361 # arrowleft key
 PLAYER_FIRE_JOYBUTTON = 0
@@ -76,11 +77,16 @@ EXPLOSION_PARTICLE_SIZE = 4
 # UI
 TITLE_X = 400  # pCha
 TITLE_Y = 450  # px
+SETTINGS_BUTTON_X = 350  # px
+SETTINGS_BUTTON_Y = 100  # px
 BUTTON_X = 350  # px
 BUTTON_Y = 200  # px
 BUTTON_SCALE = 1 # The scale of the play/restart button
 
+UI_PLAY_KEY = 112 # P key
 UI_RESTART_KEY = 114  # R key
+UI_SETTINGS_KEY = 115 # S key
+
 
 # Shots
 SHOT_FADE_SPEED = 0.95  # the procentage of fade in shots fade (Has to be between 0.0 - 1.0)
