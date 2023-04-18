@@ -12,8 +12,8 @@ import random
 import tomli
 import arcade.gui
 
-from game_sprites import Star, Shot, Asteroid
-from tools import get_joystick
+from game_sprites import Star, Shot, Asteroid, Player
+from tools import get_joystick, wrap
 
 # load the config file as a dict
 with open('my_game.toml', 'rb') as fp:
@@ -31,95 +31,6 @@ UFO_EXPLOSIONS_PARTICLE_TEXTURES = [
     arcade.make_soft_circle_texture(25, arcade.color.BLUE),
     arcade.make_soft_circle_texture(25, arcade.color.GREEN),
 ]
-
-
-class Player(arcade.Sprite):
-    """
-    The player
-    """
-
-    def __init__(self,
-                 center_x,
-                 center_y,
-                 lives,
-                 scale,
-                 start_speed_min,
-                 start_speed_max,
-                 start_angle_min,
-                 start_angle_max):
-        """
-        Setup new Player object
-        """
-
-        # Graphics to use for Player
-        super().__init__("images/playerShip1_red.png", flipped_horizontally=True, flipped_diagonally=True)
-        self.invincibility_timer = 0
-        self.lives = lives
-        self.scale = scale
-        self.center_x = center_x
-        self.center_y = center_y
-        self.angle = random.randint(start_angle_min, start_angle_max)
-        self.forward(random.uniform(start_speed_min, start_speed_max))
-
-    def thrust(self):
-        """
-        increase speed in the direction pointing
-        """
-
-        self.forward(CONFIG['PLAYER_THRUST'])
-        # Keep track of Player Speed
-        player_speed_vector_length = math.sqrt(self.change_x ** 2 + self.change_y ** 2)
-
-        # Calculating the value used to lower the players speed while keeping the x - y ratio
-        player_x_and_y_speed_ratio = CONFIG['PLAYER_SPEED_LIMIT'] / player_speed_vector_length
-
-        # If player is too fast slow it down
-        if player_speed_vector_length > CONFIG['PLAYER_SPEED_LIMIT']:
-            self.change_x *= player_x_and_y_speed_ratio
-            self.change_y *= player_x_and_y_speed_ratio
-
-    def reset(self):
-        """
-        The code works as when you get hit by the asteroid you will disappear for 2 seconds.
-        After that you are invincible for 3 seconds, and you can get hit again.
-        """
-        self.invincibility_timer = CONFIG['PLAYER_INVINCIBILITY_SECONDS']
-        # The Player is Invisible
-        self.alpha = 0
-
-    @property
-    def is_invincible(self):
-        return self.invincibility_timer > 0
-
-    def on_update(self, delta_time):
-        """
-        Move the sprite and wrap
-        """
-
-        self.center_x += self.change_x
-        self.center_y += self.change_y
-
-        # Time when you can't get hit by an asteroid
-        if self.is_invincible:
-            self.invincibility_timer -= delta_time
-            # Time when you are not visible
-            if self.invincibility_timer < 3:
-                # Visible
-                if self.alpha == 0:
-                    self.alpha = 155
-                    self.center_x = CONFIG['PLAYER_START_X']
-                    self.center_y = CONFIG['PLAYER_START_Y']
-                    self.change_y = 0
-                    self.change_x = 0
-                    self.angle = random.randint(CONFIG['PLAYER_START_ANGLE_MIN'], CONFIG['PLAYER_START_ANGLE_MAX'])
-                    self.forward(random.uniform(CONFIG['PLAYER_START_SPEED_MIN'], CONFIG['PLAYER_START_SPEED_MAX']))
-
-        else:
-            self.alpha = 255
-
-        # wrap
-        wrap(self, CONFIG['SCREEN_WIDTH'], CONFIG['SCREEN_HEIGHT'])
-
 
 class BonusUFO(arcade.Sprite):
     """occasionally moves across the screen. Grants the player points if shot"""
@@ -304,64 +215,11 @@ class InGameView(arcade.View):
     Main application class.
     """
 
-    def __init__(self):
+    def __initFOO__(self):
         """
         Initializer
         """
 
-        # Call the parent class initializer
-        super().__init__()
-
-        # loading sounds
-
-        self.sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
-        self.sound_thrust = arcade.load_sound("sounds/spaceEngine_003.ogg")
-        self.sound_thrust_player = None
-
-        # Variable that will hold a list of shots fired by the player
-        self.player_shot_list = None
-        self.player_shot_fire_rate_timer = 0
-
-        # Asteroid SpriteList
-        self.asteroid_list = None
-
-        # The current level
-        self.level = 1
-
-        # Set up the player info
-        self.player_sprite: Player = None
-        self.player_score = None
-        self.player_lives = None
-        self.player_speed = 0
-        self.opposite_angle = 0
-        self.thrust_emitter = None
-        self.explosion_emitter = None
-        self.player_shoot_sound = None
-
-        # set up ufo info
-        self.ufo_list = None
-        self.ufo_shot_list = None
-
-        # Track the current state of what key is pressed
-        self.space_pressed = False
-        self.left_pressed = False
-        self.right_pressed = False
-        self.up_pressed = False
-        self.down_pressed = False
-        self.thrust_pressed = False
-        self.turn_right_pressed = False
-        self.turn_left_pressed = False
-
-        # Get list of joysticks
-        self.joystick = get_joystick(
-            self.on_joybutton_press,
-            self.on_joybutton_release,
-            self.on_joyaxis_motion,
-            self.on_joyhat_motion
-        )
-
-        # Set the background color
-        arcade.set_background_color(SCREEN_COLOR)
 
     def get_stars(self, no_of_stars: int) -> arcade.SpriteList:
         """
@@ -465,7 +323,62 @@ class InGameView(arcade.View):
     def on_show_view(self):
         """ Set up the game and initialize the variables. """
 
-        self.sound_thrust_player = None
+        print("first")
+
+        #self.sound_thrust_player = None
+
+        # Call the parent class initializer
+        #super().__init__()
+
+        # loading sounds
+
+        self.sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
+        self.sound_thrust = arcade.load_sound("sounds/spaceEngine_003.ogg")
+
+        # Variable that will hold a list of shots fired by the player
+        #self.player_shot_list = None
+        #self.player_shot_fire_rate_timer = 0
+
+        # Asteroid SpriteList
+        #self.asteroid_list = None
+
+        # The current level
+        self.level = 1
+
+        # Set up the player info
+        # self.player_sprite: Player = None
+        #self.player_score = None
+        #self.player_lives = None
+        #self.player_speed = 0
+        #self.opposite_angle = 0
+        #self.thrust_emitter = None
+        #self.explosion_emitter = None
+        #self.player_shoot_sound = None
+
+        # set up ufo info
+        #self.ufo_list = None
+        #self.ufo_shot_list = None
+
+        # Track the current state of what key is pressed
+        self.space_pressed = False
+        self.left_pressed = False
+        self.right_pressed = False
+        self.up_pressed = False
+        self.down_pressed = False
+        self.thrust_pressed = False
+        self.turn_right_pressed = False
+        self.turn_left_pressed = False
+
+        # Get list of joysticks
+        self.joystick = get_joystick(
+            self.on_joybutton_press,
+            self.on_joybutton_release,
+            self.on_joyaxis_motion,
+            self.on_joyhat_motion
+        )
+
+        # Set the background color
+        arcade.set_background_color(SCREEN_COLOR)
 
         # No points when the game starts
         self.player_score = 0
@@ -480,17 +393,26 @@ class InGameView(arcade.View):
         # Small stars in background
         self.stars_list = arcade.SpriteList()
 
+        print("second")
+
         # Create a Player object
         self.player_sprite = Player(
+            scale=CONFIG['SPRITE_SCALING'],
             center_x=CONFIG['PLAYER_START_X'],
             center_y=CONFIG['PLAYER_START_Y'],
             lives=CONFIG['PLAYER_START_LIVES'],
-            scale=CONFIG['SPRITE_SCALING'],
+            thrust_speed=CONFIG['PLAYER_THRUST'],
+            speed_limit=CONFIG['PLAYER_SPEED_LIMIT'],
+            invincibility_seconds=CONFIG['PLAYER_INVINCIBILITY_SECONDS'],
             start_speed_min=CONFIG['PLAYER_START_SPEED_MIN'],
             start_speed_max=CONFIG['PLAYER_START_SPEED_MAX'],
             start_angle_min=CONFIG['PLAYER_START_ANGLE_MIN'],
-            start_angle_max=CONFIG['PLAYER_START_ANGLE_MAX']
+            start_angle_max=CONFIG['PLAYER_START_ANGLE_MAX'],
+            wrap_max_x=CONFIG['SCREEN_WIDTH'],
+            wrap_max_y=CONFIG['SCREEN_HEIGHT']
         )
+
+        print("third")
 
         # load the player shot sound
         self.player_shoot_sound = arcade.load_sound("sounds/laserRetro_001.ogg")
@@ -513,6 +435,8 @@ class InGameView(arcade.View):
 
         # Start level 1
         self.next_level(1)
+
+        print("last")
 
     def on_draw(self):
         """
@@ -593,6 +517,8 @@ class InGameView(arcade.View):
         # rotate player with joystick if present
         if self.joystick:
             self.player_sprite.angle += round(self.joystick.x) * -CONFIG['PLAYER_ROTATE_SPEED']
+
+        print(self.player_sprite)
 
         # checks if ufo shot collides with player
         for ufo_shot_hit in self.player_sprite.collides_with_list(self.ufo_shot_list):

@@ -2,9 +2,9 @@
 file that contains all game-sprite classes in the project. They are imported into main when used in-game
 """
 
-from random import randrange, random, randint
+from random import randrange, random, randint, uniform
 from typing import Tuple
-from math import cos, pi
+from math import cos, pi, sqrt
 
 import arcade
 
@@ -191,3 +191,107 @@ class Asteroid(ObjInSpace):
 
         # Rotate Asteroid
         self.angle += self.rotation_speed
+
+
+class Player(ObjInSpace):
+    """
+    The player
+    """
+
+    def __init__(self,
+                 scale,
+                 center_x,
+                 center_y,
+                 lives,
+                 thrust_speed,
+                 speed_limit,
+                 invincibility_seconds,
+                 start_speed_min,
+                 start_speed_max,
+                 start_angle_min,
+                 start_angle_max,
+                 wrap_max_x,
+                 wrap_max_y):
+        """
+        Setup new Player object
+        """
+
+        # Graphics to use for Player
+        super().__init__("images/playerShip1_red.png",
+                         scale=scale,
+                         center_x=center_x,
+                         center_y=center_y,
+                         angle=randint(start_angle_min, start_angle_max),
+                         flipped_horizontally=True,
+                         flipped_diagonally=True,
+                         wrap_max_x=wrap_max_x,
+                         wrap_max_y=wrap_max_y)
+
+        self.start_x = center_x
+        self.start_y = center_y
+
+        self.lives = lives
+        self.thrust_speed = thrust_speed
+        self.speed_limit = speed_limit
+        self.invincibility_seconds = invincibility_seconds
+
+        self.forward(random.uniform(start_speed_min, start_speed_max))
+        self.invincibility_timer = 0
+
+        self.start_angle_min = start_angle_min
+        self.start_angle_max = start_angle_max
+        self.start_speed_min = start_speed_min
+        self.start_speed_max = start_speed_max
+
+    def thrust(self):
+        """
+        increase speed in the direction pointing
+        """
+
+        self.forward(self.thrust_speed)
+        # Keep track of Player Speed
+        player_speed_vector_length = sqrt(self.change_x ** 2 + self.change_y ** 2)
+
+        # Calculating the value used to lower the players speed while keeping the x - y ratio
+        player_x_and_y_speed_ratio = self.speed_limit / player_speed_vector_length
+
+        # If player is too fast slow it down
+        if player_speed_vector_length > self.speed_limit:
+            self.change_x *= player_x_and_y_speed_ratio
+            self.change_y *= player_x_and_y_speed_ratio
+
+    def reset(self):
+        """
+        The code works as when you get hit by the asteroid you will disappear for 2 seconds.
+        After that you are invincible for 3 seconds, and you can get hit again.
+        """
+        self.invincibility_timer = self.invincibility_seconds
+        # The Player is Invisible
+        self.alpha = 0
+
+    @property
+    def is_invincible(self):
+        return self.invincibility_timer > 0
+
+    def on_update(self, delta_time):
+        """
+        Move the sprite and wrap
+        """
+
+        # Time when you can't get hit by an asteroid
+        if self.is_invincible:
+            self.invincibility_timer -= delta_time
+            # Time when you are not visible
+            if self.invincibility_timer < 3:
+                # Visible
+                if self.alpha == 0:
+                    self.alpha = 155
+                    self.center_x = self.start_x
+                    self.center_y = self.start_y
+                    self.change_y = 0
+                    self.change_x = 0
+                    self.angle = randint(self.start_angle_min, self.start_angle_max)
+                    self.forward(uniform(self.start_speed_min, self.start_speed_max))
+
+        else:
+            self.alpha = 255
