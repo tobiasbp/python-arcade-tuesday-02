@@ -254,6 +254,7 @@ class BonusUFO(arcade.Sprite):
         self.level = level
         self.shot_list = shot_list
         self.target = target
+        self.shoot_timer = CONFIG['UFO_FIRE_RATE'] + (self.level - 1) * CONFIG['UFO_FIRE_RATE_MOD_PR_LEVEL']
 
         # set random direction. always point towards center, with noise
         self.change_x = random.randrange(1, CONFIG['UFO_SPEED']) + (self.level - 1) * CONFIG['UFO_SPEED_MOD_PR_LEVEL']
@@ -268,7 +269,7 @@ class BonusUFO(arcade.Sprite):
         arcade.schedule(self.change_dir, CONFIG['UFO_DIR_CHANGE_RATE'])
 
         # setup shooting
-        arcade.schedule(self.shoot, CONFIG['UFO_FIRE_RATE'] + (self.level - 1) * CONFIG['UFO_FIRE_RATE_MOD_PR_LEVEL'])
+        #arcade.schedule(self.shoot, CONFIG['UFO_FIRE_RATE'] + (self.level - 1) * CONFIG['UFO_FIRE_RATE_MOD_PR_LEVEL'])
 
     def change_dir(self, delta_time):
         """
@@ -279,7 +280,7 @@ class BonusUFO(arcade.Sprite):
         self.change_x -= r
         self.change_y += r
 
-    def shoot(self, delta_time):
+    def shoot(self):
         """
         fire a new shot
         """
@@ -872,6 +873,16 @@ class InGameView(arcade.View):
         """
         Movement and game logic
         """
+
+        #Ufo shooting
+        for ufo in self.ufo_list:
+            # Timer for when ufo should shoot
+            ufo.shoot_timer -= delta_time
+            # If timer is finished, call shoot
+            if ufo.shoot_timer <= 0:
+                self.sound_fire.play()
+                ufo.shoot()
+                ufo.shoot_timer = CONFIG['UFO_FIRE_RATE'] + (self.level - 1) * CONFIG['UFO_FIRE_RATE_MOD_PR_LEVEL']
 
         # Stars in background
         for s in self.stars_list:
