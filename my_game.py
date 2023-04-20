@@ -316,13 +316,6 @@ class BonusUFO(arcade.Sprite):
         self.shoot_timer -= delta_time
         self.change_dir_timer -= delta_time
 
-    def destroy(self):
-        """
-        kill the sprite and unschedule all functions
-        """
-        self.kill()
-
-
 class IntroView(arcade.View):
     """
     View for the intro screen.
