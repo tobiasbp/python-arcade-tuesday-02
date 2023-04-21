@@ -44,7 +44,7 @@ class Shot(arcade.Sprite):
     universal class for shot objects
     """
 
-    def __init__(self, filename, center_x, center_y, angle, speed, range, sound=None):
+    def __init__(self, filename, center_x, center_y, angle, speed, range):
 
         super().__init__(
             filename=filename,
@@ -61,10 +61,6 @@ class Shot(arcade.Sprite):
         self.distance_traveled = 0
 
         self.forward(self.speed)
-
-        # play the shot sound if present
-        if sound:
-            sound.play()
 
     def update(self):
         """
@@ -237,7 +233,6 @@ class BonusUFO(arcade.Sprite):
     """occasionally moves across the screen. Grants the player points if shot"""
 
     sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
-    sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
 
     def __int__(self, shot_list, target, level=1, **kwargs):
 
@@ -256,6 +251,8 @@ class BonusUFO(arcade.Sprite):
         self.level = level
         self.shot_list = shot_list
         self.target = target
+        self.shoot_timer = CONFIG['UFO_FIRE_RATE'] + (self.level - 1) * CONFIG['UFO_FIRE_RATE_MOD_PR_LEVEL']
+        self.change_dir_timer = CONFIG['UFO_DIR_CHANGE_RATE']
 
         # set random direction. always point towards center, with noise
         self.change_x = random.randrange(1, CONFIG['UFO_SPEED']) + (self.level - 1) * CONFIG['UFO_SPEED_MOD_PR_LEVEL']
@@ -266,13 +263,7 @@ class BonusUFO(arcade.Sprite):
         if self.center_y > CONFIG['SCREEN_HEIGHT'] / 2:
             self.change_y *= -1
 
-        # setup direction changing
-        arcade.schedule(self.change_dir, CONFIG['UFO_DIR_CHANGE_RATE'])
-
-        # setup shooting
-        arcade.schedule(self.shoot, CONFIG['UFO_FIRE_RATE'] + (self.level - 1) * CONFIG['UFO_FIRE_RATE_MOD_PR_LEVEL'])
-
-    def change_dir(self, delta_time):
+    def change_dir(self):
         """
         set a new direction
         """
@@ -281,7 +272,9 @@ class BonusUFO(arcade.Sprite):
         self.change_x -= r
         self.change_y += r
 
-    def shoot(self, delta_time):
+        self.change_dir_timer = CONFIG['UFO_DIR_CHANGE_RATE']
+
+    def shoot(self):
         """
         fire a new shot
         """
@@ -299,11 +292,13 @@ class BonusUFO(arcade.Sprite):
             ) + 90,
             speed=CONFIG['UFO_SHOT_SPEED'],
             range=CONFIG['UFO_SHOT_RANGE'],
-            sound=BonusUFO.sound_fire)
+        )
 
         self.shot_list.append(new_ufo_shot)
 
-    def update(self):
+        self.shoot_timer = CONFIG['UFO_FIRE_RATE'] + (self.level - 1) * CONFIG['UFO_FIRE_RATE_MOD_PR_LEVEL']
+
+    def on_update(self, delta_time):
         """update position, and kill if out of bounds"""
 
         # keep spinning. just for graphics purposes
@@ -315,16 +310,11 @@ class BonusUFO(arcade.Sprite):
         # kill if out of bounds
         if self.center_x > CONFIG['SCREEN_WIDTH'] or self.center_x < 0 or self.center_y > CONFIG[
             'SCREEN_HEIGHT'] or self.center_y < 0:
-            self.destroy()
+            self.kill()
 
-    def destroy(self):
-        """
-        kill the sprite and unschedule all functions
-        """
-        arcade.unschedule(self.shoot)
-        arcade.unschedule(self.change_dir)
-        self.kill()
-
+        # Timers for when ufo should shoot and change direction
+        self.shoot_timer -= delta_time
+        self.change_dir_timer -= delta_time
 
 class IntroView(arcade.View):
     """
@@ -654,7 +644,7 @@ class InGameView(arcade.View):
 
         self.sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
         self.sound_thrust = arcade.load_sound("sounds/spaceEngine_003.ogg")
-        self.sound_thrust_player = None
+        self.sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = None
@@ -875,6 +865,16 @@ class InGameView(arcade.View):
         Movement and game logic
         """
 
+        # UFO shooting and direction changing
+        for ufo in self.ufo_list:
+            # If shooting timer is finished, call shoot
+            if ufo.shoot_timer <= 0:
+                self.sound_fire.play()
+                ufo.shoot()
+            # If direction changing timer is finished, call change_dir
+            if ufo.change_dir_timer <= 0:
+                ufo.change_dir()
+
         # Stars in background
         for s in self.stars_list:
             # Star's direction is opposite of the player
@@ -882,7 +882,7 @@ class InGameView(arcade.View):
             s.change_y = -1 * self.player_sprite.change_y
             # Wrap star if off screen
             wrap(s, CONFIG['SCREEN_WIDTH'], CONFIG['SCREEN_HEIGHT'])
-            
+
         # Move all stars
         self.stars_list.on_update(delta_time)
 
@@ -899,6 +899,7 @@ class InGameView(arcade.View):
 
         # checks if ufo shot collides with player
         for ufo_shot_hit in self.player_sprite.collides_with_list(self.ufo_shot_list):
+            self.sound_explosion.play()
             self.player_sprite.lives -= 1
             self.player_sprite.reset()
             self.get_explosion(self.player_sprite.position)
@@ -907,20 +908,21 @@ class InGameView(arcade.View):
         # Check if collision with Asteroids and dies and kills the Asteroid
         for a in self.player_sprite.collides_with_list(self.asteroid_list):
             if not self.player_sprite.is_invincible:
-                # In the future, the Player will explode instead of disappearing.
+                self.sound_explosion.play()
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
                 self.get_explosion(self.player_sprite.position)
+
                 a.kill()
 
         # check for collision with bonus_ufo
         for ufo in self.player_sprite.collides_with_list(self.ufo_list):
             if not self.player_sprite.is_invincible:
-                # In the future, the Player will explode instead of disappearing.
+                self.sound_explosion.play()
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
                 self.get_explosion(self.player_sprite.position)
-                ufo.destroy()
+                ufo.kill()
 
         # Player shot
         for shot in self.player_shot_list:
@@ -928,7 +930,7 @@ class InGameView(arcade.View):
             for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
                 shot.kill()
                 self.sound_explosion.play()
-                ufo_hit.destroy()
+                ufo_hit.kill()
                 self.player_score += CONFIG['UFO_POINTS_REWARD']
                 self.get_explosion(
                     ufo_hit.position,
@@ -978,7 +980,7 @@ class InGameView(arcade.View):
         self.asteroid_list.update()
 
         # update UFOs
-        self.ufo_list.update()
+        self.ufo_list.on_update(delta_time)
 
         # update UFO shot_lists
         self.ufo_shot_list.update()
@@ -1023,7 +1025,9 @@ class InGameView(arcade.View):
             if self.thrust_pressed is False:
                 if self.sound_thrust_player is not None:
                     self.sound_thrust.stop(self.sound_thrust_player)
+                
                 self.sound_thrust_player = self.sound_thrust.play(loop=True)
+
             self.thrust_pressed = True
 
         if key == CONFIG["PLAYER_FIRE_KEY"]:
@@ -1036,9 +1040,9 @@ class InGameView(arcade.View):
                         angle=self.player_sprite.angle,
                         speed=CONFIG['PLAYER_SHOT_SPEED'],
                         range=CONFIG['PLAYER_SHOT_RANGE'],
-                        sound=self.player_shoot_sound
                     )
 
+                    self.sound_fire.play()
                     self.player_shot_list.append(new_shot)
                     self.player_shot_fire_rate_timer = 0
 
