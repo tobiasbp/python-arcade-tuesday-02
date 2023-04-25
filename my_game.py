@@ -1127,6 +1127,8 @@ class GameOverView(arcade.View):
         self.game_over_sign = arcade.load_texture("images/UI/asteroidsGameOverSign.png")
         self.restart_button = arcade.load_texture("images/UI/asteroidsRestartButton.png")
         self.restart_button_cover = arcade.load_texture("images/UI/asteroidsRestartButtonHover.png")
+        self.base_button = arcade.load_texture("images/UI/asteroidsBasicButtonSmall.png")
+        self.base_button_cover = arcade.load_texture("images/UI/asteroidsBasicButtonSmallHover.png")
 
         self.player_score = player_score
         self.level = level
@@ -1141,10 +1143,11 @@ class GameOverView(arcade.View):
             y=CONFIG['BUTTON_Y'],
             width=100,
             height=100,
-            texture=self.restart_button,
-            texture_hovered=self.restart_button_cover,
+            texture=self.base_button,
+            texture_hovered=self.base_button_cover,
             scale=CONFIG['BUTTON_SCALE'],
-            style=None
+            style=None,
+            text="Retry"
         )
         # When the GUI button is now clicked it starts the event self.new_game
         self.gui_restart_button.on_click = self.new_game
