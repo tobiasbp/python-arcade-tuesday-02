@@ -325,7 +325,7 @@ class InGameView(arcade.View):
 
         print("first")
 
-        #self.sound_thrust_player = None
+        self.sound_thrust_player = None
 
         # Call the parent class initializer
         #super().__init__()
@@ -337,7 +337,7 @@ class InGameView(arcade.View):
 
         # Variable that will hold a list of shots fired by the player
         #self.player_shot_list = None
-        #self.player_shot_fire_rate_timer = 0
+        self.player_shot_fire_rate_timer = 0
 
         # Asteroid SpriteList
         #self.asteroid_list = None
@@ -352,7 +352,7 @@ class InGameView(arcade.View):
         #self.player_speed = 0
         #self.opposite_angle = 0
         #self.thrust_emitter = None
-        #self.explosion_emitter = None
+        self.explosion_emitter = None
         #self.player_shoot_sound = None
 
         # set up ufo info
@@ -397,6 +397,8 @@ class InGameView(arcade.View):
 
         # Create a Player object
         self.player_sprite = Player(
+            wrap_max_x=CONFIG['SCREEN_WIDTH'],
+            wrap_max_y=CONFIG['SCREEN_HEIGHT'],
             scale=CONFIG['SPRITE_SCALING'],
             center_x=CONFIG['PLAYER_START_X'],
             center_y=CONFIG['PLAYER_START_Y'],
@@ -408,8 +410,6 @@ class InGameView(arcade.View):
             start_speed_max=CONFIG['PLAYER_START_SPEED_MAX'],
             start_angle_min=CONFIG['PLAYER_START_ANGLE_MIN'],
             start_angle_max=CONFIG['PLAYER_START_ANGLE_MAX'],
-            wrap_max_x=CONFIG['SCREEN_WIDTH'],
-            wrap_max_y=CONFIG['SCREEN_HEIGHT']
         )
 
         print("third")
