@@ -329,6 +329,8 @@ class IntroView(arcade.View):
         self.play_button_cover = arcade.load_texture("images/UI/asteroidsStartButtonHover.png")
         self.settings_button = arcade.load_texture("images/UI/asteroidsSettingsButton.png")
         self.settings_button_cover = arcade.load_texture("images/UI/asteroidsSettingsButtonHover.png")
+        self.base_button = arcade.load_texture("images/UI/asteroidsBasicButtonSmall.png")
+        self.base_button_cover = arcade.load_texture("images/UI/asteroidsBasicButtonSmallHover.png")
 
         # Makes the manager that contains the GUI button and enables it to the game.
         self.manager = arcade.gui.UIManager()
@@ -340,10 +342,11 @@ class IntroView(arcade.View):
             y=CONFIG['BUTTON_Y'],
             width=100,
             height=100,
-            texture=self.play_button,
-            texture_hovered=self.play_button_cover,
+            texture=self.base_button,
+            texture_hovered=self.base_button_cover,
             scale=CONFIG['BUTTON_SCALE'],
             style=None,
+            text="Play"
         )
 
         # Make the settings button
@@ -352,10 +355,11 @@ class IntroView(arcade.View):
             y=CONFIG['SETTINGS_BUTTON_Y'],
             width=100,
             height=100,
-            texture=self.settings_button,
-            texture_hovered=self.settings_button_cover,
+            texture=self.base_button,
+            texture_hovered=self.base_button_cover,
             scale=CONFIG['BUTTON_SCALE'],
             style=None,
+            text="Settings"
         )
 
         # Now when the GUI buttons are clicked they run the functions we assign to them
@@ -473,6 +477,10 @@ class SettingsView(arcade.View):
         for k in self.key_to_id:
             self.id_to_key.update({self.key_to_id[k]: k})
 
+        # Load button textures
+        self.base_button = arcade.load_texture("images/UI/asteroidsBasicButtonBig.png")
+        self.base_button_cover = arcade.load_texture("images/UI/asteroidsBasicButtonBigHover.png")
+
         self.name_of_key_to_change = None
         self.changed_settings = {}
         # Settings guides that appears under the buttons
@@ -503,9 +511,13 @@ class SettingsView(arcade.View):
 
 
         # Initialize the widgets
-        self.reset_settings_button = arcade.gui.UIFlatButton(
-            text="Reset Settings",
-            width=400
+        self.reset_settings_button = arcade.gui.UITextureButton(
+            texture=self.base_button,
+            texture_hovered=self.base_button_cover,
+            scale=CONFIG["BUTTON_SCALE"],
+            style=None,
+            text="Reset Settings"
+
         )
         self.v_box.add(self.reset_settings_button.with_space_around(
             bottom=20
