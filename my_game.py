@@ -519,31 +519,41 @@ class SettingsView(arcade.View):
             text="Reset Settings"
 
         )
-        self.v_box.add(self.reset_settings_button.with_space_around(
-            bottom=20
-        ))
+        self.v_box.add(self.reset_settings_button.with_space_around(bottom=20))
 
-        self.change_player_thrust_key_button = arcade.gui.UIFlatButton(
-            text="Change Thrust Key: " + self.id_to_key[CONFIG["PLAYER_THRUST_KEY"]],
-            width=400
+        self.change_player_thrust_key_button = arcade.gui.UITextureButton(
+            texture=self.base_button,
+            texture_hovered=self.base_button_cover,
+            scale=CONFIG["BUTTON_SCALE"],
+            style=None,
+            text="Change Thrust Key: " + self.id_to_key[CONFIG["PLAYER_THRUST_KEY"]]
         )
         self.v_box.add(self.change_player_thrust_key_button.with_space_around(bottom=20))
 
-        self.change_player_fire_key_button = arcade.gui.UIFlatButton(
-            text="Change Fire Key: " + self.id_to_key[CONFIG["PLAYER_FIRE_KEY"]],
-            width=400
+        self.change_player_fire_key_button = arcade.gui.UITextureButton(
+            texture=self.base_button,
+            texture_hovered=self.base_button_cover,
+            scale=CONFIG["BUTTON_SCALE"],
+            style=None,
+            text="Change Fire Key: " + self.id_to_key[CONFIG["PLAYER_FIRE_KEY"]]
         )
         self.v_box.add(self.change_player_fire_key_button.with_space_around(bottom=20))
 
-        self.change_player_turn_left_key_button = arcade.gui.UIFlatButton(
-            text="Change Turn Left Key: " + self.id_to_key[CONFIG["PLAYER_TURN_LEFT_KEY"]],
-            width=400
+        self.change_player_turn_left_key_button = arcade.gui.UITextureButton(
+            texture=self.base_button,
+            texture_hovered=self.base_button_cover,
+            scale=CONFIG["BUTTON_SCALE"],
+            style=None,
+            text="Change Turn Left Key: " + self.id_to_key[CONFIG["PLAYER_TURN_LEFT_KEY"]]
         )
         self.v_box.add(self.change_player_turn_left_key_button.with_space_around(bottom=20))
 
-        self.change_player_turn_right_key_button = arcade.gui.UIFlatButton(
-            text="Change Turn Right Key: " + self.id_to_key[CONFIG["PLAYER_TURN_RIGHT_KEY"]],
-            width=400
+        self.change_player_turn_right_key_button = arcade.gui.UITextureButton(
+            texture=self.base_button,
+            texture_hovered=self.base_button_cover,
+            scale=CONFIG["BUTTON_SCALE"],
+            style=None,
+            text="Change Turn Right Key: " + self.id_to_key[CONFIG["PLAYER_TURN_RIGHT_KEY"]]
         )
         self.v_box.add(self.change_player_turn_right_key_button.with_space_around(bottom=20))
 
