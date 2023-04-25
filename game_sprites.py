@@ -90,7 +90,6 @@ class Shot(ObjInSpace):
             self.kill()
 
 
-
 class Star(arcade.Sprite):
     """
     A flashing star.
@@ -217,7 +216,7 @@ class Player(ObjInSpace):
         """
 
         # Graphics to use for Player
-        super().__init__("images/playerShip1_red.png",
+        super().__init__(filename="images/playerShip1_red.png",
                          scale=scale,
                          center_x=center_x,
                          center_y=center_y,
