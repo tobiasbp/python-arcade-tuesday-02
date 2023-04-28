@@ -391,6 +391,8 @@ class InGameView(arcade.View):
 
         # Create a Player object
         self.player_sprite = Player(
+            wrap_max_x=CONFIG['SCREEN_WIDTH'],
+            wrap_max_y=CONFIG['SCREEN_HEIGHT'],
             scale=CONFIG['SPRITE_SCALING'],
             center_x=CONFIG['PLAYER_START_X'],
             center_y=CONFIG['PLAYER_START_Y'],
@@ -402,8 +404,6 @@ class InGameView(arcade.View):
             start_speed_max=CONFIG['PLAYER_START_SPEED_MAX'],
             start_angle_min=CONFIG['PLAYER_START_ANGLE_MIN'],
             start_angle_max=CONFIG['PLAYER_START_ANGLE_MAX'],
-            wrap_max_x=CONFIG['SCREEN_WIDTH'],
-            wrap_max_y=CONFIG['SCREEN_HEIGHT']
         )
 
         # load the player shot sound

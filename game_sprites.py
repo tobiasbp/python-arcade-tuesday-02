@@ -16,6 +16,7 @@ class ObjInSpace(arcade.Sprite):
     """
 
     def __init__(self, wrap_max_x, wrap_max_y, **kwargs):
+
         super().__init__(**kwargs)
 
         self.wrap_max_x = wrap_max_x
