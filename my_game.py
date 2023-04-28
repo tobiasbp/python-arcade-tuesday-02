@@ -567,7 +567,7 @@ class InGameView(arcade.View):
                                                    s.angle + CONFIG["ASTEROIDS_SPREAD"])
                         new_a = Asteroid(
                             scale=CONFIG['SPRITE_SCALING'],
-                            angle=a.angle,
+                            angle=a_angle,
                             screen_width=CONFIG['SCREEN_WIDTH'],
                             screen_height=CONFIG['SCREEN_HEIGHT'],
                             min_spawn_dist_from_player=CONFIG['ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER'],
@@ -599,16 +599,16 @@ class InGameView(arcade.View):
         self.player_sprite.on_update(delta_time)
 
         # Update the player shots
-        self.player_shot_list.update()
+        self.player_shot_list.on_update(delta_time)
 
         # Update Asteroids
-        self.asteroid_list.update()
+        self.asteroid_list.on_update(delta_time)
 
         # update UFOs
         self.ufo_list.update()
 
         # update UFO shot_lists
-        self.ufo_shot_list.update()
+        self.ufo_shot_list.on_update(delta_time)
 
         # check if the player is dead
         if self.player_sprite.lives <= 0:

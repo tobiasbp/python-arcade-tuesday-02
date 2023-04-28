@@ -73,12 +73,12 @@ class Shot(ObjInSpace):
         if sound:
             sound.play()
 
-    def update(self):
+    def on_update(self, delta_time):
         """
         move the sprite and fade
         """
 
-        super().update()
+        super().on_update(delta_time)
 
         # check if the shot traveled too far
         self.distance_traveled += self.speed
@@ -185,9 +185,9 @@ class Asteroid(ObjInSpace):
         self.direction = self.angle  # placeholder for initial angle - angle changes during the game
         self.value = score_values[self.size - 1]
 
-    def update(self):
+    def on_update(self, delta_time):
 
-        super().update()
+        super().on_update(delta_time)
 
         # Rotate Asteroid
         self.angle += self.rotation_speed
