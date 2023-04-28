@@ -21,7 +21,7 @@ class ObjInSpace(arcade.Sprite):
         self.wrap_max_x = wrap_max_x
         self.wrap_max_y = wrap_max_y
 
-    def update(self):
+    def on_update(self, delta_time):
 
         self.center_x += self.change_x
         self.center_y += self.change_y
@@ -234,7 +234,7 @@ class Player(ObjInSpace):
         self.speed_limit = speed_limit
         self.invincibility_seconds = invincibility_seconds
 
-        self.forward(random.uniform(start_speed_min, start_speed_max))
+        self.forward(uniform(start_speed_min, start_speed_max))
         self.invincibility_timer = 0
 
         self.start_angle_min = start_angle_min
@@ -276,6 +276,8 @@ class Player(ObjInSpace):
         """
         Move the sprite and wrap
         """
+
+        super().on_update(delta_time)
 
         # Time when you can't get hit by an asteroid
         if self.is_invincible:
