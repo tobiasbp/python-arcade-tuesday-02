@@ -1161,12 +1161,14 @@ class GameOverView(arcade.View):
             arcade.color.WHITE
         )
 
-    def on_key_press(self, symbol: int, modifiers: int):
-        self.gui_restart_button.hovered = True
 
-    def on_key_release(self, _symbol: int, _modifiers: int):
-        # If you press any key you start the game also. If you're lazy. :)
-        self.new_game()
+    def on_key_press(self, symbol: int, modifiers: int):
+        if symbol == arcade.key.R:
+            self.gui_restart_button.hovered = True
+
+    def on_key_release(self, symbol: int, _modifiers: int):
+        if symbol == arcade.key.R:
+            self.new_game()
 
     def on_joybutton_pressed(self, joystick, button_no):
         self.gui_restart_button.hovered = True
