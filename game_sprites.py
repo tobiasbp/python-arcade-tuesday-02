@@ -11,8 +11,8 @@ import arcade
 
 class ObjInSpace(arcade.Sprite):
     """
-    base obj for all other sprites
-    this obj only wraps, and moves
+    all in-game objects will inherit from this class.
+    This class only moves the sprite based on its change_x and change_y, and wraps them to a given width
     """
 
     def __init__(self, wrap_max_x, wrap_max_y, **kwargs):
