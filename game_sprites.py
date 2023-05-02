@@ -413,3 +413,32 @@ class BonusUFO(ObjInSpace):
         arcade.unschedule(self.shoot)
         arcade.unschedule(self.change_dir)
         self.kill()
+
+
+
+class PowerUp(arcade.Sprite):
+
+    pu_types = [
+        {"filename": "images/Power-ups/powerupYellow_star.png",
+         "score": 600
+         },
+        {"filename": "images/Power-ups/powerupRed_star.png",
+         "score": 1000
+         },
+        {"filename": "images/Power-ups/powerupGreen_star.png",
+         "score": 300
+         }
+    ]
+
+    def __init__(self, max_x, max_y):
+
+        self.type = choice(PowerUp.pu_types)
+
+        super().__init__(
+            filename=self.type["filename"],
+            center_x=randint(0, max_x),
+            center_y=randint(0, max_y)
+        )
+
+        self.angle = randint(0, 360)
+        self.forward(0.5)
