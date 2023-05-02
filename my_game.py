@@ -325,10 +325,6 @@ class IntroView(arcade.View):
         super().__init__()
 
         self.title_graphics = arcade.load_texture("images/UI/asteroidsTitle.png")
-        self.play_button = arcade.load_texture("images/UI/asteroidsStartButton.png")
-        self.play_button_cover = arcade.load_texture("images/UI/asteroidsStartButtonHover.png")
-        self.settings_button = arcade.load_texture("images/UI/asteroidsSettingsButton.png")
-        self.settings_button_cover = arcade.load_texture("images/UI/asteroidsSettingsButtonHover.png")
         self.base_button = arcade.load_texture("images/UI/asteroidsBasicButtonSmall.png")
         self.base_button_cover = arcade.load_texture("images/UI/asteroidsBasicButtonSmallHover.png")
 
@@ -1125,8 +1121,6 @@ class GameOverView(arcade.View):
 
         self.check_if_started = False
         self.game_over_sign = arcade.load_texture("images/UI/asteroidsGameOverSign.png")
-        self.restart_button = arcade.load_texture("images/UI/asteroidsRestartButton.png")
-        self.restart_button_cover = arcade.load_texture("images/UI/asteroidsRestartButtonHover.png")
         self.base_button = arcade.load_texture("images/UI/asteroidsBasicButtonSmall.png")
         self.base_button_cover = arcade.load_texture("images/UI/asteroidsBasicButtonSmallHover.png")
 
