@@ -377,7 +377,7 @@ class BonusUFO(ObjInSpace):
             scale=self.shot_scale,
             center_x=self.center_x,
             center_y=self.center_y,
-            angle=-new_angle,
+            angle=new_angle,
             speed=self.shot_speed,
             range=self.shot_range,
             fade_start=self.shot_fade_start,
