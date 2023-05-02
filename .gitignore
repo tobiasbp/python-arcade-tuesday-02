@@ -133,3 +133,4 @@ dmypy.json
 
 # my_game
 user_settings_*
+user_settings.toml
