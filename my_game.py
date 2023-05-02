@@ -326,10 +326,8 @@ class IntroView(arcade.View):
         super().__init__()
 
         self.title_graphics = arcade.load_texture("images/UI/asteroidsTitle.png")
-        self.play_button = arcade.load_texture("images/UI/asteroidsStartButton.png")
-        self.play_button_cover = arcade.load_texture("images/UI/asteroidsStartButtonHover.png")
-        self.settings_button = arcade.load_texture("images/UI/asteroidsSettingsButton.png")
-        self.settings_button_cover = arcade.load_texture("images/UI/asteroidsSettingsButtonHover.png")
+        self.basic_button = arcade.load_texture("images/UI/basicButtonSmall.png")
+        self.basic_button_hover = arcade.load_texture("images/UI/basicButtonSmallHover.png")
 
         # Makes the manager that contains the GUI button and enables it to the game.
         self.manager = arcade.gui.UIManager()
@@ -341,10 +339,11 @@ class IntroView(arcade.View):
             y=CONFIG['BUTTON_Y'],
             width=100,
             height=100,
-            texture=self.play_button,
-            texture_hovered=self.play_button_cover,
+            texture=self.basic_button,
+            texture_hovered=self.basic_button_hover,
             scale=CONFIG['BUTTON_SCALE'],
             style=None,
+            text="Play"
         )
 
         # Make the settings button
@@ -353,10 +352,11 @@ class IntroView(arcade.View):
             y=CONFIG['SETTINGS_BUTTON_Y'],
             width=100,
             height=100,
-            texture=self.settings_button,
-            texture_hovered=self.settings_button_cover,
+            texture=self.basic_button,
+            texture_hovered=self.basic_button_hover,
             scale=CONFIG['BUTTON_SCALE'],
             style=None,
+            text="Settings"
         )
 
         # Now when the GUI buttons are clicked they run the functions we assign to them
@@ -474,6 +474,10 @@ class SettingsView(arcade.View):
         for k in self.key_to_id:
             self.id_to_key.update({self.key_to_id[k]: k})
 
+        # Load button textures
+        self.basic_button = arcade.load_texture("images/UI/basicButtonBig.png")
+        self.basic_button_hover = arcade.load_texture("images/UI/basicButtonBigHover.png")
+
         self.name_of_key_to_change = None
         self.changed_settings = {}
         # Settings guides that appears under the buttons
@@ -504,35 +508,49 @@ class SettingsView(arcade.View):
 
 
         # Initialize the widgets
-        self.reset_settings_button = arcade.gui.UIFlatButton(
-            text="Reset Settings",
-            width=400
-        )
-        self.v_box.add(self.reset_settings_button.with_space_around(
-            bottom=20
-        ))
+        self.reset_settings_button = arcade.gui.UITextureButton(
+            texture=self.basic_button,
+            texture_hovered=self.basic_button_hover,
+            scale=CONFIG["BUTTON_SCALE"],
+            style=None,
+            text="Reset Settings"
 
-        self.change_player_thrust_key_button = arcade.gui.UIFlatButton(
-            text="Change Thrust Key: " + self.id_to_key[CONFIG["PLAYER_THRUST_KEY"]],
-            width=400
+        )
+        self.v_box.add(self.reset_settings_button.with_space_around(bottom=20))
+
+        self.change_player_thrust_key_button = arcade.gui.UITextureButton(
+            texture=self.basic_button,
+            texture_hovered=self.basic_button_hover,
+            scale=CONFIG["BUTTON_SCALE"],
+            style=None,
+            text="Change Thrust Key: " + self.id_to_key[CONFIG["PLAYER_THRUST_KEY"]]
         )
         self.v_box.add(self.change_player_thrust_key_button.with_space_around(bottom=20))
 
-        self.change_player_fire_key_button = arcade.gui.UIFlatButton(
-            text="Change Fire Key: " + self.id_to_key[CONFIG["PLAYER_FIRE_KEY"]],
-            width=400
+        self.change_player_fire_key_button = arcade.gui.UITextureButton(
+            texture=self.basic_button,
+            texture_hovered=self.basic_button_hover,
+            scale=CONFIG["BUTTON_SCALE"],
+            style=None,
+            text="Change Fire Key: " + self.id_to_key[CONFIG["PLAYER_FIRE_KEY"]]
         )
         self.v_box.add(self.change_player_fire_key_button.with_space_around(bottom=20))
 
-        self.change_player_turn_left_key_button = arcade.gui.UIFlatButton(
-            text="Change Turn Left Key: " + self.id_to_key[CONFIG["PLAYER_TURN_LEFT_KEY"]],
-            width=400
+        self.change_player_turn_left_key_button = arcade.gui.UITextureButton(
+            texture=self.basic_button,
+            texture_hovered=self.basic_button_hover,
+            scale=CONFIG["BUTTON_SCALE"],
+            style=None,
+            text="Change Turn Left Key: " + self.id_to_key[CONFIG["PLAYER_TURN_LEFT_KEY"]]
         )
         self.v_box.add(self.change_player_turn_left_key_button.with_space_around(bottom=20))
 
-        self.change_player_turn_right_key_button = arcade.gui.UIFlatButton(
-            text="Change Turn Right Key: " + self.id_to_key[CONFIG["PLAYER_TURN_RIGHT_KEY"]],
-            width=400
+        self.change_player_turn_right_key_button = arcade.gui.UITextureButton(
+            texture=self.basic_button,
+            texture_hovered=self.basic_button_hover,
+            scale=CONFIG["BUTTON_SCALE"],
+            style=None,
+            text="Change Turn Right Key: " + self.id_to_key[CONFIG["PLAYER_TURN_RIGHT_KEY"]]
         )
         self.v_box.add(self.change_player_turn_right_key_button.with_space_around(bottom=20))
 
@@ -1125,8 +1143,8 @@ class GameOverView(arcade.View):
 
         self.check_if_started = False
         self.game_over_sign = arcade.load_texture("images/UI/asteroidsGameOverSign.png")
-        self.restart_button = arcade.load_texture("images/UI/asteroidsRestartButton.png")
-        self.restart_button_cover = arcade.load_texture("images/UI/asteroidsRestartButtonHover.png")
+        self.basic_button = arcade.load_texture("images/UI/basicButtonSmall.png")
+        self.basic_button_hover = arcade.load_texture("images/UI/basicButtonSmallHover.png")
 
         self.player_score = player_score
         self.level = level
@@ -1141,10 +1159,11 @@ class GameOverView(arcade.View):
             y=CONFIG['BUTTON_Y'],
             width=100,
             height=100,
-            texture=self.restart_button,
-            texture_hovered=self.restart_button_cover,
+            texture=self.basic_button,
+            texture_hovered=self.basic_button_hover,
             scale=CONFIG['BUTTON_SCALE'],
-            style=None
+            style=None,
+            text="Retry"
         )
         # When the GUI button is now clicked it starts the event self.new_game
         self.gui_restart_button.on_click = self.new_game

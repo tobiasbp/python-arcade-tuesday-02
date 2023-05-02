@@ -79,9 +79,9 @@ EXPLOSION_SHAKE_AMPLITUDE = 10 # How much to shake the camera
 # UI
 TITLE_X = 400  # pCha
 TITLE_Y = 450  # px
-SETTINGS_BUTTON_X = 350  # px
+SETTINGS_BUTTON_X = 300  # px
 SETTINGS_BUTTON_Y = 100  # px
-BUTTON_X = 350  # px
+BUTTON_X = 300  # px
 BUTTON_Y = 200  # px
 BUTTON_SCALE = 1 # The scale of the play/restart button
 
