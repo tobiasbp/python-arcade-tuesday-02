@@ -325,6 +325,9 @@ class BonusUFO(ObjInSpace):
         self.shot_list = shot_list
         self.target = target
         self.speed = speed
+        self.dir_change_rate = dir_change_rate
+        self.fire_rate = fire_rate
+        self.fire_rate_mod = fire_rate_mod
         self.shot_scale = shot_scale
         self.shot_speed = shot_speed
         self.shot_range = shot_range
@@ -332,6 +335,9 @@ class BonusUFO(ObjInSpace):
         self.shot_fade_speed = shot_fade_speed
         self.screen_width = screen_width
         self.screen_height = screen_height
+
+        self.shoot_timer = fire_rate + fire_rate_mod
+        self.change_dir_timer = dir_change_rate
 
         # set random direction. always point towards center, with noise
         self.change_x = randrange(1, speed) + speed_mod
@@ -342,13 +348,7 @@ class BonusUFO(ObjInSpace):
         if self.center_y > screen_height / 2:
             self.change_y *= -1
 
-        # setup direction changing
-        arcade.schedule(self.change_dir, dir_change_rate)
-
-        # setup shooting
-        arcade.schedule(self.shoot, fire_rate + fire_rate_mod)
-
-    def change_dir(self, delta_time):
+    def change_dir(self):
         """
         set a new direction
         """
@@ -357,7 +357,9 @@ class BonusUFO(ObjInSpace):
         self.change_x -= r
         self.change_y += r
 
-    def shoot(self, delta_time):
+        self.change_dir_timer = self.dir_change_rate
+
+    def shoot(self):
         """
         fire a new shot
         """
@@ -386,7 +388,9 @@ class BonusUFO(ObjInSpace):
 
         self.shot_list.append(new_ufo_shot)
 
-    def update(self):
+        self.shoot_timer = self.fire_rate + self.fire_rate_mod
+
+    def on_update(self, delta_time):
         """update position, and kill if out of bounds"""
 
         # keep spinning. just for graphics purposes
@@ -394,6 +398,9 @@ class BonusUFO(ObjInSpace):
 
         self.center_x += self.change_x
         self.center_y += self.change_y
+
+        self.shoot_timer -= delta_time
+        self.change_dir_timer -= delta_time
 
         # kill if out of bounds
         if self.center_x > self.screen_width or self.center_x < 0 or self.center_y > self.screen_height or self.center_y < 0:
