@@ -13,6 +13,7 @@ import random
 import tomli_w
 import pathlib
 import arcade.gui
+from pyglet.math import Vec2
 
 from game_sprites import Star
 from tools import get_joystick, wrap, load_toml, get_stars, StoppableEmitter
@@ -732,6 +733,8 @@ class InGameView(arcade.View):
         """
         Makes an explosion effect
         """
+        self.shake(CONFIG['EXPLOSION_SHAKE_AMPLITUDE'])
+
         if textures is None:
             textures = PARTICLE_TEXTURES
 
@@ -765,8 +768,23 @@ class InGameView(arcade.View):
                 sprite.change_x += math.sin(sprite.radians) * impact
                 sprite.change_y += math.cos(sprite.radians) * impact
 
+    def shake(self, amplitude, speed=1.5, damping=0.9):
+        # A random float between 0 and 2 * pi (A direction in radians)
+        d = random.random() * 2 * math.pi
+        # A vector in the random direction
+        v = Vec2(
+            amplitude * math.cos(d),
+            amplitude * math.sin(d)
+        )
+        self.camera_sprites.shake(v, speed, damping)
+
     def on_show_view(self):
         """ Set up the game and initialize the variables. """
+
+        # Cameras for observing the game. We need two cams, so we can change
+        # the view of the game (like shaking) without affecting the GUI.
+        self.camera_sprites = arcade.Camera(CONFIG["SCREEN_WIDTH"], CONFIG["SCREEN_HEIGHT"])
+        self.camera_GUI = arcade.Camera(CONFIG["SCREEN_WIDTH"], CONFIG["SCREEN_HEIGHT"])
 
         self.sound_thrust_player = None
 
@@ -814,6 +832,9 @@ class InGameView(arcade.View):
         # This command has to happen before we start drawing
         arcade.start_render()
 
+        # Render from the view of this camera
+        self.camera_sprites.use()
+
         # Stars in the background drawn first
         self.stars_list.draw()
 
@@ -839,6 +860,9 @@ class InGameView(arcade.View):
         # draw explosion
         if self.explosion_emitter is not None:
             self.explosion_emitter.draw()
+
+        # Here comes the GUI. Switch camera
+        self.camera_GUI.use()
 
         # Draw players score on screen
         arcade.draw_text(
@@ -924,9 +948,8 @@ class InGameView(arcade.View):
                 self.get_explosion(self.player_sprite.position)
                 ufo.kill()
 
-        # Player shot
+        # Player shot hits UFO
         for shot in self.player_shot_list:
-
             for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
                 shot.kill()
                 self.sound_explosion.play()
@@ -946,20 +969,19 @@ class InGameView(arcade.View):
 
         # Check for PlayerShot - Asteroid collisions
         for s in self.player_shot_list:
-
             for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
-                for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
-                    if a.size > 1:
+                # Shake the camera in proportion to Asteroids size
+                self.shake(amplitude=CONFIG["ASTEROIDS_SHAKE_AMPLITUDE"] * a.size)
+                self.player_score += a.value
+                self.sound_explosion.play()
+                # Split into smaller Asteroids if not smallest size
+                if a.size > 1:
+                    for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
                         a_angle = random.randrange(s.angle - CONFIG["ASTEROIDS_SPREAD"], s.angle + CONFIG["ASTEROIDS_SPREAD"])
                         new_a = Asteroid(a.size - 1, self.level, a.position, a_angle)
                         self.asteroid_list.append(new_a)
-
-                    else:
-                        pass
-                s.kill()
                 a.kill()
-                self.sound_explosion.play()
-                self.player_score += a.value
+                s.kill()
 
         self.stoppable_emitter.update()
         # check for thrust

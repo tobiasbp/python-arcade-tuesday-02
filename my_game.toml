@@ -49,6 +49,7 @@ ASTEROIDS_SPEED = 1  # px/update
 ASTEROIDS_SPEED_MOD_PR_LEVEL = 0.7  # added to ASTEROIDS_SPEED on level increase
 ASTEROID_SCORE_VALUES = [20, 30, 40, 50]  # points
 ASTEROIDS_PR_SPLIT = 2
+ASTEROIDS_SHAKE_AMPLITUDE = 3.0 # How much to shake when Asteroids are hit. Depends on Asteroid size
 
 # ufo_constants
 UFO_SPEED = 2  # px/update. both for x and y note: has to be int
@@ -73,6 +74,7 @@ EXPLOSION_PARTICLE_SPEED = 4
 EXPLOSION_PARTICLE_LIFETIME_MIN = 0.1
 EXPLOSION_PARTICLE_LIFETIME_MAX = 0.9
 EXPLOSION_PARTICLE_SIZE = 4
+EXPLOSION_SHAKE_AMPLITUDE = 10 # How much to shake the camera
 
 # UI
 TITLE_X = 400  # pCha
