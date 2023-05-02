@@ -2,7 +2,7 @@
 file that contains all game-sprite classes in the project. They are imported into main when used in-game
 """
 
-from random import randrange, random, randint, uniform
+from random import randrange, random, randint, uniform, choice
 from typing import Tuple
 from math import cos, pi, sqrt
 
@@ -297,3 +297,112 @@ class Player(ObjInSpace):
 
         else:
             self.alpha = 255
+
+
+class BonusUFO(ObjInSpace):
+    """occasionally moves across the screen. Grants the player points if shot"""
+
+    sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
+    sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
+
+    def __int__(self, scale, shot_list, target, speed, speed_mod, dir_change_rate, fire_rate, fire_rate_mod, shot_scale, shot_speed, shot_range, shot_fade_start, shot_fade_speed, small_size, big_size, screen_width, screen_height, **kwargs):
+
+        kwargs['filename'] = "images/ufoBlue.png"
+
+        # UFOs are big or small
+        kwargs['scale'] = scale * choice((small_size, big_size))
+
+        # set random position off-screen
+        kwargs['center_x'] = choice([0, screen_width])
+        kwargs['center_y'] = choice([0, screen_height])
+
+        # send arguments upstairs
+        super().__init__(
+            wrap_max_x=screen_width,
+            wrap_max_y=screen_height,
+            **kwargs)
+
+        self.shot_list = shot_list
+        self.target = target
+        self.speed = speed
+        self.shot_scale = shot_scale
+        self.shot_speed = shot_speed
+        self.shot_range = shot_range
+        self.shot_fade_start = shot_fade_start
+        self.shot_fade_speed = shot_fade_speed
+        self.screen_width = screen_width
+        self.screen_height = screen_height
+
+        # set random direction. always point towards center, with noise
+        self.change_x = randrange(1, speed) + speed_mod
+        if self.center_x > screen_width / 2:
+            self.change_x *= -1
+
+        self.change_y = speed - self.change_x + speed_mod
+        if self.center_y > screen_height / 2:
+            self.change_y *= -1
+
+        # setup direction changing
+        arcade.schedule(self.change_dir, dir_change_rate)
+
+        # setup shooting
+        arcade.schedule(self.shoot, fire_rate + fire_rate_mod)
+
+    def change_dir(self, delta_time):
+        """
+        set a new direction
+        """
+
+        r = randrange(-self.speed, self.speed)
+        self.change_x -= r
+        self.change_y += r
+
+    def shoot(self, delta_time):
+        """
+        fire a new shot
+        """
+
+        # -1 and + 90 is to make the UFO shoot the right way
+        new_angle = -1 * arcade.get_angle_degrees(
+                self.center_x,
+                self.center_y,
+                self.target.center_x,
+                self.target.center_y
+            ) + 90
+
+        new_ufo_shot = Shot(
+            filename="images/Lasers/laserGreen07.png",
+            scale=self.shot_scale,
+            center_x=self.center_x,
+            center_y=self.center_y,
+            angle=-new_angle,
+            speed=self.shot_speed,
+            range=self.shot_range,
+            fade_start=self.shot_fade_start,
+            fade_speed=self.shot_fade_speed,
+            wrap_max_x=self.screen_width,
+            wrap_max_y=self.screen_height,
+            sound=BonusUFO.sound_fire)
+
+        self.shot_list.append(new_ufo_shot)
+
+    def update(self):
+        """update position, and kill if out of bounds"""
+
+        # keep spinning. just for graphics purposes
+        self.angle += self.change_x + self.change_y  # the faster it moves, the faster it spins.
+
+        self.center_x += self.change_x
+        self.center_y += self.change_y
+
+        # kill if out of bounds
+        if self.center_x > self.screen_width or self.center_x < 0 or self.center_y > self.screen_height or self.center_y < 0:
+            self.destroy()
+
+    def destroy(self):
+        """
+        kill the sprite and unschedule all functions
+        """
+        arcade.unschedule(self.shoot)
+        arcade.unschedule(self.change_dir)
+        self.kill()

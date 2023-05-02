@@ -12,7 +12,7 @@ import random
 import tomli
 import arcade.gui
 
-from game_sprites import Star, Shot, Asteroid, Player
+from game_sprites import Star, Shot, Asteroid, Player, BonusUFO
 from tools import get_joystick, wrap
 
 # load the config file as a dict
@@ -31,103 +31,6 @@ UFO_EXPLOSIONS_PARTICLE_TEXTURES = [
     arcade.make_soft_circle_texture(25, arcade.color.BLUE),
     arcade.make_soft_circle_texture(25, arcade.color.GREEN),
 ]
-
-class BonusUFO(arcade.Sprite):
-    """occasionally moves across the screen. Grants the player points if shot"""
-
-    sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
-    sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
-
-    def __int__(self, shot_list, target, level=1, **kwargs):
-
-        kwargs['filename'] = "images/ufoBlue.png"
-
-        # UFOs are big or small
-        kwargs['scale'] = CONFIG['SPRITE_SCALING'] * random.choice([CONFIG['UFO_SIZE_SMALL'], CONFIG['UFO_SIZE_BIG']])
-
-        # set random position off-screen
-        kwargs['center_x'] = random.choice([0, CONFIG['SCREEN_WIDTH']])
-        kwargs['center_y'] = random.choice([0, CONFIG['SCREEN_HEIGHT']])
-
-        # send arguments upstairs
-        super().__init__(**kwargs)
-
-        self.level = level
-        self.shot_list = shot_list
-        self.target = target
-
-        # set random direction. always point towards center, with noise
-        self.change_x = random.randrange(1, CONFIG['UFO_SPEED']) + (self.level - 1) * CONFIG['UFO_SPEED_MOD_PR_LEVEL']
-        if self.center_x > CONFIG['SCREEN_WIDTH'] / 2:
-            self.change_x *= -1
-
-        self.change_y = CONFIG['UFO_SPEED'] - self.change_x + (self.level - 1) * CONFIG['UFO_SPEED_MOD_PR_LEVEL']
-        if self.center_y > CONFIG['SCREEN_HEIGHT'] / 2:
-            self.change_y *= -1
-
-        # setup direction changing
-        arcade.schedule(self.change_dir, CONFIG['UFO_DIR_CHANGE_RATE'])
-
-        # setup shooting
-        arcade.schedule(self.shoot, CONFIG['UFO_FIRE_RATE'] + (self.level - 1) * CONFIG['UFO_FIRE_RATE_MOD_PR_LEVEL'])
-
-    def change_dir(self, delta_time):
-        """
-        set a new direction
-        """
-
-        r = random.randrange(-CONFIG['UFO_SPEED'], CONFIG['UFO_SPEED'])
-        self.change_x -= r
-        self.change_y += r
-
-    def shoot(self, delta_time):
-        """
-        fire a new shot
-        """
-
-        new_ufo_shot = Shot(
-            filename="images/Lasers/laserGreen07.png",
-            scale=CONFIG['SPRITE_SCALING'],
-            center_x=self.center_x,
-            center_y=self.center_y,
-            # -1 and + 90 is to make the UFO shoot the right way
-            angle=-1 * arcade.get_angle_degrees(
-                self.center_x,
-                self.center_y,
-                self.target.center_x,
-                self.target.center_y
-            ) + 90,
-            speed=CONFIG['UFO_SHOT_SPEED'],
-            range=CONFIG['UFO_SHOT_RANGE'],
-            fade_start=CONFIG['SHOT_FADE_START'],
-            fade_speed=CONFIG['SHOT_FADE_SPEED'],
-            wrap_max_x=CONFIG['SCREEN_WIDTH'],
-            wrap_max_y=CONFIG['SCREEN_HEIGHT'],
-            sound=BonusUFO.sound_fire)
-
-        self.shot_list.append(new_ufo_shot)
-
-    def update(self):
-        """update position, and kill if out of bounds"""
-
-        # keep spinning. just for graphics purposes
-        self.angle += self.change_x + self.change_y  # the faster it moves, the faster it spins.
-
-        self.center_x += self.change_x
-        self.center_y += self.change_y
-
-        # kill if out of bounds
-        if self.center_x > CONFIG['SCREEN_WIDTH'] or self.center_x < 0 or self.center_y > CONFIG[
-            'SCREEN_HEIGHT'] or self.center_y < 0:
-            self.destroy()
-
-    def destroy(self):
-        """
-        kill the sprite and unschedule all functions
-        """
-        arcade.unschedule(self.shoot)
-        arcade.unschedule(self.change_dir)
-        self.kill()
 
 
 class IntroView(arcade.View):
@@ -335,8 +238,26 @@ class InGameView(arcade.View):
         has to take delta_time because it needs to be called by arcade.schedule
         """
 
-        new_ufo_obj = BonusUFO()
-        new_ufo_obj.__int__(self.ufo_shot_list, self.player_sprite, self.level)  # it needs the list so it can send shots to MyGame
+        new_ufo_obj = BonusUFO(0, 0)  # actual values are given below
+        new_ufo_obj.__int__(
+            scale=CONFIG['SPRITE_SCALING'],
+            shot_list=self.ufo_shot_list,
+            target=self.player_sprite,
+            speed=CONFIG['UFO_SPEED'],
+            speed_mod=CONFIG['UFO_SPEED_MOD_PR_LEVEL'] * (self.level - 1),
+            dir_change_rate=CONFIG['UFO_DIR_CHANGE_RATE'],
+            fire_rate=CONFIG['UFO_FIRE_RATE'],
+            fire_rate_mod=CONFIG['UFO_FIRE_RATE_MOD_PR_LEVEL'] * (self.level - 1),
+            shot_scale=CONFIG['SPRITE_SCALING'],
+            shot_speed=CONFIG['UFO_SHOT_SPEED'],
+            shot_range=CONFIG['UFO_SHOT_RANGE'],
+            shot_fade_start=CONFIG['SHOT_FADE_START'],
+            shot_fade_speed=CONFIG['SHOT_FADE_SPEED'],
+            small_size=CONFIG['UFO_SIZE_SMALL'],
+            big_size=CONFIG['UFO_SIZE_BIG'],
+            screen_width=CONFIG['SCREEN_WIDTH'],
+            screen_height=CONFIG['SCREEN_HEIGHT']
+        )  # it needs the list so it can send shots to MyGame
         self.ufo_list.append(new_ufo_obj)
 
     def get_explosion(self, position, textures=None):
