@@ -459,7 +459,10 @@ class InGameView(arcade.View):
         has to take delta_time because it needs to be called by arcade.schedule
         """
 
+        # FIXME: stop calling this function in arcade.schedule
+
         new_ufo_obj = BonusUFO(0, 0)  # actual values are given below
+        # we have to call __init__ manually - if we don't the UFO won't __init__
         new_ufo_obj.__int__(
             scale=CONFIG['SPRITE_SCALING'],
             shot_list=self.ufo_shot_list,
