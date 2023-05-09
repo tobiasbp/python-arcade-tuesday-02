@@ -751,11 +751,21 @@ class InGameView(arcade.View):
         # Check for PlayerShot - Asteroid collisions
         for s in self.player_shot_list:
             for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
-                for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
-                    if a.size > 1:
 
-                        a_angle = random.randrange(s.angle - CONFIG["ASTEROIDS_SPREAD"],
-                                                   s.angle + CONFIG["ASTEROIDS_SPREAD"])
+                # Shake the camera in proportion to Asteroid size
+                self.shake(amplitude=CONFIG["ASTEROIDS_SHAKE_AMPLITUDE"] * a.size)
+                self.player_score += a.value
+                self.sound_explosion.play()
+
+                # Split into smaller Asteroids if not smallest size
+                if a.size > 1:
+                    for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
+                        # A random angle for the the new Asteroid
+                        a_angle = random.randrange(
+                            s.angle - CONFIG["ASTEROIDS_SPREAD"],
+                            s.angle + CONFIG["ASTEROIDS_SPREAD"]
+                        )
+                        # Create an Asteroid
                         new_a = Asteroid(
                             scale=CONFIG['SPRITE_SCALING'],
                             angle=a_angle,
@@ -770,10 +780,11 @@ class InGameView(arcade.View):
                             level=self.level,
                             spawn_pos=a.position
                         )
-
-
+                        # Add the new Asteroid to the sprite list
                         self.asteroid_list.append(new_a)
+                # Remove shot Asteroid
                 a.kill()
+                # Remove the shot which hit the Asteroid
                 s.kill()
 
         self.stoppable_emitter.update()
