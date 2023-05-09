@@ -422,27 +422,33 @@ class PowerUp(arcade.Sprite):
     pu_types = [
         {"filename": "images/Power-ups/powerupGreen_star.png",
          "score": 300,
-         "life": 0
+         "life": 0,
+         "lifetime": 15
          },
         {"filename": "images/Power-ups/powerupYellow_star.png",
          "score": 600,
-         "life": 0
+         "life": 0,
+         "lifetime": 10
          },
         {"filename": "images/Power-ups/powerupRed_star.png",
          "score": 1000,
-         "life": 0
+         "life": 0,
+         "lifetime": 5
          },
         {"filename": "images/Power-ups/powerupGreen_shield.png",
          "score": 0,
-         "life": 1
+         "life": 1,
+         "lifetime": 15
          },
         {"filename": "images/Power-ups/powerupYellow_shield.png",
          "score": 0,
-         "life": 2
+         "life": 2,
+         "lifetime": 10
          },
         {"filename": "images/Power-ups/powerupRed_shield.png",
          "score": 0,
-         "life": 3
+         "life": 3,
+         "lifetime": 5
          }
     ]
 
@@ -459,3 +465,5 @@ class PowerUp(arcade.Sprite):
 
         self.angle = randint(0, 360)
         self.forward(0.5)
+        # time till death in sec
+        self.lifetimer = self.type["lifetime"]
