@@ -418,15 +418,31 @@ class BonusUFO(ObjInSpace):
 
 class PowerUp(arcade.Sprite):
 
+    # PowerUp colors: Green: Lvl 1, Yellow Lvl 2; Red: Lvl 3
     pu_types = [
+        {"filename": "images/Power-ups/powerupGreen_star.png",
+         "score": 300,
+         "life": 0
+         },
         {"filename": "images/Power-ups/powerupYellow_star.png",
-         "score": 600
+         "score": 600,
+         "life": 0
          },
         {"filename": "images/Power-ups/powerupRed_star.png",
-         "score": 1000
+         "score": 1000,
+         "life": 0
          },
-        {"filename": "images/Power-ups/powerupGreen_star.png",
-         "score": 300
+        {"filename": "images/Power-ups/powerupGreen_shield.png",
+         "score": 0,
+         "life": 1
+         },
+        {"filename": "images/Power-ups/powerupYellow_shield.png",
+         "score": 0,
+         "life": 2
+         },
+        {"filename": "images/Power-ups/powerupRed_shield.png",
+         "score": 0,
+         "life": 3
          }
     ]
 

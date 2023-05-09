@@ -407,7 +407,6 @@ class InGameView(arcade.View):
         # Set up the player info
         self.player_sprite: Player = None
         self.player_score = None
-        self.player_lives = None
         self.player_speed = 0
         self.opposite_angle = 0
         self.explosion_emitter = None
@@ -723,6 +722,7 @@ class InGameView(arcade.View):
         # Check if colliding whit power_up
         for power_up_hit in self.player_sprite.collides_with_list(self.power_up_list):
             self.player_score += power_up_hit.type["score"]
+            self.player_sprite.lives += power_up_hit.type["life"]
             power_up_hit.kill()
 
         # Check if collision with Asteroids and dies and kills the Asteroid
