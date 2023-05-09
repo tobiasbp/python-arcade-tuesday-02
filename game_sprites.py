@@ -448,6 +448,7 @@ class PowerUp(arcade.Sprite):
 
     def __init__(self, max_x, max_y):
 
+        # Random Type ^
         self.type = choice(PowerUp.pu_types)
 
         super().__init__(
