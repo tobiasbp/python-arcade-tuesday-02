@@ -15,8 +15,10 @@ import pathlib
 import arcade.gui
 from pyglet.math import Vec2
 
-from game_sprites import Star
+
+from game_sprites import Star, Shot, Asteroid, Player, BonusUFO
 from tools import get_joystick, wrap, load_toml, get_stars, StoppableEmitter
+
 
 # load the config file as a dict
 CONFIG = load_toml('my_game.toml')
@@ -39,283 +41,6 @@ UFO_EXPLOSIONS_PARTICLE_TEXTURES = [
     arcade.make_soft_circle_texture(25, arcade.color.GREEN),
 ]
 
-
-class Shot(arcade.Sprite):
-    """
-    universal class for shot objects
-    """
-
-    def __init__(self, filename, center_x, center_y, angle, speed, range):
-
-        super().__init__(
-            filename=filename,
-            scale=CONFIG['SPRITE_SCALING'],
-            center_x=center_x,
-            center_y=center_y,
-            angle=angle,
-            flipped_horizontally=True,
-            flipped_diagonally=True
-        )
-
-        self.speed = speed
-        self.range = range
-        self.distance_traveled = 0
-
-        self.forward(self.speed)
-
-    def update(self):
-        """
-        move the sprite and fade
-        """
-
-        self.center_x += self.change_x
-        self.center_y += self.change_y
-
-        wrap(self, CONFIG['SCREEN_WIDTH'], CONFIG['SCREEN_HEIGHT'])
-
-        # check if the shot traveled too far
-        self.distance_traveled += self.speed
-
-        # start fading when flown far enough
-        if self.distance_traveled > CONFIG['SHOT_FADE_START']:
-            self.alpha *= CONFIG['SHOT_FADE_SPEED']
-
-        if self.distance_traveled > self.range:
-            self.kill()
-
-
-class Player(arcade.Sprite):
-    """
-    The player
-    """
-
-    def __init__(self,
-                 center_x,
-                 center_y,
-                 lives,
-                 scale,
-                 start_speed_min,
-                 start_speed_max,
-                 start_angle_min,
-                 start_angle_max):
-        """
-        Setup new Player object
-        """
-
-        # Graphics to use for Player
-        super().__init__("images/playerShip1_red.png", flipped_horizontally=True, flipped_diagonally=True)
-        self.invincibility_timer = 0
-        self.lives = lives
-        self.scale = scale
-        self.center_x = center_x
-        self.center_y = center_y
-        self.angle = random.randint(start_angle_min, start_angle_max)
-        self.forward(random.uniform(start_speed_min, start_speed_max))
-
-    def thrust(self):
-        """
-        increase speed in the direction pointing
-        """
-
-        self.forward(CONFIG['PLAYER_THRUST'])
-        # Keep track of Player Speed
-        player_speed_vector_length = math.sqrt(self.change_x ** 2 + self.change_y ** 2)
-
-        # Calculating the value used to lower the players speed while keeping the x - y ratio
-        player_x_and_y_speed_ratio = CONFIG['PLAYER_SPEED_LIMIT'] / player_speed_vector_length
-
-        # If player is too fast slow it down
-        if player_speed_vector_length > CONFIG['PLAYER_SPEED_LIMIT']:
-            self.change_x *= player_x_and_y_speed_ratio
-            self.change_y *= player_x_and_y_speed_ratio
-
-    def reset(self):
-        """
-        The code works as when you get hit by the asteroid you will disappear for 2 seconds.
-        After that you are invincible for 3 seconds, and you can get hit again.
-        """
-        self.invincibility_timer = CONFIG['PLAYER_INVINCIBILITY_SECONDS']
-        # The Player is Invisible
-        self.alpha = 0
-
-    @property
-    def is_invincible(self):
-        return self.invincibility_timer > 0
-
-    def on_update(self, delta_time):
-        """
-        Move the sprite and wrap
-        """
-
-        self.center_x += self.change_x
-        self.center_y += self.change_y
-
-        # Time when you can't get hit by an asteroid
-        if self.is_invincible:
-            self.invincibility_timer -= delta_time
-            # Time when you are not visible
-            if self.invincibility_timer < 3:
-                # Visible
-                if self.alpha == 0:
-                    self.alpha = 155
-                    self.center_x = CONFIG['PLAYER_START_X']
-                    self.center_y = CONFIG['PLAYER_START_Y']
-                    self.change_y = 0
-                    self.change_x = 0
-                    self.angle = random.randint(CONFIG['PLAYER_START_ANGLE_MIN'], CONFIG['PLAYER_START_ANGLE_MAX'])
-                    self.forward(random.uniform(CONFIG['PLAYER_START_SPEED_MIN'], CONFIG['PLAYER_START_SPEED_MAX']))
-
-        else:
-            self.alpha = 255
-
-        # wrap
-        wrap(self, CONFIG['SCREEN_WIDTH'], CONFIG['SCREEN_HEIGHT'])
-
-
-class Asteroid(arcade.Sprite):
-
-    def __init__(self, size=3, level=1, spawn_pos=None, angle=None):
-        # Initialize the asteroid
-
-        # Graphics
-        super().__init__(
-            filename='images/Meteors/meteorGrey_med1.png',
-            scale=size * CONFIG['SPRITE_SCALING']
-        )
-
-        self.size = size
-        self.level = level
-
-        if angle == None:
-            self.angle = random.randrange(0, 360)
-        else:
-            self.angle = angle
-
-        # Spawning Astroids until the distance to the player is longer than ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER
-        if not spawn_pos is None:
-            self.position = spawn_pos
-        else:
-            while True:
-                self.center_x = random.randint(0, CONFIG['SCREEN_WIDTH'])
-                self.center_y = random.randint(0, CONFIG['SCREEN_HEIGHT'])
-
-                if arcade.get_distance(
-                        self.center_x,
-                        self.center_y,
-                        CONFIG['PLAYER_START_X'],
-                        CONFIG['PLAYER_START_Y']
-                ) > CONFIG['ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER']:
-                    break
-        self.angle += random.randint(-CONFIG['ASTEROIDS_SPREAD'], CONFIG['ASTEROIDS_SPREAD'])
-        self.forward(CONFIG['ASTEROIDS_SPEED'])
-
-        self.angle += random.randint(-CONFIG['ASTEROIDS_SPREAD'], CONFIG['ASTEROIDS_SPREAD'])
-        self.forward(CONFIG['ASTEROIDS_SPEED'])
-        self.level = level
-
-        self.rotation_speed = random.randrange(0, 5)
-
-        self.direction = self.angle  # placeholder for initial angle - angle changes during the game
-        self.value = CONFIG['ASTEROID_SCORE_VALUES'][self.size - 1]
-
-    def update(self):
-        # Update position
-        self.center_x += self.change_x
-        self.center_y += self.change_y
-
-        # Rotate Asteroid
-        self.angle += self.rotation_speed
-
-        # wrap
-        wrap(self, CONFIG['SCREEN_WIDTH'], CONFIG['SCREEN_HEIGHT'])
-
-
-class BonusUFO(arcade.Sprite):
-    """occasionally moves across the screen. Grants the player points if shot"""
-
-    sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
-
-    def __int__(self, shot_list, target, level=1, **kwargs):
-
-        kwargs['filename'] = "images/ufoBlue.png"
-
-        # UFOs are big or small
-        kwargs['scale'] = CONFIG['SPRITE_SCALING'] * random.choice([CONFIG['UFO_SIZE_SMALL'], CONFIG['UFO_SIZE_BIG']])
-
-        # set random position off-screen
-        kwargs['center_x'] = random.choice([0, CONFIG['SCREEN_WIDTH']])
-        kwargs['center_y'] = random.choice([0, CONFIG['SCREEN_HEIGHT']])
-
-        # send arguments upstairs
-        super().__init__(**kwargs)
-
-        self.level = level
-        self.shot_list = shot_list
-        self.target = target
-        self.shoot_timer = CONFIG['UFO_FIRE_RATE'] + (self.level - 1) * CONFIG['UFO_FIRE_RATE_MOD_PR_LEVEL']
-        self.change_dir_timer = CONFIG['UFO_DIR_CHANGE_RATE']
-
-        # set random direction. always point towards center, with noise
-        self.change_x = random.randrange(1, CONFIG['UFO_SPEED']) + (self.level - 1) * CONFIG['UFO_SPEED_MOD_PR_LEVEL']
-        if self.center_x > CONFIG['SCREEN_WIDTH'] / 2:
-            self.change_x *= -1
-
-        self.change_y = CONFIG['UFO_SPEED'] - self.change_x + (self.level - 1) * CONFIG['UFO_SPEED_MOD_PR_LEVEL']
-        if self.center_y > CONFIG['SCREEN_HEIGHT'] / 2:
-            self.change_y *= -1
-
-    def change_dir(self):
-        """
-        set a new direction
-        """
-
-        r = random.randrange(-CONFIG['UFO_SPEED'], CONFIG['UFO_SPEED'])
-        self.change_x -= r
-        self.change_y += r
-
-        self.change_dir_timer = CONFIG['UFO_DIR_CHANGE_RATE']
-
-    def shoot(self):
-        """
-        fire a new shot
-        """
-
-        new_ufo_shot = Shot(
-            filename="images/Lasers/laserGreen07.png",
-            center_x=self.center_x,
-            center_y=self.center_y,
-            # -1 and + 90 is to make the UFO shoot the right way
-            angle=-1 * arcade.get_angle_degrees(
-                self.center_x,
-                self.center_y,
-                self.target.center_x,
-                self.target.center_y
-            ) + 90,
-            speed=CONFIG['UFO_SHOT_SPEED'],
-            range=CONFIG['UFO_SHOT_RANGE'],
-        )
-
-        self.shot_list.append(new_ufo_shot)
-
-        self.shoot_timer = CONFIG['UFO_FIRE_RATE'] + (self.level - 1) * CONFIG['UFO_FIRE_RATE_MOD_PR_LEVEL']
-
-    def on_update(self, delta_time):
-        """update position, and kill if out of bounds"""
-
-        # keep spinning. just for graphics purposes
-        self.angle += self.change_x + self.change_y  # the faster it moves, the faster it spins.
-
-        self.center_x += self.change_x
-        self.center_y += self.change_y
-
-        # kill if out of bounds
-        if self.center_x > CONFIG['SCREEN_WIDTH'] or self.center_x < 0 or self.center_y > CONFIG[
-            'SCREEN_HEIGHT'] or self.center_y < 0:
-            self.kill()
-
-        # Timers for when ufo should shoot and change direction
-        self.shoot_timer -= delta_time
-        self.change_dir_timer -= delta_time
 
 class IntroView(arcade.View):
     """
@@ -655,6 +380,7 @@ class InGameView(arcade.View):
         """
         Initializer
         """
+        self.sound_thrust_player = None
 
         # Call the parent class initializer
         super().__init__()
@@ -663,6 +389,7 @@ class InGameView(arcade.View):
 
         self.sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
         self.sound_thrust = arcade.load_sound("sounds/spaceEngine_003.ogg")
+        
         self.sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
 
         # Variable that will hold a list of shots fired by the player
@@ -735,7 +462,15 @@ class InGameView(arcade.View):
 
         # Spawn Asteroids
         for r in range(CONFIG['ASTEROIDS_PR_LEVEL'] + (self.level - 1) * CONFIG['ASTEROID_NUM_MOD_PR_LEVEL']):
-            self.asteroid_list.append(Asteroid(level=self.level))
+            self.asteroid_list.append(Asteroid(scale=CONFIG['SPRITE_SCALING'],
+                                               screen_width=CONFIG['SCREEN_WIDTH'],
+                                               screen_height=CONFIG['SCREEN_HEIGHT'],
+                                               min_spawn_dist_from_player=CONFIG['ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER'],
+                                               player_start_pos=(CONFIG['PLAYER_START_X'], CONFIG['PLAYER_START_Y']),
+                                               score_values=CONFIG['ASTEROID_SCORE_VALUES'],
+                                               spread=CONFIG['ASTEROIDS_SPREAD'],
+                                               speed=CONFIG['ASTEROIDS_SPEED'],
+                                               level=self.level))
 
     def spawn_ufo(self, delta_time):
         """
@@ -743,8 +478,29 @@ class InGameView(arcade.View):
         has to take delta_time because it needs to be called by arcade.schedule
         """
 
-        new_ufo_obj = BonusUFO()
-        new_ufo_obj.__int__(self.ufo_shot_list, self.player_sprite, self.level)  # it needs the list so it can send shots to MyGame
+        # FIXME: stop calling this function in arcade.schedule
+
+        new_ufo_obj = BonusUFO(0, 0)  # actual values are given below
+        # we have to call __init__ manually - if we don't the UFO won't __init__
+        new_ufo_obj.__int__(
+            scale=CONFIG['SPRITE_SCALING'],
+            shot_list=self.ufo_shot_list,
+            target=self.player_sprite,
+            speed=CONFIG['UFO_SPEED'],
+            speed_mod=CONFIG['UFO_SPEED_MOD_PR_LEVEL'] * (self.level - 1),
+            dir_change_rate=CONFIG['UFO_DIR_CHANGE_RATE'],
+            fire_rate=CONFIG['UFO_FIRE_RATE'],
+            fire_rate_mod=CONFIG['UFO_FIRE_RATE_MOD_PR_LEVEL'] * (self.level - 1),
+            shot_scale=CONFIG['SPRITE_SCALING'],
+            shot_speed=CONFIG['UFO_SHOT_SPEED'],
+            shot_range=CONFIG['UFO_SHOT_RANGE'],
+            shot_fade_start=CONFIG['SHOT_FADE_START'],
+            shot_fade_speed=CONFIG['SHOT_FADE_SPEED'],
+            small_size=CONFIG['UFO_SIZE_SMALL'],
+            big_size=CONFIG['UFO_SIZE_BIG'],
+            screen_width=CONFIG['SCREEN_WIDTH'],
+            screen_height=CONFIG['SCREEN_HEIGHT']
+        )  # it needs the list so it can send shots to MyGame
         self.ufo_list.append(new_ufo_obj)
 
     def get_explosion(self, position, textures=None):
@@ -821,14 +577,19 @@ class InGameView(arcade.View):
 
         # Create a Player object
         self.player_sprite = Player(
+            wrap_max_x=CONFIG['SCREEN_WIDTH'],
+            wrap_max_y=CONFIG['SCREEN_HEIGHT'],
+            scale=CONFIG['SPRITE_SCALING'],
             center_x=CONFIG['PLAYER_START_X'],
             center_y=CONFIG['PLAYER_START_Y'],
             lives=CONFIG['PLAYER_START_LIVES'],
-            scale=CONFIG['SPRITE_SCALING'],
+            thrust_speed=CONFIG['PLAYER_THRUST'],
+            speed_limit=CONFIG['PLAYER_SPEED_LIMIT'],
+            invincibility_seconds=CONFIG['PLAYER_INVINCIBILITY_SECONDS'],
             start_speed_min=CONFIG['PLAYER_START_SPEED_MIN'],
             start_speed_max=CONFIG['PLAYER_START_SPEED_MAX'],
             start_angle_min=CONFIG['PLAYER_START_ANGLE_MIN'],
-            start_angle_max=CONFIG['PLAYER_START_ANGLE_MAX']
+            start_angle_max=CONFIG['PLAYER_START_ANGLE_MAX'],
         )
 
         # load the player shot sound
@@ -939,6 +700,8 @@ class InGameView(arcade.View):
         if self.joystick:
             self.player_sprite.angle += round(self.joystick.x) * -CONFIG['PLAYER_ROTATE_SPEED']
 
+
+
         # checks if ufo shot collides with player
         for ufo_shot_hit in self.player_sprite.collides_with_list(self.ufo_shot_list):
             self.sound_explosion.play()
@@ -988,15 +751,27 @@ class InGameView(arcade.View):
         # Check for PlayerShot - Asteroid collisions
         for s in self.player_shot_list:
             for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
-                # Shake the camera in proportion to Asteroids size
-                self.shake(amplitude=CONFIG["ASTEROIDS_SHAKE_AMPLITUDE"] * a.size)
-                self.player_score += a.value
-                self.sound_explosion.play()
-                # Split into smaller Asteroids if not smallest size
-                if a.size > 1:
-                    for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
-                        a_angle = random.randrange(s.angle - CONFIG["ASTEROIDS_SPREAD"], s.angle + CONFIG["ASTEROIDS_SPREAD"])
-                        new_a = Asteroid(a.size - 1, self.level, a.position, a_angle)
+                for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
+                    if a.size > 1:
+
+                        a_angle = random.randrange(s.angle - CONFIG["ASTEROIDS_SPREAD"],
+                                                   s.angle + CONFIG["ASTEROIDS_SPREAD"])
+                        new_a = Asteroid(
+                            scale=CONFIG['SPRITE_SCALING'],
+                            angle=a_angle,
+                            screen_width=CONFIG['SCREEN_WIDTH'],
+                            screen_height=CONFIG['SCREEN_HEIGHT'],
+                            min_spawn_dist_from_player=CONFIG['ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER'],
+                            player_start_pos=(CONFIG['PLAYER_START_X'], CONFIG['PLAYER_START_Y']),
+                            score_values=CONFIG['ASTEROID_SCORE_VALUES'],
+                            spread=CONFIG['ASTEROIDS_SPREAD'],
+                            speed=CONFIG['ASTEROIDS_SPEED'],
+                            size=a.size - 1,
+                            level=self.level,
+                            spawn_pos=a.position
+                        )
+
+
                         self.asteroid_list.append(new_a)
                 a.kill()
                 s.kill()
@@ -1014,16 +789,16 @@ class InGameView(arcade.View):
         self.player_sprite.on_update(delta_time)
 
         # Update the player shots
-        self.player_shot_list.update()
+        self.player_shot_list.on_update(delta_time)
 
         # Update Asteroids
-        self.asteroid_list.update()
+        self.asteroid_list.on_update(delta_time)
 
         # update UFOs
         self.ufo_list.on_update(delta_time)
 
         # update UFO shot_lists
-        self.ufo_shot_list.update()
+        self.ufo_shot_list.on_update(delta_time)
 
         # check if the player is dead
         if self.player_sprite.lives <= 0:
@@ -1075,11 +850,18 @@ class InGameView(arcade.View):
                 if self.player_shot_fire_rate_timer >= CONFIG['PLAYER_FIRE_RATE']:
                     new_shot = Shot(
                         filename="images/Lasers/laserBlue01.png",
+                        scale=CONFIG['SPRITE_SCALING'],
                         center_x=self.player_sprite.center_x,
                         center_y=self.player_sprite.center_y,
                         angle=self.player_sprite.angle,
                         speed=CONFIG['PLAYER_SHOT_SPEED'],
                         range=CONFIG['PLAYER_SHOT_RANGE'],
+                        fade_start=CONFIG['SHOT_FADE_START'],
+                        fade_speed=CONFIG['SHOT_FADE_SPEED'],
+                        wrap_max_x=CONFIG['SCREEN_WIDTH'],
+                        wrap_max_y=CONFIG['SCREEN_HEIGHT'],
+                        sound=self.player_shoot_sound,
+
                     )
 
                     self.sound_fire.play()
