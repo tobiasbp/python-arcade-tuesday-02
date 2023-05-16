@@ -111,6 +111,7 @@ class Player(arcade.Sprite):
         self.center_y = center_y
         self.angle = random.randint(start_angle_min, start_angle_max)
         self.forward(random.uniform(start_speed_min, start_speed_max))
+        self.shield_timer = 0
 
     def thrust(self):
         """
@@ -139,6 +140,10 @@ class Player(arcade.Sprite):
         self.alpha = 0
 
     @property
+    def is_shield(self):
+        return self.shield_timer > 0
+
+    @property
     def is_invincible(self):
         return self.invincibility_timer > 0
 
@@ -149,6 +154,9 @@ class Player(arcade.Sprite):
 
         self.center_x += self.change_x
         self.center_y += self.change_y
+
+        if self.is_shield:
+            self.shield_timer -= delta_time
 
         # Time when you can't get hit by an asteroid
         if self.is_invincible:
@@ -316,6 +324,18 @@ class BonusUFO(arcade.Sprite):
         # Timers for when ufo should shoot and change direction
         self.shoot_timer -= delta_time
         self.change_dir_timer -= delta_time
+
+class Shield(arcade.Sprite):
+
+    # Protective shield for player
+    def __init__(self):
+
+        # Graphics initializer
+        super().__init__("images/Effects/shield1.png", flipped_horizontally=True, flipped_diagonally=True)
+
+        self.center_x = 0
+        self.center_y = 0
+        self.angle = 0
 
 class IntroView(arcade.View):
     """
@@ -677,6 +697,7 @@ class InGameView(arcade.View):
 
         # Set up the player info
         self.player_sprite: Player = None
+        self.player_shield: Shield = None
         self.player_score = None
         self.player_lives = None
         self.player_speed = 0
@@ -831,6 +852,9 @@ class InGameView(arcade.View):
             start_angle_max=CONFIG['PLAYER_START_ANGLE_MAX']
         )
 
+        # Create shield
+        self.player_shield = Shield()
+
         # load the player shot sound
         self.player_shoot_sound = arcade.load_sound("sounds/laserRetro_001.ogg")
 
@@ -874,6 +898,10 @@ class InGameView(arcade.View):
 
         # and their shots
         self.ufo_shot_list.draw()
+
+        # Draw Shield
+        if self.player_sprite.is_shield:
+            self.player_shield.draw()
 
         # draw explosion
         if self.explosion_emitter is not None:
@@ -941,11 +969,14 @@ class InGameView(arcade.View):
 
         # checks if ufo shot collides with player
         for ufo_shot_hit in self.player_sprite.collides_with_list(self.ufo_shot_list):
-            self.sound_explosion.play()
-            self.player_sprite.lives -= 1
-            self.player_sprite.reset()
-            self.get_explosion(self.player_sprite.position)
-            ufo_shot_hit.kill()
+            if not self.player_sprite.is_shield:
+                self.sound_explosion.play()
+                self.player_sprite.lives -= 1
+                self.player_sprite.reset()
+                self.get_explosion(self.player_sprite.position)
+                ufo_shot_hit.kill()
+            else:
+                self.player_sprite.shield_timer = 0
 
         # Check if collision with Asteroids and dies and kills the Asteroid
         for a in self.player_sprite.collides_with_list(self.asteroid_list):
@@ -1010,6 +1041,10 @@ class InGameView(arcade.View):
         if self.player_shot_fire_rate_timer < CONFIG['PLAYER_FIRE_RATE']:
             self.player_shot_fire_rate_timer += delta_time
 
+        self.player_shield.center_x = self.player_sprite.center_x
+        self.player_shield.center_y = self.player_sprite.center_y
+        self.player_shield.angle = self.player_sprite.angle
+
         # Update player sprite
         self.player_sprite.on_update(delta_time)
 
@@ -1043,6 +1078,9 @@ class InGameView(arcade.View):
         """
         Called whenever a key is pressed.
         """
+
+        if key == arcade.key.RSHIFT:
+            self.player_sprite.shield_timer = CONFIG["PLAYER_SHIELD_TIMER"]
 
         # Track state of arrow keys
         if key == CONFIG["PLAYER_TURN_RIGHT_KEY"]:
