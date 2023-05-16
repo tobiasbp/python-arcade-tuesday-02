@@ -474,7 +474,11 @@ class InGameView(arcade.View):
                                                level=self.level))
 
         # Spawn PowerUp
-        pu = PowerUp(max_x=CONFIG["SCREEN_WIDTH"], max_y=CONFIG["SCREEN_HEIGHT"])
+        pu = PowerUp(max_x=CONFIG["SCREEN_WIDTH"],
+                     max_y=CONFIG["SCREEN_HEIGHT"],
+                     wrap_max_x=CONFIG["SCREEN_WIDTH"],
+                     wrap_max_y=CONFIG["SCREEN_HEIGHT"])
+
         self.power_up_list.append(
             pu
         )
@@ -821,7 +825,7 @@ class InGameView(arcade.View):
         self.asteroid_list.on_update(delta_time)
 
         # Update Power Ups
-        self.power_up_list.update()
+        self.power_up_list.on_update(delta_time)
 
         # update UFOs
         self.ufo_list.on_update(delta_time)

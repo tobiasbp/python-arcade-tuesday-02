@@ -416,7 +416,7 @@ class BonusUFO(ObjInSpace):
 
 
 
-class PowerUp(arcade.Sprite):
+class PowerUp(ObjInSpace):
 
     # PowerUp colors: Green: Lvl 1, Yellow Lvl 2; Red: Lvl 3
     pu_types = [
@@ -452,7 +452,7 @@ class PowerUp(arcade.Sprite):
          }
     ]
 
-    def __init__(self, max_x, max_y):
+    def __init__(self, max_x, max_y, wrap_max_x, wrap_max_y):
 
         # Random Type ^
         self.type = choice(PowerUp.pu_types)
@@ -460,10 +460,15 @@ class PowerUp(arcade.Sprite):
         super().__init__(
             filename=self.type["filename"],
             center_x=randint(0, max_x),
-            center_y=randint(0, max_y)
+            center_y=randint(0, max_y),
+            wrap_max_x=wrap_max_x,
+            wrap_max_y=wrap_max_y
         )
 
         self.angle = randint(0, 360)
         self.forward(0.5)
         # time till death in sec
         self.lifetimer = self.type["lifetime"]
+
+    def on_update(self, delta_time):
+        super().on_update(delta_time)
