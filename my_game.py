@@ -704,15 +704,16 @@ class InGameView(arcade.View):
 
         # checks if ufo shot collides with player
         for ufo_shot_hit in self.player_sprite.collides_with_list(self.ufo_shot_list):
-            self.sound_explosion.play()
-            self.player_sprite.lives -= 1
-            self.player_sprite.reset()
-            self.get_explosion(self.player_sprite.position)
-            ufo_shot_hit.kill()
+            if self.player_sprite.functionality == 0:
+                self.sound_explosion.play()
+                self.player_sprite.lives -= 1
+                self.player_sprite.reset()
+                self.get_explosion(self.player_sprite.position)
+                ufo_shot_hit.kill()
 
         # Check if collision with Asteroids and dies and kills the Asteroid
         for a in self.player_sprite.collides_with_list(self.asteroid_list):
-            if not self.player_sprite.is_invincible:
+            if self.player_sprite.functionality == 0:
                 self.sound_explosion.play()
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
@@ -722,7 +723,7 @@ class InGameView(arcade.View):
 
         # check for collision with bonus_ufo
         for ufo in self.player_sprite.collides_with_list(self.ufo_list):
-            if not self.player_sprite.is_invincible:
+            if self.player_sprite.functionality == 0:
                 self.sound_explosion.play()
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
@@ -789,7 +790,7 @@ class InGameView(arcade.View):
 
         self.stoppable_emitter.update()
         # check for thrust
-        if self.thrust_pressed:
+        if self.thrust_pressed and self.player_sprite.functionality < 2:
             self.player_sprite.thrust()
             self.stoppable_emitter.start()
 
@@ -857,7 +858,7 @@ class InGameView(arcade.View):
             self.thrust_pressed = True
 
         if key == CONFIG["PLAYER_FIRE_KEY"]:
-            if not self.player_sprite.is_invincible:
+            if self.player_sprite.functionality == 0:
                 if self.player_shot_fire_rate_timer >= CONFIG['PLAYER_FIRE_RATE']:
                     new_shot = Shot(
                         filename="images/Lasers/laserBlue01.png",

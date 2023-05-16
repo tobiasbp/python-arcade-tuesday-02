@@ -270,8 +270,17 @@ class Player(ObjInSpace):
         self.alpha = 0
 
     @property
-    def is_invincible(self):
-        return self.invincibility_timer > 0
+    def functionality(self):
+        if self.invincibility_timer > 0:
+
+            if self.invincibility_timer < 3:
+                return 1  # functional and invincible
+            else:
+                return 2  # not functional and invincible
+
+        else:
+            return 0  # functional and not invincible
+
 
     def on_update(self, delta_time):
         """
@@ -281,7 +290,7 @@ class Player(ObjInSpace):
         super().on_update(delta_time)
 
         # Time when you can't get hit by an asteroid
-        if self.is_invincible:
+        if self.functionality > 0:
             self.invincibility_timer -= delta_time
             # Time when you are not visible
             if self.invincibility_timer < 3:
