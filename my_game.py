@@ -226,6 +226,16 @@ class Asteroid(arcade.Sprite):
         self.direction = self.angle  # placeholder for initial angle - angle changes during the game
         self.value = CONFIG['ASTEROID_SCORE_VALUES'][self.size - 1]
 
+    def split(self, spread_deg=30, angle=None, parent=None):
+        """
+        Distortion of initial angle, asteroid to inherit from
+        """
+        if angle is None:
+            angle = random.randrange(0, 360)
+        new_angle = random.randrange(angle - spread_deg, angle + spread_deg)
+        new_a = Asteroid(parent.size - 1, self.level, parent.position, new_angle)
+        return new_a
+
     def update(self):
         # Update position
         self.center_x += self.change_x
@@ -329,7 +339,6 @@ class Shield(arcade.Sprite):
 
     # Protective shield for player
     def __init__(self):
-
         # Graphics initializer
         super().__init__("images/Effects/shield1.png", flipped_horizontally=True, flipped_diagonally=True)
 
@@ -988,6 +997,19 @@ class InGameView(arcade.View):
 
                 a.kill()
 
+        # Check for Asteroid - Shield collision
+        for a in self.player_shield.collides_with_list(self.asteroid_list):
+            for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
+                self.asteroid_list.append(a.split(s.angle, CONFIG["ASTEROIDS_SPREAD"], a))
+            a.kill
+
+        # Check for UFOShot - Shield collision
+        for s in self.player_shield.collides_with_list(self.ufo_shot_list):
+            if self.player_sprite.is_shield:
+                s.kill
+                # Shield deactivates if hit by UFOShot
+                self.player_sprite.shield_timer = 0
+
         # check for collision with bonus_ufo
         for ufo in self.player_sprite.collides_with_list(self.ufo_list):
             if not self.player_sprite.is_invincible:
@@ -1026,9 +1048,7 @@ class InGameView(arcade.View):
                 # Split into smaller Asteroids if not smallest size
                 if a.size > 1:
                     for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
-                        a_angle = random.randrange(s.angle - CONFIG["ASTEROIDS_SPREAD"], s.angle + CONFIG["ASTEROIDS_SPREAD"])
-                        new_a = Asteroid(a.size - 1, self.level, a.position, a_angle)
-                        self.asteroid_list.append(new_a)
+                        self.asteroid_list.append(a.split(s.angle, CONFIG["ASTEROIDS_SPREAD"], a))
                 a.kill()
                 s.kill()
 
@@ -1041,6 +1061,7 @@ class InGameView(arcade.View):
         if self.player_shot_fire_rate_timer < CONFIG['PLAYER_FIRE_RATE']:
             self.player_shot_fire_rate_timer += delta_time
 
+        # Move shield on top of player
         self.player_shield.center_x = self.player_sprite.center_x
         self.player_shield.center_y = self.player_sprite.center_y
         self.player_shield.angle = self.player_sprite.angle
