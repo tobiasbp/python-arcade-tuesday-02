@@ -422,31 +422,25 @@ class PowerUp(ObjInSpace):
     pu_types = [
         {"filename": "images/Power-ups/powerupGreen_star.png",
          "score": 300,
-         "life": 0,
          "lifetime": 15
          },
         {"filename": "images/Power-ups/powerupYellow_star.png",
          "score": 600,
-         "life": 0,
          "lifetime": 10
          },
         {"filename": "images/Power-ups/powerupRed_star.png",
          "score": 1000,
-         "life": 0,
          "lifetime": 5
          },
         {"filename": "images/Power-ups/powerupGreen_shield.png",
-         "score": 0,
          "life": 1,
          "lifetime": 15
          },
         {"filename": "images/Power-ups/powerupYellow_shield.png",
-         "score": 0,
          "life": 2,
          "lifetime": 10
          },
         {"filename": "images/Power-ups/powerupRed_shield.png",
-         "score": 0,
          "life": 3,
          "lifetime": 5
          }
