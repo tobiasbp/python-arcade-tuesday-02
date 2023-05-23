@@ -703,8 +703,8 @@ class InGameView(arcade.View):
 
 
         # checks if ufo shot collides with player
-        for ufo_shot_hit in self.player_sprite.collides_with_list(self.ufo_shot_list):
-            if not self.player_sprite.is_invincible:
+        if not self.player_sprite.is_invincible:
+            for ufo_shot_hit in self.player_sprite.collides_with_list(self.ufo_shot_list):
                 self.sound_explosion.play()
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
@@ -712,8 +712,8 @@ class InGameView(arcade.View):
                 ufo_shot_hit.kill()
 
         # Check if collision with Asteroids and dies and kills the Asteroid
-        for a in self.player_sprite.collides_with_list(self.asteroid_list):
-            if not self.player_sprite.is_invincible:
+        if not self.player_sprite.is_invincible:
+            for a in self.player_sprite.collides_with_list(self.asteroid_list):
                 self.sound_explosion.play()
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
@@ -722,8 +722,8 @@ class InGameView(arcade.View):
                 a.kill()
 
         # check for collision with bonus_ufo
-        for ufo in self.player_sprite.collides_with_list(self.ufo_list):
-            if not self.player_sprite.is_invincible:
+        if not self.player_sprite.is_invincible:
+            for ufo in self.player_sprite.collides_with_list(self.ufo_list):
                 self.sound_explosion.play()
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
