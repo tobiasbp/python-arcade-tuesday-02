@@ -790,7 +790,7 @@ class InGameView(arcade.View):
 
         self.stoppable_emitter.update()
         # check for thrust
-        if self.thrust_pressed and self.player_sprite.alpha != 0:
+        if self.thrust_pressed and self.player_sprite.alpha > 0:
             self.player_sprite.thrust()
             self.stoppable_emitter.start()
 
