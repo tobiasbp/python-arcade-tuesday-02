@@ -273,10 +273,6 @@ class Player(ObjInSpace):
     def is_invincible(self):
         return self.invincibility_timer > 0
 
-    @property
-    def is_functional(self):
-        return self.invincibility_timer < 3
-
     def on_update(self, delta_time):
         """
         Move the sprite and wrap
