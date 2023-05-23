@@ -452,21 +452,21 @@ class PowerUp(ObjInSpace):
          }
     ]
 
-    def __init__(self, max_x, max_y, wrap_max_x, wrap_max_y):
+    def __init__(self, start_max_x, start_max_y, wrap_max_x, wrap_max_y, speed):
 
-        # Random Type ^
+        # Random Type
         self.type = choice(PowerUp.pu_types)
 
         super().__init__(
             filename=self.type["filename"],
-            center_x=randint(0, max_x),
-            center_y=randint(0, max_y),
+            center_x=randint(0, start_max_x),
+            center_y=randint(0, start_max_y),
             wrap_max_x=wrap_max_x,
             wrap_max_y=wrap_max_y
         )
 
         self.angle = randint(0, 360)
-        self.forward(0.5)
+        self.forward(speed)
         # time till death in sec
         self.lifetimer = self.type["lifetime"]
 

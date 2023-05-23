@@ -474,10 +474,11 @@ class InGameView(arcade.View):
                                                level=self.level))
 
         # Spawn PowerUp
-        pu = PowerUp(max_x=CONFIG["SCREEN_WIDTH"],
-                     max_y=CONFIG["SCREEN_HEIGHT"],
+        pu = PowerUp(start_max_x=CONFIG["SCREEN_WIDTH"],
+                     start_max_y=CONFIG["SCREEN_HEIGHT"],
                      wrap_max_x=CONFIG["SCREEN_WIDTH"],
-                     wrap_max_y=CONFIG["SCREEN_HEIGHT"])
+                     wrap_max_y=CONFIG["SCREEN_HEIGHT"],
+                     speed=random.uniform(CONFIG["POWERUP_MIN_SPEED"], CONFIG["POWERUP_MAX_SPEED"]))
 
         self.power_up_list.append(
             pu
@@ -579,7 +580,7 @@ class InGameView(arcade.View):
         # Sprite lists
         self.player_shot_list = arcade.SpriteList()
         self.asteroid_list = arcade.SpriteList()
-        self.power_up_list =arcade.SpriteList()
+        self.power_up_list = arcade.SpriteList()
 
         self.ufo_list = arcade.SpriteList()
         self.ufo_shot_list = arcade.SpriteList()
