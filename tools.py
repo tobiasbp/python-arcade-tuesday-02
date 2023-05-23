@@ -7,7 +7,6 @@ import arcade
 import tomli
 from typing import Tuple
 import random
-
 from game_sprites import Star
 
 

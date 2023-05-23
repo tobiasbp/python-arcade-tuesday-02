@@ -413,3 +413,56 @@ class BonusUFO(ObjInSpace):
         arcade.unschedule(self.shoot)
         arcade.unschedule(self.change_dir)
         self.kill()
+
+
+
+class PowerUp(ObjInSpace):
+
+    # PowerUp colors: Green: Lvl 1, Yellow Lvl 2; Red: Lvl 3
+    pu_types = [
+        {"filename": "images/Power-ups/powerupGreen_star.png",
+         "score": 300,
+         "lifetime": 15
+         },
+        {"filename": "images/Power-ups/powerupYellow_star.png",
+         "score": 600,
+         "lifetime": 10
+         },
+        {"filename": "images/Power-ups/powerupRed_star.png",
+         "score": 1000,
+         "lifetime": 5
+         },
+        {"filename": "images/Power-ups/powerupGreen_shield.png",
+         "life": 1,
+         "lifetime": 15
+         },
+        {"filename": "images/Power-ups/powerupYellow_shield.png",
+         "life": 2,
+         "lifetime": 10
+         },
+        {"filename": "images/Power-ups/powerupRed_shield.png",
+         "life": 3,
+         "lifetime": 5
+         }
+    ]
+
+    def __init__(self, start_max_x, start_max_y, wrap_max_x, wrap_max_y, speed):
+
+        # Random Type
+        self.type = choice(PowerUp.pu_types)
+
+        super().__init__(
+            filename=self.type["filename"],
+            center_x=randint(0, start_max_x),
+            center_y=randint(0, start_max_y),
+            wrap_max_x=wrap_max_x,
+            wrap_max_y=wrap_max_y
+        )
+
+        self.angle = randint(0, 360)
+        self.forward(speed)
+        # time till death in sec
+        self.lifetimer = self.type["lifetime"]
+
+    def on_update(self, delta_time):
+        super().on_update(delta_time)

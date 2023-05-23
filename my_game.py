@@ -16,9 +16,8 @@ import arcade.gui
 from pyglet.math import Vec2
 
 
-from game_sprites import Star, Shot, Asteroid, Player, BonusUFO
+from game_sprites import Star, Shot, Asteroid, Player, BonusUFO, PowerUp
 from tools import get_joystick, wrap, load_toml, get_stars, StoppableEmitter
-
 
 # load the config file as a dict
 CONFIG = load_toml('my_game.toml')
@@ -389,12 +388,15 @@ class InGameView(arcade.View):
 
         self.sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
         self.sound_thrust = arcade.load_sound("sounds/spaceEngine_003.ogg")
-        
+
         self.sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = None
         self.player_shot_fire_rate_timer = 0
+
+        # Power ups SprteList
+        self.power_up_list = None
 
         # Asteroid SpriteList
         self.asteroid_list = None
@@ -405,7 +407,6 @@ class InGameView(arcade.View):
         # Set up the player info
         self.player_sprite: Player = None
         self.player_score = None
-        self.player_lives = None
         self.player_speed = 0
         self.opposite_angle = 0
         self.explosion_emitter = None
@@ -471,6 +472,17 @@ class InGameView(arcade.View):
                                                spread=CONFIG['ASTEROIDS_SPREAD'],
                                                speed=CONFIG['ASTEROIDS_SPEED'],
                                                level=self.level))
+
+        # Spawn PowerUp
+        pu = PowerUp(start_max_x=CONFIG["SCREEN_WIDTH"],
+                     start_max_y=CONFIG["SCREEN_HEIGHT"],
+                     wrap_max_x=CONFIG["SCREEN_WIDTH"],
+                     wrap_max_y=CONFIG["SCREEN_HEIGHT"],
+                     speed=random.uniform(CONFIG["POWERUP_MIN_SPEED"], CONFIG["POWERUP_MAX_SPEED"]))
+
+        self.power_up_list.append(
+            pu
+        )
 
     def spawn_ufo(self, delta_time):
         """
@@ -568,6 +580,7 @@ class InGameView(arcade.View):
         # Sprite lists
         self.player_shot_list = arcade.SpriteList()
         self.asteroid_list = arcade.SpriteList()
+        self.power_up_list = arcade.SpriteList()
 
         self.ufo_list = arcade.SpriteList()
         self.ufo_shot_list = arcade.SpriteList()
@@ -629,6 +642,9 @@ class InGameView(arcade.View):
 
         # Draw asteroids
         self.asteroid_list.draw()
+
+        # Draw Power Ups
+        self.power_up_list.draw()
 
         # draw ufo(s)
         self.ufo_list.draw()
@@ -700,8 +716,6 @@ class InGameView(arcade.View):
         if self.joystick:
             self.player_sprite.angle += round(self.joystick.x) * -CONFIG['PLAYER_ROTATE_SPEED']
 
-
-
         # checks if ufo shot collides with player
         for ufo_shot_hit in self.player_sprite.collides_with_list(self.ufo_shot_list):
             self.sound_explosion.play()
@@ -710,6 +724,12 @@ class InGameView(arcade.View):
             self.get_explosion(self.player_sprite.position)
             ufo_shot_hit.kill()
 
+        # Check if colliding whit power_up
+        for power_up_hit in self.player_sprite.collides_with_list(self.power_up_list):
+            self.player_score += power_up_hit.type.get("score", 0)
+            self.player_sprite.lives += power_up_hit.type.get("life", 0)
+            power_up_hit.kill()
+
         # Check if collision with Asteroids and dies and kills the Asteroid
         for a in self.player_sprite.collides_with_list(self.asteroid_list):
             if not self.player_sprite.is_invincible:
@@ -717,7 +737,6 @@ class InGameView(arcade.View):
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
                 self.get_explosion(self.player_sprite.position)
-
                 a.kill()
 
         # check for collision with bonus_ufo
@@ -750,6 +769,7 @@ class InGameView(arcade.View):
 
         # Check for PlayerShot - Asteroid collisions
         for s in self.player_shot_list:
+
             for a in arcade.check_for_collision_with_list(s, self.asteroid_list):
 
                 # Shake the camera in proportion to Asteroid size
@@ -805,6 +825,9 @@ class InGameView(arcade.View):
         # Update Asteroids
         self.asteroid_list.on_update(delta_time)
 
+        # Update Power Ups
+        self.power_up_list.on_update(delta_time)
+
         # update UFOs
         self.ufo_list.on_update(delta_time)
 
@@ -851,9 +874,7 @@ class InGameView(arcade.View):
             if self.thrust_pressed is False:
                 if self.sound_thrust_player is not None:
                     self.sound_thrust.stop(self.sound_thrust_player)
-                
                 self.sound_thrust_player = self.sound_thrust.play(loop=True)
-
             self.thrust_pressed = True
 
         if key == CONFIG["PLAYER_FIRE_KEY"]:
@@ -994,7 +1015,6 @@ class GameOverView(arcade.View):
             CONFIG['SCREEN_HEIGHT'] * 0.6,
             arcade.color.WHITE
         )
-
 
     def on_key_press(self, symbol: int, modifiers: int):
         if symbol == arcade.key.R:
