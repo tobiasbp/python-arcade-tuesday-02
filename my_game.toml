@@ -1,0 +1,102 @@
+# this is the config file for the project, storing (almost) all the game file constants
+# Link to the arcade key ID translation page used in the keybinds
+# https://api.arcade.academy/en/latest/arcade.key.html#key
+
+SPRITE_SCALING = 0.5
+
+# screen_constants
+SCREEN_WIDTH = 800  # px
+SCREEN_HEIGHT = 600  # px
+
+# player_constants
+PLAYER_START_X = 400  # px
+PLAYER_START_Y = 300  # px
+PLAYER_START_SPEED_MIN = 0.5
+PLAYER_START_SPEED_MAX = 2
+PLAYER_START_ANGLE_MIN = 0
+PLAYER_START_ANGLE_MAX = 360
+PLAYER_START_LIVES = 3
+PLAYER_ROTATE_SPEED = 5  # px/update
+PLAYER_THRUST = 0.05  # speed gained from thrusting
+PLAYER_SHOT_SPEED = 4  # px/update
+PLAYER_SPEED_LIMIT = 5  # px/update
+PLAYER_INVINCIBILITY_SECONDS = 5  # secs
+PLAYER_FIRE_RATE = 0.2  # secs
+PLAYER_SHOT_RANGE = 400  # px
+PLAYER_THRUST_KEY = 65362 # arrowup key
+PLAYER_FIRE_KEY = 32 # space key
+EXIT_SETTINGS_KEY = 65307 # escape key
+PLAYER_TURN_RIGHT_KEY = 65363 # arrowright key
+PLAYER_TURN_LEFT_KEY = 65361 # arrowleft key
+PLAYER_FIRE_JOYBUTTON = 0
+PLAYER_THRUST_JOYBUTTON = 1
+PLAYER_SELECT_JOYSTICK = 8
+PLAYER_START_JOYSTICK = 9
+
+PLAYER_SHOCKWAVE_STRENGTH = 8  # px/update at center point
+PLAYER_SHOCKWAVE_RANGE = 250  # px radius
+
+THRUSTER_EMIT_RATE = 0.025  # secs
+THRUSTER_EMIT_TIME = 0.35  #secs
+PLAYER_ENGINE_SHAKE = 20 # The maximum + minimum of the shaking of the particles
+
+# asteroid_constants
+ASTEROIDS_SPREAD = 30
+ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER = 350 # px
+ASTEROIDS_PR_LEVEL = 5
+ASTEROID_NUM_MOD_PR_LEVEL = 1  # added to ASTEROIDS_PR_LEVEL on level increase
+ASTEROIDS_SPEED = 1  # px/update
+ASTEROIDS_SPEED_MOD_PR_LEVEL = 0.7  # added to ASTEROIDS_SPEED on level increase
+ASTEROID_SCORE_VALUES = [20, 30, 40, 50]  # points
+ASTEROIDS_PR_SPLIT = 2
+ASTEROIDS_SHAKE_AMPLITUDE = 3.0 # How much to shake when Asteroids are hit. Depends on Asteroid size
+
+# ufo_constants
+UFO_SPEED = 2  # px/update. both for x and y note: has to be int
+UFO_SPEED_MOD_PR_LEVEL = 1  # added to UFO_SPEED on level increase
+UFO_DIR_CHANGE_RATE = 3  # secs
+UFO_SPAWN_RATE = 10  # seconds
+UFO_SPAWN_RATE_MOD_PR_LEVEL = -0.5  # added to UFO_SPAWN_RATE on level increase
+UFO_POINTS_REWARD = 300  # points
+UFO_SHOT_SPEED = 2  # px/update
+UFO_SHOT_RANGE = 200  # px
+UFO_FIRE_RATE = 1.5  # secs
+UFO_FIRE_RATE_MOD_PR_LEVEL = -0.15  # added to UFO_FIRE_RATE on level increase
+UFO_SIZE_SMALL = 0.9  # multiplier for original file
+UFO_SIZE_BIG = 1.5  # multiplier for original file
+UFO_SHOCKWAVE_STRENGTH = 7  # px/update at center point
+UFO_SHOCKWAVE_RANGE = 200  # px radius
+
+
+# explosions
+EXPLOSION_PARTICLE_AMOUNT = 220
+EXPLOSION_PARTICLE_SPEED = 4
+EXPLOSION_PARTICLE_LIFETIME_MIN = 0.1
+EXPLOSION_PARTICLE_LIFETIME_MAX = 0.9
+EXPLOSION_PARTICLE_SIZE = 4
+EXPLOSION_SHAKE_AMPLITUDE = 10 # How much to shake the camera
+
+# UI
+TITLE_X = 400  # pCha
+TITLE_Y = 450  # px
+SETTINGS_BUTTON_X = 300  # px
+SETTINGS_BUTTON_Y = 100  # px
+BUTTON_X = 300  # px
+BUTTON_Y = 200  # px
+BUTTON_SCALE = 1 # The scale of the play/restart button
+
+UI_PLAY_KEY = 112 # P key
+UI_RESTART_KEY = 114  # R key
+UI_SETTINGS_KEY = 115 # S key
+
+
+# Shots
+SHOT_FADE_SPEED = 0.95  # the procentage of fade in shots fade (Has to be between 0.0 - 1.0)
+SHOT_FADE_START = 100  # Shot starts to fade this many pixels before it reaches it's range
+
+# Background stars
+STARS_ON_SCREEN_GAME = 100
+STARS_ON_SCREEN_INTRO = 300
+STARS_SCALE = 0.5
+STARS_BASE_SIZE = 10
+STARS_FADE_SPEED = 30

@@ -130,3 +130,7 @@ dmypy.json
 
 # PyCharm
 .idea/
+
+# my_game
+user_settings_*
+user_settings.toml
