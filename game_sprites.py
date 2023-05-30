@@ -448,11 +448,11 @@ class PowerUp(ObjInSpace):
          "lifetime": 5
          },
         {"filename": "images/Power-ups/powerupGreen_bolt.png",
-         "firerate": 0.25,
+         "firerate": 0.5,
          "lifetime": 10
          },
         {"filename": "images/Power-ups/powerupRed_bolt.png",
-         "firerate": 4,
+         "firerate": 1.5,
          "lifetime": 10
          }
     ]
