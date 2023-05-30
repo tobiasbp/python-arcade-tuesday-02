@@ -211,7 +211,8 @@ class Player(ObjInSpace):
                  start_angle_min,
                  start_angle_max,
                  wrap_max_x,
-                 wrap_max_y):
+                 wrap_max_y,
+                 fire_rate):
         """
         Setup new Player object
         """
@@ -242,6 +243,8 @@ class Player(ObjInSpace):
         self.start_angle_max = start_angle_max
         self.start_speed_min = start_speed_min
         self.start_speed_max = start_speed_max
+
+        self.fire_rate = fire_rate
 
     def thrust(self):
         """
@@ -443,6 +446,14 @@ class PowerUp(ObjInSpace):
         {"filename": "images/Power-ups/powerupRed_shield.png",
          "life": 3,
          "lifetime": 5
+         },
+        {"filename": "images/Power-ups/powerupGreen_bolt.png",
+         "firerate": 0.25,
+         "lifetime": 10
+         },
+        {"filename": "images/Power-ups/powerupRed_bolt.png",
+         "firerate": 4,
+         "lifetime": 10
          }
     ]
 
