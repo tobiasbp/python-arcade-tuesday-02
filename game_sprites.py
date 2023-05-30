@@ -466,3 +466,6 @@ class PowerUp(ObjInSpace):
 
     def on_update(self, delta_time):
         super().on_update(delta_time)
+        self.lifetimer -= delta_time
+        if self.lifetimer <= 0:
+            self.kill()
