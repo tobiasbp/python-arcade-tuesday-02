@@ -135,6 +135,8 @@ class Player(arcade.Sprite):
         The code works as when you get hit by the asteroid you will disappear for 2 seconds.
         After that you are invincible for 3 seconds, and you can get hit again.
         """
+        # Deactivate Shield
+        self.shield_timer = 0
         self.invincibility_timer = CONFIG['PLAYER_INVINCIBILITY_SECONDS']
         # The Player is Invisible
         self.alpha = 0
@@ -999,14 +1001,16 @@ class InGameView(arcade.View):
 
         # Check for Asteroid - Shield collision
         for a in self.player_shield.collides_with_list(self.asteroid_list):
-            for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
-                self.asteroid_list.append(a.split(s.angle, CONFIG["ASTEROIDS_SPREAD"], a))
-            a.kill
+            if self.player_sprite.is_shield:
+                for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
+                    self.asteroid_list.append(a.split(CONFIG["ASTEROIDS_SPREAD"], s.angle, a))
+                a.kill()
+                self.player_sprite.shield_timer = 0
 
         # Check for UFOShot - Shield collision
         for s in self.player_shield.collides_with_list(self.ufo_shot_list):
             if self.player_sprite.is_shield:
-                s.kill
+                s.kill()
                 # Shield deactivates if hit by UFOShot
                 self.player_sprite.shield_timer = 0
 
@@ -1048,7 +1052,7 @@ class InGameView(arcade.View):
                 # Split into smaller Asteroids if not smallest size
                 if a.size > 1:
                     for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
-                        self.asteroid_list.append(a.split(s.angle, CONFIG["ASTEROIDS_SPREAD"], a))
+                        self.asteroid_list.append(a.split(CONFIG["ASTEROIDS_SPREAD"], s.angle, a))
                 a.kill()
                 s.kill()
 
@@ -1100,7 +1104,9 @@ class InGameView(arcade.View):
         Called whenever a key is pressed.
         """
 
-        if key == arcade.key.RSHIFT:
+        # This is a temporary way to activate the shield. Remove when testing is finished
+
+        if key == arcade.key.RSHIFT and not self.player_sprite.is_invincible:
             self.player_sprite.shield_timer = CONFIG["PLAYER_SHIELD_TIMER"]
 
         # Track state of arrow keys
