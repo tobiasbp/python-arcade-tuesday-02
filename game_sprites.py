@@ -15,17 +15,18 @@ class ObjInSpace(arcade.Sprite):
     This class only moves the sprite based on its change_x and change_y, and wraps them to a given width
     """
 
-    def __init__(self, wrap_max_x, wrap_max_y, **kwargs):
+    def __init__(self, wrap_max_x, wrap_max_y, speed_scale=1.0, **kwargs):
 
         super().__init__(**kwargs)
 
         self.wrap_max_x = wrap_max_x
         self.wrap_max_y = wrap_max_y
+        self.speed_scale = speed_scale
 
     def on_update(self, delta_time):
 
-        self.center_x += self.change_x
-        self.center_y += self.change_y
+        self.center_x += self.change_x * self.speed_scale
+        self.center_y += self.change_y * self.speed_scale
 
         # wrap
         if self.right < 0:
@@ -44,7 +45,7 @@ class Shot(ObjInSpace):
     universal class for shot objects
     """
 
-    def __init__(self, filename, scale, center_x, center_y, angle, speed, range, fade_start, fade_speed, wrap_max_x, wrap_max_y, sound=None):
+    def __init__(self, filename, scale, center_x, center_y, angle, speed, range, fade_start, fade_speed, wrap_max_x, wrap_max_y, speed_scale=1.0, sound=None):
 
         super().__init__(
             filename=filename,
@@ -55,7 +56,8 @@ class Shot(ObjInSpace):
             flipped_horizontally=True,
             flipped_diagonally=True,
             wrap_max_x=wrap_max_x,
-            wrap_max_y=wrap_max_y
+            wrap_max_y=wrap_max_y,
+            speed_scale=speed_scale
         )
 
         self.speed = speed
@@ -64,6 +66,7 @@ class Shot(ObjInSpace):
         self.fade_speed = fade_speed
         self.wrap_max_x = wrap_max_x
         self.wrap_max_y = wrap_max_y
+        self.speed_scale = speed_scale
 
         self.distance_traveled = 0
 
@@ -81,11 +84,13 @@ class Shot(ObjInSpace):
         super().on_update(delta_time)
 
         # check if the shot traveled too far
-        self.distance_traveled += self.speed
+        self.distance_traveled += self.speed * self.speed_scale
+
+        # FIXME: make a function for when the fading of the shot should start, based on teh range
 
         # start fading when flown far enough
         if self.distance_traveled > self.fade_start:
-            self.alpha *= self.fade_speed
+            self.alpha *= self.fade_speed * self.speed_scale
 
         if self.distance_traveled > self.range:
             self.kill()
@@ -96,7 +101,7 @@ class Star(arcade.Sprite):
     A flashing star.
     """
 
-    def __init__(self, position: Tuple[int, int], base_size:int = 10, scale:float=0.5, fade_speed:int=30):
+    def __init__(self, position: Tuple[int, int], base_size:int = 10, scale:float=0.5, fade_speed:int=30, speed_scale=1.0):
         """
         base_size: The size of the circle texture used for stars.
         scale: Will be multiplied with a random float between 0.0 & 1.0 to calculate the scaling of the star.
@@ -114,6 +119,8 @@ class Star(arcade.Sprite):
         # Start fade pos between 0 and 2 * pi
         self.fade_pos = 2 * random() * pi
 
+        self.speed_scale = speed_scale
+
         self.fade_speed = random() / fade_speed
 
     def on_update(self, delta_time: float = 1/60):
@@ -128,13 +135,13 @@ class Star(arcade.Sprite):
         self.fade_pos += self.fade_speed
 
         # Bigger stars move faster than small stars
-        self.center_x += self.scale * self.change_x
-        self.center_y += self.scale * self.change_y
+        self.center_x += self.scale * self.change_x * self.speed_scale
+        self.center_y += self.scale * self.change_y * self.speed_scale
 
 
 class Asteroid(ObjInSpace):
 
-    def __init__(self, scale, screen_width, screen_height, min_spawn_dist_from_player, player_start_pos, score_values, spread, speed, size=3, level=1, spawn_pos=None, angle=None):
+    def __init__(self, scale, screen_width, screen_height, min_spawn_dist_from_player, player_start_pos, score_values, spread, speed, size=3, level=1, speed_scale=1.0, spawn_pos=None, angle=None):
         # Initialize the asteroid
 
         # Graphics
@@ -142,7 +149,8 @@ class Asteroid(ObjInSpace):
             filename='images/Meteors/meteorGrey_med1.png',
             scale=size * scale,
             wrap_max_x=screen_width,
-            wrap_max_y=screen_height
+            wrap_max_y=screen_height,
+            speed_scale=speed_scale
         )
 
         self.size = size
@@ -154,6 +162,7 @@ class Asteroid(ObjInSpace):
         self.score_values = score_values
         self.spread = spread
         self.speed = speed
+        self.speed_scale = speed_scale
 
         if angle == None:
             self.angle = randrange(0, 360)
@@ -190,7 +199,7 @@ class Asteroid(ObjInSpace):
         super().on_update(delta_time)
 
         # Rotate Asteroid
-        self.angle += self.rotation_speed
+        self.angle += self.rotation_speed * self.speed_scale
 
 
 class Player(ObjInSpace):
@@ -211,7 +220,8 @@ class Player(ObjInSpace):
                  start_angle_min,
                  start_angle_max,
                  wrap_max_x,
-                 wrap_max_y):
+                 wrap_max_y,
+                 speed_scale=1.0):
         """
         Setup new Player object
         """
@@ -225,7 +235,8 @@ class Player(ObjInSpace):
                          flipped_horizontally=True,
                          flipped_diagonally=True,
                          wrap_max_x=wrap_max_x,
-                         wrap_max_y=wrap_max_y)
+                         wrap_max_y=wrap_max_y,
+                         speed_scale=speed_scale)
 
         self.start_x = center_x
         self.start_y = center_y
@@ -243,12 +254,14 @@ class Player(ObjInSpace):
         self.start_speed_min = start_speed_min
         self.start_speed_max = start_speed_max
 
+        self.speed_scale = speed_scale
+
     def thrust(self):
         """
         increase speed in the direction pointing
         """
 
-        self.forward(self.thrust_speed)
+        self.forward(self.thrust_speed * self.speed_scale)
         # Keep track of Player Speed
         player_speed_vector_length = sqrt(self.change_x ** 2 + self.change_y ** 2)
 
@@ -256,7 +269,7 @@ class Player(ObjInSpace):
         player_x_and_y_speed_ratio = self.speed_limit / player_speed_vector_length
 
         # If player is too fast slow it down
-        if player_speed_vector_length > self.speed_limit:
+        if player_speed_vector_length > self.speed_limit * self.speed_scale:
             self.change_x *= player_x_and_y_speed_ratio
             self.change_y *= player_x_and_y_speed_ratio
 
@@ -282,7 +295,7 @@ class Player(ObjInSpace):
 
         # Time when you can't get hit by an asteroid
         if self.is_invincible:
-            self.invincibility_timer -= delta_time
+            self.invincibility_timer -= delta_time * self.speed_scale
             # Time when you are not visible
             if self.invincibility_timer < 3:
                 # Visible
@@ -305,7 +318,7 @@ class BonusUFO(ObjInSpace):
     sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
     sound_explosion = arcade.load_sound("sounds/explosionCrunch_000.ogg")
 
-    def __int__(self, scale, shot_list, target, speed, speed_mod, dir_change_rate, fire_rate, fire_rate_mod, shot_scale, shot_speed, shot_range, shot_fade_start, shot_fade_speed, small_size, big_size, screen_width, screen_height, **kwargs):
+    def __int__(self, scale, shot_list, target, speed, speed_mod, dir_change_rate, fire_rate, fire_rate_mod, shot_scale, shot_speed, shot_range, shot_fade_start, shot_fade_speed, small_size, big_size, screen_width, screen_height, speed_scale=1.0, **kwargs):
 
         kwargs['filename'] = "images/ufoBlue.png"
 
@@ -320,6 +333,7 @@ class BonusUFO(ObjInSpace):
         super().__init__(
             wrap_max_x=screen_width,
             wrap_max_y=screen_height,
+            speed_scale=speed_scale,
             **kwargs)
 
         self.shot_list = shot_list

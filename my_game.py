@@ -463,15 +463,17 @@ class InGameView(arcade.View):
 
         # Spawn Asteroids
         for r in range(CONFIG['ASTEROIDS_PR_LEVEL'] + (self.level - 1) * CONFIG['ASTEROID_NUM_MOD_PR_LEVEL']):
-            self.asteroid_list.append(Asteroid(scale=CONFIG['SPRITE_SCALING'],
-                                               screen_width=CONFIG['SCREEN_WIDTH'],
-                                               screen_height=CONFIG['SCREEN_HEIGHT'],
-                                               min_spawn_dist_from_player=CONFIG['ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER'],
-                                               player_start_pos=(CONFIG['PLAYER_START_X'], CONFIG['PLAYER_START_Y']),
-                                               score_values=CONFIG['ASTEROID_SCORE_VALUES'],
-                                               spread=CONFIG['ASTEROIDS_SPREAD'],
-                                               speed=CONFIG['ASTEROIDS_SPEED'],
-                                               level=self.level))
+            self.asteroid_list.append(
+                Asteroid(scale=CONFIG['SPRITE_SCALING'],
+                            screen_width=CONFIG['SCREEN_WIDTH'],
+                            screen_height=CONFIG['SCREEN_HEIGHT'],
+                            min_spawn_dist_from_player=CONFIG['ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER'],
+                            player_start_pos=(CONFIG['PLAYER_START_X'], CONFIG['PLAYER_START_Y']),
+                            score_values=CONFIG['ASTEROID_SCORE_VALUES'],
+                            spread=CONFIG['ASTEROIDS_SPREAD'],
+                            speed=CONFIG['ASTEROIDS_SPEED'],
+                            level=self.level)
+            )
 
         # Spawn PowerUp
         pu = PowerUp(start_max_x=CONFIG["SCREEN_WIDTH"],
@@ -708,9 +710,9 @@ class InGameView(arcade.View):
         # Calculate player speed based on the keys pressed
         # Move player with keyboard
         if self.turn_left_pressed and not self.turn_right_pressed:
-            self.player_sprite.angle += CONFIG['PLAYER_ROTATE_SPEED']
+            self.player_sprite.angle += CONFIG['PLAYER_ROTATE_SPEED'] * self.player_sprite.speed_scale
         elif self.turn_right_pressed and not self.turn_left_pressed:
-            self.player_sprite.angle += -CONFIG['PLAYER_ROTATE_SPEED']
+            self.player_sprite.angle += -CONFIG['PLAYER_ROTATE_SPEED'] * self.player_sprite.speed_scale
 
         # rotate player with joystick if present
         if self.joystick:
@@ -783,8 +785,8 @@ class InGameView(arcade.View):
                     for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
                         # A random angle for the the new Asteroid
                         a_angle = random.randrange(
-                            s.angle - CONFIG["ASTEROIDS_SPREAD"],
-                            s.angle + CONFIG["ASTEROIDS_SPREAD"]
+                            int(s.angle - CONFIG["ASTEROIDS_SPREAD"]),
+                            int(s.angle + CONFIG["ASTEROIDS_SPREAD"])
                         )
                         # Create an Asteroid
                         new_a = Asteroid(
@@ -893,7 +895,7 @@ class InGameView(arcade.View):
                         fade_speed=CONFIG['SHOT_FADE_SPEED'],
                         wrap_max_x=CONFIG['SCREEN_WIDTH'],
                         wrap_max_y=CONFIG['SCREEN_HEIGHT'],
-                        sound=self.player_shoot_sound,
+                        sound=self.player_shoot_sound
 
                     )
 
