@@ -717,12 +717,13 @@ class InGameView(arcade.View):
             self.player_sprite.angle += round(self.joystick.x) * -CONFIG['PLAYER_ROTATE_SPEED']
 
         # checks if ufo shot collides with player
-        for ufo_shot_hit in self.player_sprite.collides_with_list(self.ufo_shot_list):
-            self.sound_explosion.play()
-            self.player_sprite.lives -= 1
-            self.player_sprite.reset()
-            self.get_explosion(self.player_sprite.position)
-            ufo_shot_hit.kill()
+        if not self.player_sprite.is_invincible:
+            for ufo_shot_hit in self.player_sprite.collides_with_list(self.ufo_shot_list):
+                self.sound_explosion.play()
+                self.player_sprite.lives -= 1
+                self.player_sprite.reset()
+                self.get_explosion(self.player_sprite.position)
+                ufo_shot_hit.kill()
 
         # Check if colliding whit power_up
         for power_up_hit in self.player_sprite.collides_with_list(self.power_up_list):
@@ -731,8 +732,8 @@ class InGameView(arcade.View):
             power_up_hit.kill()
 
         # Check if collision with Asteroids and dies and kills the Asteroid
-        for a in self.player_sprite.collides_with_list(self.asteroid_list):
-            if not self.player_sprite.is_invincible:
+        if not self.player_sprite.is_invincible:
+            for a in self.player_sprite.collides_with_list(self.asteroid_list):
                 self.sound_explosion.play()
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
@@ -740,8 +741,8 @@ class InGameView(arcade.View):
                 a.kill()
 
         # check for collision with bonus_ufo
-        for ufo in self.player_sprite.collides_with_list(self.ufo_list):
-            if not self.player_sprite.is_invincible:
+        if not self.player_sprite.is_invincible:
+            for ufo in self.player_sprite.collides_with_list(self.ufo_list):
                 self.sound_explosion.play()
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
@@ -809,7 +810,7 @@ class InGameView(arcade.View):
 
         self.stoppable_emitter.update()
         # check for thrust
-        if self.thrust_pressed:
+        if self.thrust_pressed and self.player_sprite.alpha > 0:
             self.player_sprite.thrust()
             self.stoppable_emitter.start()
 
