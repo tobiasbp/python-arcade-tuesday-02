@@ -594,6 +594,7 @@ class InGameView(arcade.View):
         self.player_sprite = Player(
             wrap_max_x=CONFIG['SCREEN_WIDTH'],
             wrap_max_y=CONFIG['SCREEN_HEIGHT'],
+            speed_scale=0.1,
             scale=CONFIG['SPRITE_SCALING'],
             center_x=CONFIG['PLAYER_START_X'],
             center_y=CONFIG['PLAYER_START_Y'],
@@ -616,7 +617,7 @@ class InGameView(arcade.View):
         # Start level 1
         self.next_level(1)
 
-        self.stoppable_emitter = StoppableEmitter(self.player_sprite)
+        self.stoppable_emitter = StoppableEmitter(target=self.player_sprite, particle_lifetime=0.5 / self.player_sprite.speed_scale, offset=(5 * self.player_sprite.speed_scale, 5 * self.player_sprite.speed_scale))
 
     def on_draw(self):
         """
