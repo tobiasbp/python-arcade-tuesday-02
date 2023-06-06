@@ -607,6 +607,7 @@ class InGameView(arcade.View):
             start_speed_max=CONFIG['PLAYER_START_SPEED_MAX'],
             start_angle_min=CONFIG['PLAYER_START_ANGLE_MIN'],
             start_angle_max=CONFIG['PLAYER_START_ANGLE_MAX'],
+            fire_rate=CONFIG['PLAYER_FIRE_RATE']
         )
 
         # load the player shot sound
@@ -733,6 +734,7 @@ class InGameView(arcade.View):
         for power_up_hit in self.player_sprite.collides_with_list(self.power_up_list):
             self.player_score += power_up_hit.type.get("score", 0)
             self.player_sprite.lives += power_up_hit.type.get("life", 0)
+            self.player_sprite.fire_rate *= power_up_hit.type.get("fire_rate", 1.0)
             power_up_hit.kill()
 
         # Check if collision with Asteroids and dies and kills the Asteroid
@@ -819,9 +821,6 @@ class InGameView(arcade.View):
             self.player_sprite.thrust()
             self.stoppable_emitter.start()
 
-        if self.player_shot_fire_rate_timer < CONFIG['PLAYER_FIRE_RATE'] / self.player_sprite.speed_scale:
-            self.player_shot_fire_rate_timer += delta_time
-
         # Update player sprite
         self.player_sprite.on_update(delta_time)
 
@@ -885,7 +884,7 @@ class InGameView(arcade.View):
 
         if key == CONFIG["PLAYER_FIRE_KEY"]:
             if not self.player_sprite.is_invincible:
-                if self.player_shot_fire_rate_timer >= CONFIG['PLAYER_FIRE_RATE'] / self.player_sprite.speed_scale:
+                if self.player_sprite.fire():
                     new_shot = Shot(
                         filename="images/Lasers/laserBlue01.png",
                         scale=CONFIG['SPRITE_SCALING'],
@@ -905,7 +904,7 @@ class InGameView(arcade.View):
 
                     self.sound_fire.play(speed=self.player_sprite.speed_scale)
                     self.player_shot_list.append(new_shot)
-                    self.player_shot_fire_rate_timer = 0
+
 
         if key == CONFIG['UI_RESTART_KEY']:
             new_game = InGameView()
