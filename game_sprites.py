@@ -74,7 +74,7 @@ class Shot(ObjInSpace):
 
         # play the shot sound if present
         if sound:
-            sound.play()
+            sound.play(speed=self.speed_scale)
 
     def on_update(self, delta_time):
         """
