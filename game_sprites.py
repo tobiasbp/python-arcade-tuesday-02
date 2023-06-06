@@ -86,11 +86,11 @@ class Shot(ObjInSpace):
         # check if the shot traveled too far
         self.distance_traveled += self.speed * self.speed_scale
 
-        # FIXME: make a function for when the fading of the shot should start, based on teh range
+        # FIXME: make a function for when the fading of the shot should start, based on the range
 
         # start fading when flown far enough
-        if self.distance_traveled > self.fade_start:
-            self.alpha *= self.fade_speed * self.speed_scale
+        #if self.distance_traveled > self.fade_start:
+        #    self.alpha *= self.fade_speed * self.speed_scale
 
         if self.distance_traveled > self.range:
             self.kill()
@@ -351,14 +351,14 @@ class BonusUFO(ObjInSpace):
         self.screen_height = screen_height
 
         self.shoot_timer = fire_rate + fire_rate_mod
-        self.change_dir_timer = dir_change_rate
+        self.change_dir_timer = dir_change_rate / self.speed_scale
 
         # set random direction. always point towards center, with noise
-        self.change_x = randrange(1, speed) + speed_mod
+        self.change_x = (randrange(1, speed) + speed_mod) * self.speed_scale
         if self.center_x > screen_width / 2:
             self.change_x *= -1
 
-        self.change_y = speed - self.change_x + speed_mod
+        self.change_y = (speed - self.change_x + speed_mod) * self.speed_scale
         if self.center_y > screen_height / 2:
             self.change_y *= -1
 
@@ -367,11 +367,11 @@ class BonusUFO(ObjInSpace):
         set a new direction
         """
 
-        r = randrange(-self.speed, self.speed)
+        r = (randrange(-self.speed, self.speed)) * self.speed_scale
         self.change_x -= r
         self.change_y += r
 
-        self.change_dir_timer = self.dir_change_rate
+        self.change_dir_timer = self.dir_change_rate / self.speed_scale
 
     def shoot(self):
         """
@@ -398,11 +398,12 @@ class BonusUFO(ObjInSpace):
             fade_speed=self.shot_fade_speed,
             wrap_max_x=self.screen_width,
             wrap_max_y=self.screen_height,
+            speed_scale=self.speed_scale,
             sound=BonusUFO.sound_fire)
 
         self.shot_list.append(new_ufo_shot)
 
-        self.shoot_timer = self.fire_rate + self.fire_rate_mod
+        self.shoot_timer = (self.fire_rate + self.fire_rate_mod) / self.speed_scale
 
     def on_update(self, delta_time):
         """update position, and kill if out of bounds"""

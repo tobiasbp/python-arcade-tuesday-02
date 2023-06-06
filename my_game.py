@@ -514,8 +514,8 @@ class InGameView(arcade.View):
             big_size=CONFIG['UFO_SIZE_BIG'],
             screen_width=CONFIG['SCREEN_WIDTH'],
             screen_height=CONFIG['SCREEN_HEIGHT']
-
         )  # it needs the list so it can send shots to MyGame
+
         self.ufo_list.append(new_ufo_obj)
 
     def get_explosion(self, position, textures=None):
@@ -596,7 +596,6 @@ class InGameView(arcade.View):
         self.player_sprite = Player(
             wrap_max_x=CONFIG['SCREEN_WIDTH'],
             wrap_max_y=CONFIG['SCREEN_HEIGHT'],
-            speed_scale=0.1,
             scale=CONFIG['SPRITE_SCALING'],
             center_x=CONFIG['PLAYER_START_X'],
             center_y=CONFIG['PLAYER_START_Y'],
@@ -819,7 +818,7 @@ class InGameView(arcade.View):
             self.player_sprite.thrust()
             self.stoppable_emitter.start()
 
-        if self.player_shot_fire_rate_timer < CONFIG['PLAYER_FIRE_RATE']:
+        if self.player_shot_fire_rate_timer < CONFIG['PLAYER_FIRE_RATE'] / self.player_sprite.speed_scale:
             self.player_shot_fire_rate_timer += delta_time
 
         # Update player sprite
@@ -885,7 +884,7 @@ class InGameView(arcade.View):
 
         if key == CONFIG["PLAYER_FIRE_KEY"]:
             if not self.player_sprite.is_invincible:
-                if self.player_shot_fire_rate_timer >= CONFIG['PLAYER_FIRE_RATE']:
+                if self.player_shot_fire_rate_timer >= CONFIG['PLAYER_FIRE_RATE'] / self.player_sprite.speed_scale:
                     new_shot = Shot(
                         filename="images/Lasers/laserBlue01.png",
                         scale=CONFIG['SPRITE_SCALING'],
@@ -898,6 +897,7 @@ class InGameView(arcade.View):
                         fade_speed=CONFIG['SHOT_FADE_SPEED'],
                         wrap_max_x=CONFIG['SCREEN_WIDTH'],
                         wrap_max_y=CONFIG['SCREEN_HEIGHT'],
+                        speed_scale=self.player_sprite.speed_scale,
                         sound=self.player_shoot_sound
 
                     )
