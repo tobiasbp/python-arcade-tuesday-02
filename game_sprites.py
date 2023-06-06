@@ -226,7 +226,8 @@ class Player(ObjInSpace):
                          flipped_horizontally=True,
                          flipped_diagonally=True,
                          wrap_max_x=wrap_max_x,
-                         wrap_max_y=wrap_max_y)
+                         wrap_max_y=wrap_max_y,
+                         )
 
         self.start_x = center_x
         self.start_y = center_y
@@ -245,6 +246,7 @@ class Player(ObjInSpace):
         self.start_speed_max = start_speed_max
 
         self.fire_rate = fire_rate
+        self.time_to_next_shot = 0
 
     def thrust(self):
         """
@@ -276,12 +278,28 @@ class Player(ObjInSpace):
     def is_invincible(self):
         return self.invincibility_timer > 0
 
+    def fire(self):
+        """
+        It keeps track of fire rate when shooting but do not create a shot
+        """
+        if self.time_to_next_shot == 0:
+            self.time_to_next_shot = self.fire_rate
+            return True
+        else:
+            # Still waiting for time to run out
+            return False
+
     def on_update(self, delta_time):
         """
         Move the sprite and wrap
         """
 
         super().on_update(delta_time)
+
+        if self.time_to_next_shot > 0:
+            self.time_to_next_shot -= delta_time
+            # time cant go below zero
+            self.time_to_next_shot = min(0, self.time_to_next_shot)
 
         # Time when you can't get hit by an asteroid
         if self.is_invincible:
@@ -448,11 +466,11 @@ class PowerUp(ObjInSpace):
          "lifetime": 5
          },
         {"filename": "images/Power-ups/powerupGreen_bolt.png",
-         "firerate": 0.5,
+         "fire_rate": 0.5,
          "lifetime": 10
          },
         {"filename": "images/Power-ups/powerupRed_bolt.png",
-         "firerate": 1.5,
+         "fire_rate": 1.5,
          "lifetime": 10
          }
     ]
