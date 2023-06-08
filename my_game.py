@@ -518,7 +518,7 @@ class InGameView(arcade.View):
 
         self.ufo_list.append(new_ufo_obj)
 
-    def get_explosion(self, position, textures=None):
+    def get_explosion(self, position, textures=None, speed_scale=1.0):
         """
         Makes an explosion effect
         """
@@ -532,9 +532,9 @@ class InGameView(arcade.View):
             center_xy=position,
             filenames_and_textures=textures,
             particle_count=CONFIG['EXPLOSION_PARTICLE_AMOUNT'],
-            particle_speed=CONFIG['EXPLOSION_PARTICLE_SPEED'],
-            particle_lifetime_min=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MIN'],
-            particle_lifetime_max=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MAX'],
+            particle_speed=CONFIG['EXPLOSION_PARTICLE_SPEED'] * speed_scale,
+            particle_lifetime_min=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MIN'] / speed_scale,
+            particle_lifetime_max=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MAX'] / speed_scale,
             particle_scale=CONFIG['EXPLOSION_PARTICLE_SIZE'])
 
     def shockwave(self, center: tuple[float, float], range: float, strength: float, sprites: arcade.SpriteList):
@@ -726,7 +726,7 @@ class InGameView(arcade.View):
                 self.sound_explosion.play(speed=self.player_sprite.speed_scale)
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
-                self.get_explosion(self.player_sprite.position)
+                self.get_explosion(position=self.player_sprite.position, speed_scale=self.player_sprite.speed_scale)
                 ufo_shot_hit.kill()
 
         # Check if colliding whit power_up
@@ -741,7 +741,7 @@ class InGameView(arcade.View):
                 self.sound_explosion.play(speed=self.player_sprite.speed_scale)
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
-                self.get_explosion(self.player_sprite.position)
+                self.get_explosion(position=self.player_sprite.position, speed_scale=self.player_sprite.speed_scale)
                 a.kill()
 
         # check for collision with bonus_ufo
@@ -750,7 +750,7 @@ class InGameView(arcade.View):
                 self.sound_explosion.play(speed=self.player_sprite.speed_scale)
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
-                self.get_explosion(self.player_sprite.position)
+                self.get_explosion(position=self.player_sprite.position, speed_scale=self.player_sprite.speed_scale)
                 ufo.kill()
 
         # Player shot hits UFO
@@ -761,8 +761,9 @@ class InGameView(arcade.View):
                 ufo_hit.kill()
                 self.player_score += CONFIG['UFO_POINTS_REWARD']
                 self.get_explosion(
-                    ufo_hit.position,
-                    textures=UFO_EXPLOSIONS_PARTICLE_TEXTURES
+                    position=ufo_hit.position,
+                    textures=UFO_EXPLOSIONS_PARTICLE_TEXTURES,
+                    speed_scale=ufo_hit.speed_scale
                 )
 
         if self.sound_thrust_player is not None and self.thrust_pressed is False and self.sound_thrust.is_playing(
