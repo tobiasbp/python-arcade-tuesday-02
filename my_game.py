@@ -596,6 +596,7 @@ class InGameView(arcade.View):
         self.player_sprite = Player(
             wrap_max_x=CONFIG['SCREEN_WIDTH'],
             wrap_max_y=CONFIG['SCREEN_HEIGHT'],
+            speed_scale=1.0,
             scale=CONFIG['SPRITE_SCALING'],
             center_x=CONFIG['PLAYER_START_X'],
             center_y=CONFIG['PLAYER_START_Y'],

@@ -301,7 +301,7 @@ class Player(ObjInSpace):
         It keeps track of fire rate when shooting but do not create a shot
         """
         if self.time_to_next_shot == 0:
-            self.time_to_next_shot = self.fire_rate
+            self.time_to_next_shot = self.fire_rate / self.speed_scale
             return True
         else:
             # Still waiting for time to run out
@@ -314,10 +314,11 @@ class Player(ObjInSpace):
 
         super().on_update(delta_time)
 
+        print(self.time_to_next_shot)
         if self.time_to_next_shot > 0:
             self.time_to_next_shot -= delta_time
             # time cant go below zero
-            self.time_to_next_shot = min(0, self.time_to_next_shot)
+            self.time_to_next_shot = max(0, self.time_to_next_shot)
 
         # Time when you can't get hit by an asteroid
         if self.is_invincible:
