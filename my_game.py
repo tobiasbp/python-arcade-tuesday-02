@@ -618,7 +618,7 @@ class InGameView(arcade.View):
         # Start level 1
         self.next_level(1)
 
-        self.stoppable_emitter = StoppableEmitter(target=self.player_sprite, particle_lifetime=0.5 / self.player_sprite.speed_scale, offset=(5 * self.player_sprite.speed_scale, 5 * self.player_sprite.speed_scale))
+        self.stoppable_emitter = StoppableEmitter(target=self.player_sprite, particle_lifetime=0.5 / self.player_sprite.speed_scale, offset=(0, 5 * self.player_sprite.speed_scale))
 
     def on_draw(self):
         """
