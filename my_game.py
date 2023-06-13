@@ -733,6 +733,18 @@ class InGameView(arcade.View):
             self.player_score += power_up_hit.type.get("score", 0)
             self.player_sprite.lives += power_up_hit.type.get("life", 0)
             self.player_sprite.fire_rate *= power_up_hit.type.get("fire_rate", 1.0)
+            # power up that adds more asteroids
+            for a in range(0, power_up_hit.type.get("add_asteroids", 0)):
+                self.asteroid_list.append(Asteroid(
+                                scale=CONFIG['SPRITE_SCALING'],
+                                screen_width=CONFIG['SCREEN_WIDTH'],
+                                screen_height=CONFIG['SCREEN_HEIGHT'],
+                                min_spawn_dist_from_player=CONFIG['ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER'],
+                                player_start_pos=(CONFIG['PLAYER_START_X'], CONFIG['PLAYER_START_Y']),
+                                score_values=CONFIG['ASTEROID_SCORE_VALUES'],
+                                spread=CONFIG['ASTEROIDS_SPREAD'],
+                                speed=CONFIG['ASTEROIDS_SPEED'],
+                                level=self.level))
             power_up_hit.kill()
 
         # Check if collision with Asteroids and dies and kills the Asteroid
