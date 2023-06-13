@@ -514,7 +514,7 @@ class PowerUp(ObjInSpace):
         self.angle = randint(0, 360)
         self.forward(speed)
         # time till death in sec
-        self.lifetimer = self.type["lifetime"]
+        self.lifetimer = self.type.get(["lifetime"],10)
 
     def on_update(self, delta_time):
         super().on_update(delta_time)
