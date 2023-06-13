@@ -719,6 +719,25 @@ class InGameView(arcade.View):
         if self.joystick:
             self.player_sprite.angle += round(self.joystick.x) * -CONFIG['PLAYER_ROTATE_SPEED']
 
+        # Only check for shield collisions, if shield is present
+        if self.player_sprite.is_shield:
+
+            # Check for shield - asteroid collisions
+            for a in self.player_sprite.shield.collides_with_list(self.asteroid_list):
+                for n in range(CONFIG["ASTEROIDS_PR_SPLIT"]):
+                    self.asteroid_list.append(a.split(spread_deg=CONFIG["ASTEROIDS_SPREAD"], parent=a, angle=-a.angle))
+                # Remove asteroid
+                a.kill()
+                # Shield is deactivated upon collision
+                self.player_sprite.remove_shield()
+
+            # Check for shield - ufo shot collisions
+            for s in self.player_sprite.shield.collides_with_list(self.asteroid_list):
+                # Remove shot
+                s.kill()
+                # Shield is deactivated upon collision
+                self.player_sprite.remove_shield()
+
         # checks if ufo shot collides with player
         if not self.player_sprite.is_invincible:
             for ufo_shot_hit in self.player_sprite.collides_with_list(self.ufo_shot_list):
@@ -785,28 +804,8 @@ class InGameView(arcade.View):
                 # Split into smaller Asteroids if not smallest size
                 if a.size > 1:
                     for n in range(CONFIG['ASTEROIDS_PR_SPLIT']):
-                        # A random angle for the the new Asteroid
-                        a_angle = random.randrange(
-                            int(s.angle - CONFIG["ASTEROIDS_SPREAD"]),
-                            int(s.angle + CONFIG["ASTEROIDS_SPREAD"])
-                        )
-                        # Create an Asteroid
-                        new_a = Asteroid(
-                            scale=CONFIG['SPRITE_SCALING'],
-                            angle=a_angle,
-                            screen_width=CONFIG['SCREEN_WIDTH'],
-                            screen_height=CONFIG['SCREEN_HEIGHT'],
-                            min_spawn_dist_from_player=CONFIG['ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER'],
-                            player_start_pos=(CONFIG['PLAYER_START_X'], CONFIG['PLAYER_START_Y']),
-                            score_values=CONFIG['ASTEROID_SCORE_VALUES'],
-                            spread=CONFIG['ASTEROIDS_SPREAD'],
-                            speed=CONFIG['ASTEROIDS_SPEED'],
-                            size=a.size - 1,
-                            level=self.level,
-                            spawn_pos=a.position
-                        )
                         # Add the new Asteroid to the sprite list
-                        self.asteroid_list.append(new_a)
+                        self.asteroid_list.append(a.split(spread_deg=CONFIG["ASTEROIDS_SPREAD"], angle=s.angle, parent=a))
                 # Remove shot Asteroid
                 a.kill()
                 # Remove the shot which hit the Asteroid
@@ -854,6 +853,13 @@ class InGameView(arcade.View):
         """
         Called whenever a key is pressed.
         """
+
+        # FIXME: Temporary way to activate shield. Remove when testing is finished.
+        if key == arcade.key.RSHIFT:
+            self.player_sprite.add_shield(
+                shield_lifetime=CONFIG["PLAYER_SHIELD_TIMER"]
+            )
+
 
         # Track state of arrow keys
         if key == CONFIG["PLAYER_TURN_RIGHT_KEY"]:
