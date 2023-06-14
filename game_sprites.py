@@ -301,6 +301,7 @@ class Player(ObjInSpace):
         It keeps track of fire rate when shooting but do not create a shot
         """
         if self.time_to_next_shot == 0:
+
             self.time_to_next_shot = self.fire_rate / self.speed_scale
             return True
         else:
@@ -314,7 +315,6 @@ class Player(ObjInSpace):
 
         super().on_update(delta_time)
 
-        print(self.time_to_next_shot)
         if self.time_to_next_shot > 0:
             self.time_to_next_shot -= delta_time
             # time cant go below zero
