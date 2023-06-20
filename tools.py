@@ -84,10 +84,11 @@ class StoppableEmitter:
                  target: arcade.Sprite,
                  particle_lifetime: float = 0.5,
                  noise: int = 15,
-                 offset: Tuple[int] = (0, 5),
+                 offset: Tuple[int, int] = (0, 5),
                  emit_interval: float = 0.01,
                  particle_count: int = 30,
                  start_alpha: int = 100):
+
         self.target = target
         self.noise = noise
         self.emit_interval = emit_interval
