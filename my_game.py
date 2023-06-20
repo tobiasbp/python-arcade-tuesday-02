@@ -514,12 +514,16 @@ class InGameView(arcade.View):
             screen_width=CONFIG['SCREEN_WIDTH'],
             screen_height=CONFIG['SCREEN_HEIGHT']
         )  # it needs the list so it can send shots to MyGame
+
         self.ufo_list.append(new_ufo_obj)
 
-    def get_explosion(self, position, textures=None, size=CONFIG["EXPLOSION_PARTICLE_SIZE"], amount=CONFIG["EXPLOSION_PARTICLE_AMOUNT"]):
+    def get_explosion(self, position, textures=None, speed_scale=1.0, size=CONFIG["EXPLOSION_PARTICLE_SIZE"], amount=CONFIG["EXPLOSION_PARTICLE_AMOUNT"]):
+
+
         """
         Makes an explosion effect
         """
+
         self.shake(CONFIG['EXPLOSION_SHAKE_AMPLITUDE'])
 
         if textures is None:
@@ -528,10 +532,11 @@ class InGameView(arcade.View):
         self.explosion_emitter = arcade.make_burst_emitter(
             center_xy=position,
             filenames_and_textures=textures,
+
             particle_count=amount,
             particle_speed=CONFIG['EXPLOSION_PARTICLE_SPEED'],
-            particle_lifetime_min=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MIN'],
-            particle_lifetime_max=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MAX'],
+            particle_lifetime_min=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MIN'] / speed_scale,
+            particle_lifetime_max=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MAX'] / speed_scale,
             particle_scale=size)
 
     def shockwave(self, center: tuple[float, float], range: float, strength: float, sprites: arcade.SpriteList):
@@ -593,6 +598,7 @@ class InGameView(arcade.View):
         self.player_sprite = Player(
             wrap_max_x=CONFIG['SCREEN_WIDTH'],
             wrap_max_y=CONFIG['SCREEN_HEIGHT'],
+            speed_scale=1.0,
             scale=CONFIG['SPRITE_SCALING'],
             center_x=CONFIG['PLAYER_START_X'],
             center_y=CONFIG['PLAYER_START_Y'],
@@ -616,7 +622,11 @@ class InGameView(arcade.View):
         # Start level 1
         self.next_level(1)
 
-        self.stoppable_emitter = StoppableEmitter(self.player_sprite)
+        self.stoppable_emitter = StoppableEmitter(
+            target=self.player_sprite,
+            particle_lifetime=0.5 / self.player_sprite.speed_scale,
+            offset=(0, 5 * self.player_sprite.speed_scale)
+        )
 
     def on_draw(self):
         """
@@ -690,7 +700,7 @@ class InGameView(arcade.View):
         for ufo in self.ufo_list:
             # If shooting timer is finished, call shoot
             if ufo.shoot_timer <= 0:
-                self.sound_fire.play()
+                self.sound_fire.play(speed=ufo.speed_scale)
                 ufo.shoot()
             # If direction changing timer is finished, call change_dir
             if ufo.change_dir_timer <= 0:
@@ -721,10 +731,10 @@ class InGameView(arcade.View):
         # checks if ufo shot collides with player
         if not self.player_sprite.is_invincible:
             for ufo_shot_hit in self.player_sprite.collides_with_list(self.ufo_shot_list):
-                self.sound_explosion.play()
+                self.sound_explosion.play(speed=self.player_sprite.speed_scale)
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
-                self.get_explosion(self.player_sprite.position)
+                self.get_explosion(position=self.player_sprite.position, speed_scale=self.player_sprite.speed_scale)
                 ufo_shot_hit.kill()
 
         # Check if colliding whit power_up
@@ -753,32 +763,34 @@ class InGameView(arcade.View):
         # Check if collision with Asteroids and dies and kills the Asteroid
         if not self.player_sprite.is_invincible:
             for a in self.player_sprite.collides_with_list(self.asteroid_list):
-                self.sound_explosion.play()
+                self.sound_explosion.play(speed=self.player_sprite.speed_scale)
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
-                self.get_explosion(self.player_sprite.position)
+                self.get_explosion(position=self.player_sprite.position, speed_scale=self.player_sprite.speed_scale)
                 a.kill()
 
         # check for collision with bonus_ufo
         if not self.player_sprite.is_invincible:
             for ufo in self.player_sprite.collides_with_list(self.ufo_list):
-                self.sound_explosion.play()
+                self.sound_explosion.play(speed=self.player_sprite.speed_scale)
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
-                self.get_explosion(self.player_sprite.position
-                                   )
+
+                self.get_explosion(position=self.player_sprite.position, speed_scale=self.player_sprite.speed_scale)
+
                 ufo.kill()
 
         # Player shot hits UFO
         for shot in self.player_shot_list:
             for ufo_hit in arcade.check_for_collision_with_list(shot, self.ufo_list):
                 shot.kill()
-                self.sound_explosion.play()
+                self.sound_explosion.play(speed=ufo_hit.speed_scale)
                 ufo_hit.kill()
                 self.player_score += CONFIG['UFO_POINTS_REWARD']
                 self.get_explosion(
-                    ufo_hit.position,
-                    textures=UFO_EXPLOSIONS_PARTICLE_TEXTURES
+                    position=ufo_hit.position,
+                    textures=UFO_EXPLOSIONS_PARTICLE_TEXTURES,
+                    speed_scale=ufo_hit.speed_scale
                 )
 
         if self.sound_thrust_player is not None and self.thrust_pressed is False and self.sound_thrust.is_playing(
@@ -796,7 +808,7 @@ class InGameView(arcade.View):
                 # Shake the camera in proportion to Asteroid size
                 self.shake(amplitude=CONFIG["ASTEROIDS_SHAKE_AMPLITUDE"] * a.size)
                 self.player_score += a.value
-                self.sound_explosion.play()
+                self.sound_explosion.play(speed=a.speed_scale)
 
                 t = arcade.load_texture("images/Meteors/meteorGrey_tiny1.png")
                 self.get_explosion(a.position, [t], 1, random.randint(4, 7))
@@ -895,7 +907,7 @@ class InGameView(arcade.View):
             if self.thrust_pressed is False:
                 if self.sound_thrust_player is not None:
                     self.sound_thrust.stop(self.sound_thrust_player)
-                self.sound_thrust_player = self.sound_thrust.play(loop=True)
+                self.sound_thrust_player = self.sound_thrust.play(loop=True, speed=self.player_sprite.speed_scale)
             self.thrust_pressed = True
 
         if key == CONFIG["PLAYER_FIRE_KEY"]:
@@ -913,11 +925,12 @@ class InGameView(arcade.View):
                         fade_speed=CONFIG['SHOT_FADE_SPEED'],
                         wrap_max_x=CONFIG['SCREEN_WIDTH'],
                         wrap_max_y=CONFIG['SCREEN_HEIGHT'],
+                        speed_scale=self.player_sprite.speed_scale,
                         sound=self.player_shoot_sound
 
                     )
 
-                    self.sound_fire.play()
+                    self.sound_fire.play(speed=self.player_sprite.speed_scale)
                     self.player_shot_list.append(new_shot)
 
 
