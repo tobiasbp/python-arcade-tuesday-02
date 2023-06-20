@@ -300,8 +300,9 @@ class Player(ObjInSpace):
         """
         It keeps track of fire rate when shooting but do not create a shot
         """
-        if self.time_to_next_shot == 0:
+        if self.time_to_next_shot <= 0:
             self.time_to_next_shot = self.fire_rate
+            print("WKDOQDJK")
             return True
         else:
             # Still waiting for time to run out
@@ -317,8 +318,8 @@ class Player(ObjInSpace):
         if self.time_to_next_shot > 0:
             self.time_to_next_shot -= delta_time
             # time cant go below zero
-            self.time_to_next_shot = min(0, self.time_to_next_shot)
-
+            self.time_to_next_shot = max(0, self.time_to_next_shot)
+        print(self.time_to_next_shot)
         # Time when you can't get hit by an asteroid
         if self.is_invincible:
             self.invincibility_timer -= delta_time * self.speed_scale
@@ -461,28 +462,28 @@ class PowerUp(ObjInSpace):
     # PowerUp colors: Green: Lvl 1, Yellow Lvl 2; Red: Lvl 3
     pu_types = [
         {"filename": "images/Power-ups/powerupGreen_star.png",
-         "score": 300,
+         "score": 900,
          "lifetime": 15
          },
         {"filename": "images/Power-ups/powerupYellow_star.png",
-         "score": 600,
+         "score": 300,
          "lifetime": 10
          },
         {"filename": "images/Power-ups/powerupRed_star.png",
-         "score": 1000,
+         "score": -400,
          "lifetime": 5
          },
         {"filename": "images/Power-ups/powerupGreen_heart.png",
-         "life": 1,
-         "lifetime": 15
-         },
-        {"filename": "images/Power-ups/powerupYellow_heart.png",
          "life": 2,
          "lifetime": 10
          },
+        {"filename": "images/Power-ups/powerupYellow_heart.png",
+         "life": 1,
+         "lifetime": 15
+         },
         {"filename": "images/Power-ups/powerupRed_heart.png",
-         "life": 3,
-         "lifetime": 5
+         "life": -1,
+         "lifetime": 20
          },
         {"filename": "images/Power-ups/powerupGreen_bolt.png",
          "fire_rate": 0.5,

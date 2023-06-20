@@ -393,7 +393,6 @@ class InGameView(arcade.View):
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = None
-        self.player_shot_fire_rate_timer = 0
 
         # Power ups SprteList
         self.power_up_list = None
@@ -517,7 +516,7 @@ class InGameView(arcade.View):
         )  # it needs the list so it can send shots to MyGame
         self.ufo_list.append(new_ufo_obj)
 
-    def get_explosion(self, position, textures=None):
+    def get_explosion(self, position, textures=None, size=CONFIG["EXPLOSION_PARTICLE_SIZE"], amount=CONFIG["EXPLOSION_PARTICLE_AMOUNT"]):
         """
         Makes an explosion effect
         """
@@ -529,11 +528,11 @@ class InGameView(arcade.View):
         self.explosion_emitter = arcade.make_burst_emitter(
             center_xy=position,
             filenames_and_textures=textures,
-            particle_count=CONFIG['EXPLOSION_PARTICLE_AMOUNT'],
+            particle_count=amount,
             particle_speed=CONFIG['EXPLOSION_PARTICLE_SPEED'],
             particle_lifetime_min=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MIN'],
             particle_lifetime_max=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MAX'],
-            particle_scale=CONFIG['EXPLOSION_PARTICLE_SIZE'])
+            particle_scale=size)
 
     def shockwave(self, center: tuple[float, float], range: float, strength: float, sprites: arcade.SpriteList):
         """
@@ -766,7 +765,8 @@ class InGameView(arcade.View):
                 self.sound_explosion.play()
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
-                self.get_explosion(self.player_sprite.position)
+                self.get_explosion(self.player_sprite.position
+                                   )
                 ufo.kill()
 
         # Player shot hits UFO
@@ -797,6 +797,9 @@ class InGameView(arcade.View):
                 self.shake(amplitude=CONFIG["ASTEROIDS_SHAKE_AMPLITUDE"] * a.size)
                 self.player_score += a.value
                 self.sound_explosion.play()
+
+                t = arcade.load_texture("images/Meteors/meteorGrey_tiny1.png")
+                self.get_explosion(a.position, [t], 1, random.randint(4, 7))
 
                 # Split into smaller Asteroids if not smallest size
                 if a.size > 1:
