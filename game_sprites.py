@@ -300,8 +300,8 @@ class Player(ObjInSpace):
         """
         It keeps track of fire rate when shooting but do not create a shot
         """
-        if self.time_to_next_shot == 0:
 
+        if self.time_to_next_shot <= 0:
             self.time_to_next_shot = self.fire_rate / self.speed_scale
             return True
         else:
@@ -463,28 +463,28 @@ class PowerUp(ObjInSpace):
     # PowerUp colors: Green: Lvl 1, Yellow Lvl 2; Red: Lvl 3
     pu_types = [
         {"filename": "images/Power-ups/powerupGreen_star.png",
-         "score": 300,
+         "score": 900,
          "lifetime": 15
          },
         {"filename": "images/Power-ups/powerupYellow_star.png",
-         "score": 600,
+         "score": 300,
          "lifetime": 10
          },
         {"filename": "images/Power-ups/powerupRed_star.png",
-         "score": 1000,
+         "score": -400,
          "lifetime": 5
          },
-        {"filename": "images/Power-ups/powerupGreen_shield.png",
-         "life": 1,
-         "lifetime": 15
-         },
-        {"filename": "images/Power-ups/powerupYellow_shield.png",
+        {"filename": "images/Power-ups/powerupGreen_heart.png",
          "life": 2,
          "lifetime": 10
          },
-        {"filename": "images/Power-ups/powerupRed_shield.png",
-         "life": 3,
-         "lifetime": 5
+        {"filename": "images/Power-ups/powerupYellow_heart.png",
+         "life": 1,
+         "lifetime": 15
+         },
+        {"filename": "images/Power-ups/powerupRed_heart.png",
+         "life": -1,
+         "lifetime": 20
          },
         {"filename": "images/Power-ups/powerupGreen_bolt.png",
          "fire_rate": 0.5,
@@ -493,6 +493,10 @@ class PowerUp(ObjInSpace):
         {"filename": "images/Power-ups/powerupRed_bolt.png",
          "fire_rate": 1.5,
          "lifetime": 10
+         },
+        {"filename": "images/Power-ups/powerupRed_asteroid.png",
+         "add_asteroids": 2,
+         "lifetime": 20
          }
     ]
 
@@ -512,7 +516,7 @@ class PowerUp(ObjInSpace):
         self.angle = randint(0, 360)
         self.forward(speed)
         # time till death in sec
-        self.lifetimer = self.type["lifetime"]
+        self.lifetimer = self.type.get("lifetime", 10)
 
     def on_update(self, delta_time):
         super().on_update(delta_time)

@@ -393,7 +393,6 @@ class InGameView(arcade.View):
 
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = None
-        self.player_shot_fire_rate_timer = 0
 
         # Power ups SprteList
         self.power_up_list = None
@@ -518,7 +517,9 @@ class InGameView(arcade.View):
 
         self.ufo_list.append(new_ufo_obj)
 
-    def get_explosion(self, position, textures=None, speed_scale=1.0):
+    def get_explosion(self, position, textures=None, speed_scale=1.0, size=CONFIG["EXPLOSION_PARTICLE_SIZE"], amount=CONFIG["EXPLOSION_PARTICLE_AMOUNT"]):
+
+
         """
         Makes an explosion effect
         """
@@ -531,11 +532,12 @@ class InGameView(arcade.View):
         self.explosion_emitter = arcade.make_burst_emitter(
             center_xy=position,
             filenames_and_textures=textures,
-            particle_count=CONFIG['EXPLOSION_PARTICLE_AMOUNT'],
-            particle_speed=CONFIG['EXPLOSION_PARTICLE_SPEED'] * speed_scale,
+
+            particle_count=amount,
+            particle_speed=CONFIG['EXPLOSION_PARTICLE_SPEED'],
             particle_lifetime_min=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MIN'] / speed_scale,
             particle_lifetime_max=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MAX'] / speed_scale,
-            particle_scale=CONFIG['EXPLOSION_PARTICLE_SIZE'])
+            particle_scale=size)
 
     def shockwave(self, center: tuple[float, float], range: float, strength: float, sprites: arcade.SpriteList):
         """
@@ -740,6 +742,22 @@ class InGameView(arcade.View):
             self.player_score += power_up_hit.type.get("score", 0)
             self.player_sprite.lives += power_up_hit.type.get("life", 0)
             self.player_sprite.fire_rate *= power_up_hit.type.get("fire_rate", 1.0)
+            # power up that adds more asteroids
+            for x in range(0, power_up_hit.type.get("add_asteroids", 0)):
+                a = Asteroid(
+                    scale=CONFIG['SPRITE_SCALING'],
+                    screen_width=CONFIG['SCREEN_WIDTH'],
+                    screen_height=CONFIG['SCREEN_HEIGHT'],
+                    min_spawn_dist_from_player=CONFIG['ASTEROIDS_MINIMUM_SPAWN_DISTANCE_FROM_PLAYER'],
+                    player_start_pos=(CONFIG['PLAYER_START_X'], CONFIG['PLAYER_START_Y']),
+                    score_values=CONFIG['ASTEROID_SCORE_VALUES'],
+                    spread=CONFIG['ASTEROIDS_SPREAD'],
+                    speed=CONFIG['ASTEROIDS_SPEED'],
+                    level=self.level
+                )
+                t = arcade.load_texture("images/Meteors/meteorBrown_tiny1.png")
+                self.get_explosion(a.position, [t])
+                self.asteroid_list.append(a)
             power_up_hit.kill()
 
         # Check if collision with Asteroids and dies and kills the Asteroid
@@ -757,7 +775,9 @@ class InGameView(arcade.View):
                 self.sound_explosion.play(speed=self.player_sprite.speed_scale)
                 self.player_sprite.lives -= 1
                 self.player_sprite.reset()
+
                 self.get_explosion(position=self.player_sprite.position, speed_scale=self.player_sprite.speed_scale)
+
                 ufo.kill()
 
         # Player shot hits UFO
@@ -789,6 +809,9 @@ class InGameView(arcade.View):
                 self.shake(amplitude=CONFIG["ASTEROIDS_SHAKE_AMPLITUDE"] * a.size)
                 self.player_score += a.value
                 self.sound_explosion.play(speed=a.speed_scale)
+
+                t = arcade.load_texture("images/Meteors/meteorGrey_tiny1.png")
+                self.get_explosion(a.position, [t], 1, random.randint(4, 7))
 
                 # Split into smaller Asteroids if not smallest size
                 if a.size > 1:
