@@ -391,6 +391,14 @@ class InGameView(arcade.View):
 
         self.sound_fire = arcade.load_sound("sounds/laserRetro_001.ogg")
 
+        # Textured for Asteroid fragments. Used when Asteroids are shot.
+        self.asteroid_fragments = [
+            arcade.load_texture("images/Meteors/meteorGrey_tiny1.png"),
+            arcade.load_texture("images/Meteors/meteorGrey_tiny2.png"),
+            arcade.load_texture("images/Meteors/meteorGrey_small1.png"),
+            arcade.load_texture("images/Meteors/meteorGrey_small2.png")
+        ]
+
         # Variable that will hold a list of shots fired by the player
         self.player_shot_list = None
 
@@ -807,12 +815,13 @@ class InGameView(arcade.View):
                 self.player_score += a.value
                 self.sound_explosion.play(speed=a.speed_scale)
 
-                t = arcade.load_texture("images/Meteors/meteorGrey_tiny1.png")
                 self.get_explosion(
                     a.position,
-                    textures=[t],
-                    size=0.8,
-                    amount=random.randint(4, 7)
+                    textures=self.asteroid_fragments,
+                    size=1.0,
+                    # Smaller Asteroids create fewer fragments
+                    amount=a.size * 2
+                    #amount=random.randint(4, 7)
                     )
 
                 # Split into smaller Asteroids if not smallest size
