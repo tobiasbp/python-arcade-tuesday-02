@@ -532,7 +532,6 @@ class InGameView(arcade.View):
         self.explosion_emitter = arcade.make_burst_emitter(
             center_xy=position,
             filenames_and_textures=textures,
-
             particle_count=amount,
             particle_speed=CONFIG['EXPLOSION_PARTICLE_SPEED'],
             particle_lifetime_min=CONFIG['EXPLOSION_PARTICLE_LIFETIME_MIN'] / speed_scale,
@@ -587,7 +586,6 @@ class InGameView(arcade.View):
         self.player_shot_list = arcade.SpriteList()
         self.asteroid_list = arcade.SpriteList()
         self.power_up_list = arcade.SpriteList()
-
         self.ufo_list = arcade.SpriteList()
         self.ufo_shot_list = arcade.SpriteList()
 
@@ -642,8 +640,7 @@ class InGameView(arcade.View):
         # Stars in the background drawn first
         self.stars_list.draw()
 
-        # draw particle emitter
-        # self.thrust_emitter.draw()
+        # Draw particle emitter
         self.stoppable_emitter.emitter.draw()
 
         # Draw the player shot
@@ -760,7 +757,7 @@ class InGameView(arcade.View):
                 self.asteroid_list.append(a)
             power_up_hit.kill()
 
-        # Check if collision with Asteroids and dies and kills the Asteroid
+        # Check if player collides with Asteroids and dies and kills the Asteroid
         if not self.player_sprite.is_invincible:
             for a in self.player_sprite.collides_with_list(self.asteroid_list):
                 self.sound_explosion.play(speed=self.player_sprite.speed_scale)
@@ -811,7 +808,12 @@ class InGameView(arcade.View):
                 self.sound_explosion.play(speed=a.speed_scale)
 
                 t = arcade.load_texture("images/Meteors/meteorGrey_tiny1.png")
-                self.get_explosion(a.position, [t], 1, random.randint(4, 7))
+                self.get_explosion(
+                    a.position,
+                    textures=[t],
+                    size=0.8,
+                    amount=random.randint(4, 7)
+                    )
 
                 # Split into smaller Asteroids if not smallest size
                 if a.size > 1:
