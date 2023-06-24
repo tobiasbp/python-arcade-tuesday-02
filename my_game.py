@@ -367,7 +367,6 @@ class SettingsView(arcade.View):
                         CONFIG["PLAYER_TURN_RIGHT_KEY"]]
                     with open("user_settings.toml", "wb") as f:
                         tomli_w.dump(self.changed_settings, f)
-                    self.changed_settings = {}
                     self.settings_guide_key_already_in_use.text = ""
 
 class InGameView(arcade.View):
