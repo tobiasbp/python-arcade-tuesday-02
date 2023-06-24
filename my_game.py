@@ -614,10 +614,10 @@ class InGameView(arcade.View):
         # setup spawn_ufo to run regularly
         arcade.schedule(self.spawn_ufo, CONFIG['UFO_SPAWN_RATE'] + (self.level - 1) * CONFIG['UFO_SPAWN_RATE_MOD_PR_LEVEL'])
 
+        self.stoppable_emitter = StoppableEmitter(self.player_sprite)
+
         # Start level 1
         self.next_level(1)
-
-        self.stoppable_emitter = StoppableEmitter(self.player_sprite)
 
     def on_draw(self):
         """
@@ -723,16 +723,23 @@ class InGameView(arcade.View):
         if self.player_sprite.is_shield:
 
             # Check for shield - asteroid collisions
-            for a in self.player_sprite.shield.collides_with_list(self.asteroid_list):
-                for n in range(CONFIG["ASTEROIDS_PR_SPLIT"]):
-                    self.asteroid_list.append(a.split(spread_deg=CONFIG["ASTEROIDS_SPREAD"], parent=a, angle=-a.angle))
-                # Remove asteroid
-                a.kill()
-                # Shield is deactivated upon collision
-                self.player_sprite.remove_shield()
+                for a in self.player_sprite.shield.collides_with_list(self.asteroid_list):
+                    for n in range(CONFIG["ASTEROIDS_PR_SPLIT"]):
+                        self.asteroid_list.append(a.split(spread_deg=CONFIG["ASTEROIDS_SPREAD"],
+                                                          parent=a,
+                                                          angle=-arcade.get_angle_degrees(
+                                                              self.player_sprite.center_x,
+                                                              self.player_sprite.center_y,
+                                                              a.center_x,
+                                                              a.center_y)))
+                    # Remove asteroid
+                    a.kill()
+                    # Shield is deactivated upon collision
+                    self.player_sprite.remove_shield()
 
+        if self.player_sprite.is_shield:
             # Check for shield - ufo shot collisions
-            for s in self.player_sprite.shield.collides_with_list(self.asteroid_list):
+            for s in self.player_sprite.shield.collides_with_list(self.ufo_shot_list):
                 # Remove shot
                 s.kill()
                 # Shield is deactivated upon collision

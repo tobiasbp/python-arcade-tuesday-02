@@ -201,9 +201,8 @@ class Asteroid(ObjInSpace):
             int(angle + spread_deg)
         )
         # Create an Asteroid
-        print(parent.scale)
         new_a = Asteroid(
-            scale=parent.scale,
+            scale=parent.scale/parent.size,
             angle=a_angle,
             screen_width=parent.screen_width,
             screen_height=parent.screen_height,
@@ -322,6 +321,8 @@ class Player(ObjInSpace):
     def remove_shield(self):
         if self.is_shield:
             self.shield.kill()
+            self.shield = None
+
     def reset(self):
         """
         The code works as when you get hit by the asteroid you will disappear for 2 seconds.
@@ -344,7 +345,7 @@ class Player(ObjInSpace):
         """
         It keeps track of fire rate when shooting but do not create a shot
         """
-        if self.time_to_next_shot == 0:
+        if self.time_to_next_shot <= 0:
             self.time_to_next_shot = self.fire_rate
             return True
         else:
