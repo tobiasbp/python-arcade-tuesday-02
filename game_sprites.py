@@ -1,8 +1,13 @@
-from random import randint, random, randrange, uniform, choice
+"""
+file that contains all game-sprite classes in the project. They are imported into main when used in-game
+"""
+
+from random import randrange, random, randint, uniform, choice
 from typing import Tuple
 from math import cos, pi, sqrt
 
 import arcade
+
 
 class ObjInSpace(arcade.Sprite):
     """
@@ -189,14 +194,28 @@ class Asteroid(ObjInSpace):
         self.direction = self.angle  # placeholder for initial angle - angle changes during the game
         self.value = score_values[self.size - 1]
 
-    def split(self, spread_deg=30, angle=None, parent=None):
-        """
-        Distortion of initial angle, asteroid to inherit from
-        """
-        if angle is None:
-            angle = random.randrange(0, 360)
-        new_angle = random.randrange(angle - spread_deg, angle + spread_deg)
-        new_a = Asteroid(parent.size - 1, self.level, parent.position, new_angle)
+    def split(self, spread_deg, angle, parent):
+        # A random angle for the new Asteroid
+        a_angle = randrange(
+            int(angle - spread_deg),
+            int(angle + spread_deg)
+        )
+        # Create an Asteroid
+        new_a = Asteroid(
+            scale=parent.scale/parent.size,
+            angle=a_angle,
+            screen_width=parent.screen_width,
+            screen_height=parent.screen_height,
+            min_spawn_dist_from_player=parent.min_spawn_dist_from_player,
+            player_start_pos=parent.player_start_pos,
+            score_values=parent.score_values,
+            spread=spread_deg,
+            speed=parent.speed,
+            size=parent.size - 1,
+            level=parent.level,
+            spawn_pos=parent.position
+        )
+
         return new_a
 
     def on_update(self, delta_time):
@@ -226,7 +245,10 @@ class Player(ObjInSpace):
                  start_angle_max,
                  wrap_max_x,
                  wrap_max_y,
-                 speed_scale=1.0):
+                 fire_rate,
+                 speed_scale=1.0
+                ):
+          
         """
         Setup new Player object
         """
@@ -241,7 +263,8 @@ class Player(ObjInSpace):
                          flipped_diagonally=True,
                          wrap_max_x=wrap_max_x,
                          wrap_max_y=wrap_max_y,
-                         speed_scale=speed_scale)
+                         speed_scale=speed_scale
+                        )
 
         self.start_x = center_x
         self.start_y = center_y
@@ -260,7 +283,13 @@ class Player(ObjInSpace):
         self.start_speed_min = start_speed_min
         self.start_speed_max = start_speed_max
 
+
+        self.fire_rate = fire_rate
+        self.time_to_next_shot = 0
+
         self.speed_scale = speed_scale
+
+        self.shield = None
 
     def thrust(self):
         """
@@ -279,25 +308,49 @@ class Player(ObjInSpace):
             self.change_x *= player_x_and_y_speed_ratio
             self.change_y *= player_x_and_y_speed_ratio
 
+    def add_shield(self, shield_lifetime=5):
+        if not self.has_shield and not self.is_invincible:
+            self.shield = arcade.Sprite(
+                filename="images/Effects/shield1.png",
+                flipped_horizontally=True,
+                flipped_diagonally=True
+            )
+            self._sprite_list.append(self.shield)
+        self.shield_timer = shield_lifetime
+
+    def remove_shield(self):
+        if self.has_shield:
+            self.shield.kill()
+            self.shield = None
+
     def reset(self):
         """
         The code works as when you get hit by the asteroid you will disappear for 2 seconds.
         After that you are invincible for 3 seconds, and you can get hit again.
         """
-        # Deactivate Shield
-        self.shield_timer = 0
-
+        self.remove_shield()
         self.invincibility_timer = self.invincibility_seconds
         # The Player is Invisible
         self.alpha = 0
 
     @property
-    def is_invincible(self):
-        return self.shield_timer > 0
+    def has_shield(self):
+        return self.shield is not None
 
     @property
     def is_invincible(self):
         return self.invincibility_timer > 0
+
+    def fire(self):
+        """
+        It keeps track of fire rate when shooting but do not create a shot
+        """
+        if self.time_to_next_shot <= 0:
+            self.time_to_next_shot = self.fire_rate
+            return True
+        else:
+            # Still waiting for time to run out
+            return False
 
     def on_update(self, delta_time):
         """
@@ -306,7 +359,12 @@ class Player(ObjInSpace):
 
         super().on_update(delta_time)
 
-        if self.is_shield:
+        if self.time_to_next_shot > 0:
+            self.time_to_next_shot -= delta_time
+            # time cant go below zero
+            self.time_to_next_shot = min(0, self.time_to_next_shot)
+
+        if self.has_shield:
             self.shield_timer -= delta_time
 
         # Time when you can't get hit by an asteroid
@@ -327,19 +385,13 @@ class Player(ObjInSpace):
         else:
             self.alpha = 255
 
-
-class Shield(ObjInSpace):
-    """
-    Protective shield for player
-    """
-    def __init__(self):
-        # Graphics initializer
-        super().__init__("images/Effects/shield1.png", flipped_horizontally=True, flipped_diagonally=True)
-
-        self.center_x = 0
-        self.center_y = 0
-        self.angle = 0
-
+        # Update shield if present
+        if self.has_shield and self.shield_timer > 0:
+            self.shield.center_x = self.center_x
+            self.shield.center_y = self.center_y
+            self.shield.angle = self.angle
+        else:
+            self.remove_shield()
 
 class BonusUFO(ObjInSpace):
     """occasionally moves across the screen. Grants the player points if shot"""
@@ -486,6 +538,14 @@ class PowerUp(ObjInSpace):
         {"filename": "images/Power-ups/powerupRed_shield.png",
          "life": 3,
          "lifetime": 5
+         },
+        {"filename": "images/Power-ups/powerupGreen_bolt.png",
+         "fire_rate": 0.5,
+         "lifetime": 10
+         },
+        {"filename": "images/Power-ups/powerupRed_bolt.png",
+         "fire_rate": 1.5,
+         "lifetime": 10
          }
     ]
 
