@@ -720,7 +720,7 @@ class InGameView(arcade.View):
             self.player_sprite.angle += round(self.joystick.x) * -CONFIG['PLAYER_ROTATE_SPEED']
 
         # Only check for shield collisions, if shield is present
-        if self.player_sprite.is_shield:
+        if self.player_sprite.has_shield:
 
             # Check for shield - asteroid collisions
                 for a in self.player_sprite.shield.collides_with_list(self.asteroid_list):
@@ -737,7 +737,7 @@ class InGameView(arcade.View):
                     # Shield is deactivated upon collision
                     self.player_sprite.remove_shield()
 
-        if self.player_sprite.is_shield:
+        if self.player_sprite.has_shield:
             # Check for shield - ufo shot collisions
             for s in self.player_sprite.shield.collides_with_list(self.ufo_shot_list):
                 # Remove shot

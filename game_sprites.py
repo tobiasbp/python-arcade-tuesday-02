@@ -309,7 +309,7 @@ class Player(ObjInSpace):
             self.change_y *= player_x_and_y_speed_ratio
 
     def add_shield(self, shield_lifetime=5):
-        if not self.is_shield and not self.is_invincible:
+        if not self.has_shield and not self.is_invincible:
             self.shield = arcade.Sprite(
                 filename="images/Effects/shield1.png",
                 flipped_horizontally=True,
@@ -319,7 +319,7 @@ class Player(ObjInSpace):
         self.shield_timer = shield_lifetime
 
     def remove_shield(self):
-        if self.is_shield:
+        if self.has_shield:
             self.shield.kill()
             self.shield = None
 
@@ -334,7 +334,7 @@ class Player(ObjInSpace):
         self.alpha = 0
 
     @property
-    def is_shield(self):
+    def has_shield(self):
         return self.shield is not None
 
     @property
@@ -364,7 +364,7 @@ class Player(ObjInSpace):
             # time cant go below zero
             self.time_to_next_shot = min(0, self.time_to_next_shot)
 
-        if self.is_shield:
+        if self.has_shield:
             self.shield_timer -= delta_time
 
         # Time when you can't get hit by an asteroid
@@ -386,7 +386,7 @@ class Player(ObjInSpace):
             self.alpha = 255
 
         # Update shield if present
-        if self.is_shield and self.shield_timer > 0:
+        if self.has_shield and self.shield_timer > 0:
             self.shield.center_x = self.center_x
             self.shield.center_y = self.center_y
             self.shield.angle = self.angle
