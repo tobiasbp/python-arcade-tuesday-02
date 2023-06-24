@@ -74,7 +74,7 @@ class Shot(ObjInSpace):
 
         # play the shot sound if present
         if sound:
-            sound.play()
+            sound.play(speed=self.speed_scale)
 
     def on_update(self, delta_time):
         """
@@ -86,11 +86,11 @@ class Shot(ObjInSpace):
         # check if the shot traveled too far
         self.distance_traveled += self.speed * self.speed_scale
 
-        # FIXME: make a function for when the fading of the shot should start, based on teh range
+        # FIXME: make a function for when the fading of the shot should start, based on the range
 
         # start fading when flown far enough
-        if self.distance_traveled > self.fade_start:
-            self.alpha *= self.fade_speed * self.speed_scale
+        #if self.distance_traveled > self.fade_start:
+        #    self.alpha *= self.fade_speed * self.speed_scale
 
         if self.distance_traveled > self.range:
             self.kill()
@@ -345,8 +345,9 @@ class Player(ObjInSpace):
         """
         It keeps track of fire rate when shooting but do not create a shot
         """
+
         if self.time_to_next_shot <= 0:
-            self.time_to_next_shot = self.fire_rate
+            self.time_to_next_shot = self.fire_rate / self.speed_scale
             return True
         else:
             # Still waiting for time to run out
@@ -362,7 +363,7 @@ class Player(ObjInSpace):
         if self.time_to_next_shot > 0:
             self.time_to_next_shot -= delta_time
             # time cant go below zero
-            self.time_to_next_shot = min(0, self.time_to_next_shot)
+            self.time_to_next_shot = max(0, self.time_to_next_shot)
 
         if self.has_shield:
             self.shield_timer -= delta_time
@@ -432,14 +433,14 @@ class BonusUFO(ObjInSpace):
         self.screen_height = screen_height
 
         self.shoot_timer = fire_rate + fire_rate_mod
-        self.change_dir_timer = dir_change_rate
+        self.change_dir_timer = dir_change_rate / self.speed_scale
 
         # set random direction. always point towards center, with noise
-        self.change_x = randrange(1, speed) + speed_mod
+        self.change_x = (randrange(1, speed) + speed_mod) * self.speed_scale
         if self.center_x > screen_width / 2:
             self.change_x *= -1
 
-        self.change_y = speed - self.change_x + speed_mod
+        self.change_y = (speed - self.change_x + speed_mod) * self.speed_scale
         if self.center_y > screen_height / 2:
             self.change_y *= -1
 
@@ -448,11 +449,11 @@ class BonusUFO(ObjInSpace):
         set a new direction
         """
 
-        r = randrange(-self.speed, self.speed)
+        r = (randrange(-self.speed, self.speed)) * self.speed_scale
         self.change_x -= r
         self.change_y += r
 
-        self.change_dir_timer = self.dir_change_rate
+        self.change_dir_timer = self.dir_change_rate / self.speed_scale
 
     def shoot(self):
         """
@@ -479,11 +480,12 @@ class BonusUFO(ObjInSpace):
             fade_speed=self.shot_fade_speed,
             wrap_max_x=self.screen_width,
             wrap_max_y=self.screen_height,
+            speed_scale=self.speed_scale,
             sound=BonusUFO.sound_fire)
 
         self.shot_list.append(new_ufo_shot)
 
-        self.shoot_timer = self.fire_rate + self.fire_rate_mod
+        self.shoot_timer = (self.fire_rate + self.fire_rate_mod) / self.speed_scale
 
     def on_update(self, delta_time):
         """update position, and kill if out of bounds"""
@@ -516,28 +518,28 @@ class PowerUp(ObjInSpace):
     # PowerUp colors: Green: Lvl 1, Yellow Lvl 2; Red: Lvl 3
     pu_types = [
         {"filename": "images/Power-ups/powerupGreen_star.png",
-         "score": 300,
+         "score": 900,
          "lifetime": 15
          },
         {"filename": "images/Power-ups/powerupYellow_star.png",
-         "score": 600,
+         "score": 300,
          "lifetime": 10
          },
         {"filename": "images/Power-ups/powerupRed_star.png",
-         "score": 1000,
+         "score": -400,
          "lifetime": 5
          },
-        {"filename": "images/Power-ups/powerupGreen_shield.png",
-         "life": 1,
-         "lifetime": 15
-         },
-        {"filename": "images/Power-ups/powerupYellow_shield.png",
+        {"filename": "images/Power-ups/powerupGreen_heart.png",
          "life": 2,
          "lifetime": 10
          },
-        {"filename": "images/Power-ups/powerupRed_shield.png",
-         "life": 3,
-         "lifetime": 5
+        {"filename": "images/Power-ups/powerupYellow_heart.png",
+         "life": 1,
+         "lifetime": 15
+         },
+        {"filename": "images/Power-ups/powerupRed_heart.png",
+         "life": -1,
+         "lifetime": 20
          },
         {"filename": "images/Power-ups/powerupGreen_bolt.png",
          "fire_rate": 0.5,
@@ -546,6 +548,10 @@ class PowerUp(ObjInSpace):
         {"filename": "images/Power-ups/powerupRed_bolt.png",
          "fire_rate": 1.5,
          "lifetime": 10
+         },
+        {"filename": "images/Power-ups/powerupRed_asteroid.png",
+         "add_asteroids": 2,
+         "lifetime": 20
          }
     ]
 
@@ -565,7 +571,7 @@ class PowerUp(ObjInSpace):
         self.angle = randint(0, 360)
         self.forward(speed)
         # time till death in sec
-        self.lifetimer = self.type["lifetime"]
+        self.lifetimer = self.type.get("lifetime", 10)
 
     def on_update(self, delta_time):
         super().on_update(delta_time)
