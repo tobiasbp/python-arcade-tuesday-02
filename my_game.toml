@@ -21,6 +21,7 @@ PLAYER_THRUST = 0.05  # speed gained from thrusting
 PLAYER_SHOT_SPEED = 4  # px/update
 PLAYER_SPEED_LIMIT = 5  # px/update
 PLAYER_INVINCIBILITY_SECONDS = 5  # secs
+PLAYER_SHIELD_TIMER = 5 # secs
 PLAYER_FIRE_RATE = 0.2  # secs
 PLAYER_SHOT_RANGE = 400  # px
 PLAYER_THRUST_KEY = 65362 # arrowup key

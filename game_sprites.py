@@ -194,6 +194,30 @@ class Asteroid(ObjInSpace):
         self.direction = self.angle  # placeholder for initial angle - angle changes during the game
         self.value = score_values[self.size - 1]
 
+    def split(self, spread_deg, angle, parent):
+        # A random angle for the new Asteroid
+        a_angle = randrange(
+            int(angle - spread_deg),
+            int(angle + spread_deg)
+        )
+        # Create an Asteroid
+        new_a = Asteroid(
+            scale=parent.scale/parent.size,
+            angle=a_angle,
+            screen_width=parent.screen_width,
+            screen_height=parent.screen_height,
+            min_spawn_dist_from_player=parent.min_spawn_dist_from_player,
+            player_start_pos=parent.player_start_pos,
+            score_values=parent.score_values,
+            spread=spread_deg,
+            speed=parent.speed,
+            size=parent.size - 1,
+            level=parent.level,
+            spawn_pos=parent.position
+        )
+
+        return new_a
+
     def on_update(self, delta_time):
 
         super().on_update(delta_time)
@@ -242,7 +266,6 @@ class Player(ObjInSpace):
                          speed_scale=speed_scale
                         )
 
-
         self.start_x = center_x
         self.start_y = center_y
 
@@ -253,6 +276,7 @@ class Player(ObjInSpace):
 
         self.forward(uniform(start_speed_min, start_speed_max))
         self.invincibility_timer = 0
+        self.shield_timer = 0
 
         self.start_angle_min = start_angle_min
         self.start_angle_max = start_angle_max
@@ -265,6 +289,7 @@ class Player(ObjInSpace):
 
         self.speed_scale = speed_scale
 
+        self.shield = None
 
     def thrust(self):
         """
@@ -283,14 +308,34 @@ class Player(ObjInSpace):
             self.change_x *= player_x_and_y_speed_ratio
             self.change_y *= player_x_and_y_speed_ratio
 
+    def add_shield(self, shield_lifetime=5):
+        if not self.has_shield and not self.is_invincible:
+            self.shield = arcade.Sprite(
+                filename="images/Effects/shield1.png",
+                flipped_horizontally=True,
+                flipped_diagonally=True
+            )
+            self._sprite_list.append(self.shield)
+        self.shield_timer = shield_lifetime
+
+    def remove_shield(self):
+        if self.has_shield:
+            self.shield.kill()
+            self.shield = None
+
     def reset(self):
         """
         The code works as when you get hit by the asteroid you will disappear for 2 seconds.
         After that you are invincible for 3 seconds, and you can get hit again.
         """
+        self.remove_shield()
         self.invincibility_timer = self.invincibility_seconds
         # The Player is Invisible
         self.alpha = 0
+
+    @property
+    def has_shield(self):
+        return self.shield is not None
 
     @property
     def is_invincible(self):
@@ -320,6 +365,9 @@ class Player(ObjInSpace):
             # time cant go below zero
             self.time_to_next_shot = max(0, self.time_to_next_shot)
 
+        if self.has_shield:
+            self.shield_timer -= delta_time
+
         # Time when you can't get hit by an asteroid
         if self.is_invincible:
             self.invincibility_timer -= delta_time * self.speed_scale
@@ -338,6 +386,13 @@ class Player(ObjInSpace):
         else:
             self.alpha = 255
 
+        # Update shield if present
+        if self.has_shield and self.shield_timer > 0:
+            self.shield.center_x = self.center_x
+            self.shield.center_y = self.center_y
+            self.shield.angle = self.angle
+        elif self.has_shield and self.shield_timer <= 0:
+            self.remove_shield()
 
 class BonusUFO(ObjInSpace):
     """occasionally moves across the screen. Grants the player points if shot"""
@@ -496,6 +551,10 @@ class PowerUp(ObjInSpace):
          },
         {"filename": "images/Power-ups/powerupRed_asteroid.png",
          "add_asteroids": 2,
+         "lifetime": 20
+         },
+        {"filename": "images/Power-ups/powerupGreen_shield.png",
+         "shield_seconds": 5,
          "lifetime": 20
          }
     ]
