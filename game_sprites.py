@@ -391,7 +391,7 @@ class Player(ObjInSpace):
             self.shield.center_x = self.center_x
             self.shield.center_y = self.center_y
             self.shield.angle = self.angle
-        else:
+        elif self.has_shield and self.shield_timer <= 0:
             self.remove_shield()
 
 class BonusUFO(ObjInSpace):
@@ -551,6 +551,10 @@ class PowerUp(ObjInSpace):
          },
         {"filename": "images/Power-ups/powerupRed_asteroid.png",
          "add_asteroids": 2,
+         "lifetime": 20
+         },
+        {"filename": "images/Power-ups/powerupGreen_shield.png",
+         "shield_seconds": 5,
          "lifetime": 20
          }
     ]

@@ -773,6 +773,7 @@ class InGameView(arcade.View):
             self.player_score += power_up_hit.type.get("score", 0)
             self.player_sprite.lives += power_up_hit.type.get("life", 0)
             self.player_sprite.fire_rate *= power_up_hit.type.get("fire_rate", 1.0)
+            self.player_sprite.add_shield(power_up_hit.type.get("shield_seconds"))
             # power up that adds more asteroids
             for x in range(0, power_up_hit.type.get("add_asteroids", 0)):
                 a = Asteroid(
